@@ -77,9 +77,6 @@ public:
     vector<string> left_image_names;
 
 
-
-
-
     DenseMapping dense_mapper;
     SemiDenseTracking semidense_tracker;
     SemiDenseMapping semidense_mapper;
@@ -110,7 +107,6 @@ public:
     ros::Publisher vis_pub;
 
 
-    ///ROSKINECT
     void depthcb(const sensor_msgs::Image::ConstPtr& msg);
     ros::Time  stamps_depth_ros;
     cv::Mat image_depth;
@@ -118,8 +114,7 @@ public:
     int counter_depth_images;
 
     int use_ros;
-    ///ROSKINECT
-    ///
+
 };
 #endif
 

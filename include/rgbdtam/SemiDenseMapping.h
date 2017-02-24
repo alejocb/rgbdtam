@@ -97,6 +97,8 @@ class SemiDenseMapping  :public Imagenes {
     int use_kinect;
     float overlap_tracking;
 
+    float num_potential_points;
+
     int images_size;
 
     int num_cameras_mapping_th,num_cameras_mapping_th_aux;

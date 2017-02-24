@@ -331,16 +331,9 @@ void join_maps(SemiDenseMapping *semidense_mapper,vector<cv::Mat> &points_map,cv
               vector<cv::Mat> &image_keyframe_pyramid, float  &points_projected_in_image);
 
 
-void remove_points_with_gradient_opposite_2epipolarline(cv::Mat &pixels_input,cv::Mat &R1,cv::Mat &t1,cv::Mat &R2,cv::Mat &t2,\
-                                                        float fx, float fy, float cx,\
-                                                        float cy,cv::Mat &gradient_by_epipolar,
-                                                        cv::Mat &GX,cv::Mat &GY,cv::Mat &image_keyframe);
-
 void get_depth_image(SemiDenseTracking *semidense_tracker, SemiDenseMapping *semidense_mapper, double stamps_aux, cv::Mat &depth_frame);
 
 inline void bilinear_interpolation(cv::Mat &image, float x_2, float y_2, float &value);
-inline void bilinear_interpolation_avoid_infinites(cv::Mat &image, float x_2, float y_2, float &value);
-inline void bilinear_interpolation_avoid_zeros(cv::Mat &image, float x_2, float y_2, float &value);
 
 void compute_geo_error(cv::Mat &points3D_cam, cv::Mat &depth_map, cv::Mat &transformed_points,
                        cv::Mat &geo_errors, cv::Mat &constant_error, cv::Mat &max_error_vector, bool use_inv_depth);

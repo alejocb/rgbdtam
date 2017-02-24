@@ -159,7 +159,6 @@ class loopcloser
     int initial_kf;
     int patch_size_for_depths;
     int use_kinect;
-    bool viewer_mutex;
 
     void evaluation(cv::Mat poses,char buffer_evaluation[]);
     void print_keyframes_after_optimization();
@@ -174,10 +173,9 @@ class loopcloser
     pcl::visualization::PCLVisualizer* viewer ;
 
     void populate_denseMap(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud, cv::Mat pointcloud1);
-    void addCameraPCL(cv::Mat &R, cv::Mat &t, char buffer[], bool blue);
-    void updateCameraPCL(cv::Mat &R, cv::Mat &t, char buffer[], bool blue);
+    void addCameraPCL(cv::Mat &R, cv::Mat &t);
 
-    private:
+    boost::mutex guard;
 };
 
 #endif
