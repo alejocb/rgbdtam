@@ -70,18 +70,18 @@ vo_system::vo_system(){
 
 
 
-    if(use_ros == 1)
-    {
+     if(use_ros == 1)
+     {
     ///Launch Image processing.
      //boost::thread thread_image_processing(&ThreadImageProcessing, &semidense_tracker,&semidense_mapper,&dense_mapper);
      }
 
 
-    if (calculate_superpixels > 0.5)
+    /*if (calculate_superpixels > 0.5)
     {
-        ///launch dense mapper thread
-         boost::thread thread_dense_mapper(&ThreadDenseMapper,&dense_mapper,&pub_cloud);
-    }
+         ///launch dense mapper thread
+         //boost::thread thread_dense_mapper(&ThreadDenseMapper,&dense_mapper,&pub_cloud);
+    }*/
 
     cout << "***    rgbdtam is working     *** " <<  endl << endl;
     cout << "***    Launch the example sequences or use your own sequence / live camera and update the file 'data.yml' with the corresponding camera_path and calibration parameters    ***"  << endl;
@@ -89,6 +89,7 @@ vo_system::vo_system(){
     if(use_ros == 1)
     {
       sub1 = it.subscribe(camera_path,1, & vo_system::imgcb,this);
+      if(semidense_tracker.use_kinect)
       sub2 = it.subscribe("/camera/depth/image",1, & vo_system::depthcb,this);
     }
 }
@@ -101,6 +102,9 @@ void vo_system::imgcb(const sensor_msgs::Image::ConstPtr& msg)
     ///read images
     try
     {
+        boost::mutex::scoped_lock lock(semidense_tracker.loopcloser_obj.guard);
+
+
         cv_bridge::CvImageConstPtr cv_ptr;
         cv_bridge::toCvShare(msg);
         cv_ptr = cv_bridge::toCvShare(msg);
@@ -120,6 +124,7 @@ void vo_system::imgcb(const sensor_msgs::Image::ConstPtr& msg)
         frame_struct.image_frame =image.clone();
         frame_struct.stamps = cv_ptr->header.stamp.toSec();
 
+
         cont_frames++;
      }
     catch (const cv_bridge::Exception& e)
@@ -130,7 +135,6 @@ void vo_system::imgcb(const sensor_msgs::Image::ConstPtr& msg)
 
 
 
-///ROSKINECT
 void vo_system::depthcb(const sensor_msgs::Image::ConstPtr& msg)
 {
     ///read images
@@ -152,4 +156,6 @@ void vo_system::depthcb(const sensor_msgs::Image::ConstPtr& msg)
            ROS_ERROR("cv_bridge exception: %s", e.what());
         }
 }
-///ROSKINECT
+
+
+

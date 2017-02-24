@@ -342,11 +342,6 @@ void prepare_image(SemiDenseTracking *semidense_tracker, cv::Mat &image_frame,
 {
      tic_initt();
 
-     /*cv::Mat image_frame_aux;
-     cv::GaussianBlur(image_frame,image_frame_aux,cv::Size(0,0),3);
-     cv::addWeighted(image_frame,1.5,image_frame_aux,-0.5,0,image_frame_aux);
-     image_frame = image_frame_aux.clone();*/
-
      cv::Mat cameraMatrixAux = cameraMatrix.clone();
      cv::Mat newCameraMatrix;
      undistort_image(image_frame, cameraMatrixAux,distCoeffs,newCameraMatrix,semidense_tracker->mapX,semidense_tracker->mapY);
@@ -367,14 +362,13 @@ void prepare_image(SemiDenseTracking *semidense_tracker, cv::Mat &image_frame,
 
 void ThreadViewerUpdater( SemiDenseTracking *semidense_tracker,SemiDenseMapping *semidense_mapper, DenseMapping *dense_mapper)
 {
-    while((ros::ok() && dense_mapper->sequence_has_finished == false || semidense_mapper->num_keyframes < 2)&&
-          !semidense_tracker->loopcloser_obj.viewer->wasStopped())
+    while((ros::ok() && dense_mapper->sequence_has_finished == false || semidense_mapper->num_keyframes < 2))
     {
-                  if(semidense_tracker->loopcloser_obj.viewer_mutex)
-                  {
-                      semidense_tracker->loopcloser_obj.viewer->spinOnce(20);
-                      boost::this_thread::sleep(boost::posix_time::milliseconds(10));
-                  }
+        {
+          boost::mutex::scoped_lock lock( semidense_tracker->loopcloser_obj.guard);
+          semidense_tracker->loopcloser_obj.viewer->spinOnce(1);
+        }
+          boost::this_thread::sleep(boost::posix_time::milliseconds(200));
     }
 }
 
@@ -686,6 +680,7 @@ void semidense_tracking(Imagenes *images,SemiDenseMapping *semidense_mapper,\
                    prepare_image(semidense_tracker,image_frame_aux,semidense_tracker->image_to_track,\
                                  semidense_tracker->image_n,semidense_tracker->image_gray,semidense_tracker->cameraMatrix,semidense_tracker->distCoeffs,\
                                  semidense_tracker->fx,semidense_tracker->fy,semidense_tracker->cx,semidense_tracker->cy);
+
               }
 
 
@@ -1093,7 +1088,10 @@ void semidense_tracking(Imagenes *images,SemiDenseMapping *semidense_mapper,\
 
 
                      // PRINT CAMERA IN PCL
-                      semidense_tracker->loopcloser_obj.addCameraPCL(semidense_tracker->R,semidense_tracker->t, "frame",false);
+                      {
+                          boost::mutex::scoped_lock lock(semidense_tracker->loopcloser_obj.guard);
+                          semidense_tracker->loopcloser_obj.addCameraPCL(semidense_tracker->R,semidense_tracker->t);
+                      }
                      // PRINT CAMERA IN PCL
 
 
@@ -1501,6 +1499,8 @@ void optimize_camera(int num_keyframes,SemiDenseTracking *semidense_tracker,
     /// SEND CURRENT TRACKED MAP TO THE MAPPING THREAD AS INITIAL SEED
     if (images.getNumberOfImages() == 0  && !semidense_tracker->SystemIsLost )
     {
+               //cout << "Points tracked: " << points_map[pyramid_levels-1].rows << endl;
+
                 cv::Mat points3D_tracked = points_map[pyramid_levels-1].t();
                 points3D_tracked = points3D_tracked.rowRange(0,3);
 
@@ -3137,21 +3137,26 @@ void euler2quaternion(float &yaw, float &pitch, float &roll, float &x, float &y,
 }
 
 
-void join_maps(SemiDenseMapping *semidense_mapper,vector<cv::Mat> &points_map,cv::Mat R,cv::Mat t,
+void join_maps(SemiDenseMapping *semidense_mapper,
+               vector<cv::Mat> &points_map,cv::Mat R,cv::Mat t,
                vector<cv::Mat> point_clouds,int pyramid_levels,\
-                vector<float> &focalx, vector<float> &focaly, vector<float> &centerx, vector<float> &centery,   \
-              vector<cv::Mat> &image_keyframe_pyramid, float  &points_projected_in_image)
+               vector<float> &focalx, vector<float> &focaly,
+               vector<float> &centerx, vector<float> &centery,   \
+               vector<cv::Mat> &image_keyframe_pyramid,
+               float  &points_projected_in_image)
 {
    vector<cv::Mat> color(pyramid_levels);
 
-   float  maximum_points_to_track = 600;
+    float  maximum_points_to_track = 10000 / 4 / 4 / 4 / 4;
+    //float  maximum_points_to_track = 600;
     for (int i = 0; i < pyramid_levels;i++)
     {
         int imsize_y = image_keyframe_pyramid[i].rows;
         int imsize_x = image_keyframe_pyramid[i].cols;
 
 
-        maximum_points_to_track *= 3;
+        maximum_points_to_track *= 4;
+        //maximum_points_to_track *= 3;
 
         cv::Mat edges;
         cv::Mat gray_image_aux = image_keyframe_pyramid[i]*255;
@@ -3174,7 +3179,6 @@ void join_maps(SemiDenseMapping *semidense_mapper,vector<cv::Mat> &points_map,cv
         G_reshaped = G_reshaped.reshape(0,G_reshaped.rows*G_reshaped.cols);
         cv::sort(G_reshaped,G_reshaped,CV_SORT_EVERY_COLUMN + CV_SORT_ASCENDING);
         int number_of_pixels_limit =  0.40 * image_keyframe_pyramid[i].cols * image_keyframe_pyramid[i].rows;
-        //if ( G_reshaped.rows*G_reshaped.cols < maximum_points_to_track) number_of_pixels_limit= G_reshaped.rows*G_reshaped.cols;
         float limit_grad_aux = G_reshaped.at<float>(number_of_pixels_limit-100,0);
 
         cv::Mat points_joined(0, points_map[i].cols , CV_32FC1);
@@ -3182,8 +3186,6 @@ void join_maps(SemiDenseMapping *semidense_mapper,vector<cv::Mat> &points_map,cv
         cv::Mat pointsClouds3Dmap_cam;
 
         cv::Mat points_map_aux = points_map[i].clone();
-        //if (semidense_mapper->num_keyframes > semidense_mapper->init_keyframes )
-        //{points_map_aux.push_back(point_clouds[i]);}
         point_clouds[i] = points_map_aux.clone();
 
         if (i==pyramid_levels-1)
@@ -3238,7 +3240,7 @@ void join_maps(SemiDenseMapping *semidense_mapper,vector<cv::Mat> &points_map,cv
 
                 if(  edge_restriction == true &&
                      G.at<float>(round(pointsClouds3Dmap_cam.at<float>(1,k)),round(pointsClouds3Dmap_cam.at<float>(0,k))) < limit_grad_aux&&
-                     check_repatead_points.at<float>(round(pointsClouds3Dmap_cam.at<float>(1,k)), round(pointsClouds3Dmap_cam.at<float>(0,k))) < 1)
+                     check_repatead_points.at<float>(round(pointsClouds3Dmap_cam.at<float>(1,k)),round(pointsClouds3Dmap_cam.at<float>(0,k))) < 1)
                 {
                         points_joined_previous_map.push_back(point_clouds[i].row(k));
                         check_repatead_points.at<float>(round(pointsClouds3Dmap_cam.at<float>(1,k)),round(pointsClouds3Dmap_cam.at<float>(0,k)))+=1;
@@ -3266,84 +3268,4 @@ void join_maps(SemiDenseMapping *semidense_mapper,vector<cv::Mat> &points_map,cv
         points_joined.push_back(points_joined_previous_map);
         points_map[i] = points_joined.clone();
     }
-}
-
-
-
-void remove_points_with_gradient_opposite_2epipolarline(cv::Mat &pixels_input_aux,cv::Mat &R1,cv::Mat &t1,cv::Mat &R2,cv::Mat &t2,\
-                                                        float fx, float fy, float cx,\
-                                                        float cy,cv::Mat &gradient_by_epipolar,cv::Mat &GX,cv::Mat &GY,cv::Mat &image_keyframe)
-{
-
-    cv::Mat pixels_input = pixels_input_aux.t();
-
-    cv::Mat K_ref = (cv::Mat_<float>(3,3) << -fx, 0, cx, 0,fy, cy, 0, 0, 1);
-    cv::Mat K_ref_inv = K_ref.inv();
-
-
-    cv::Mat K_o = (cv::Mat_<float>(3,3) << -fx, 0,cx, 0, fy, cy, 0, 0, 1);
-    cv::Mat t_rel = t2 - R2*R1.t()*t1;
-    cv::Mat R_rel =  R2 *  R1.t();
-    cv::Mat n = (cv::Mat_<float>(3,1) <<  0,0,1);
-
-    float d = -1;
-
-    cv::Mat H_ref_o = K_o*R_rel*K_ref_inv + K_o*t_rel*n.t()*K_ref_inv * d ;
-
-     cv::Mat pixels_output_d1 = H_ref_o*pixels_input.t();
-    pixels_output_d1.rowRange(0,1) = pixels_output_d1.rowRange(0,1) / pixels_output_d1.rowRange(2,3) ;
-    pixels_output_d1.rowRange(1,2)  =  pixels_output_d1.rowRange(1,2)  / pixels_output_d1.rowRange(2,3);
-    pixels_output_d1.rowRange(2,3)   = pixels_output_d1.rowRange(2,3) / pixels_output_d1.rowRange(2,3);
-    //pixels_output_d2 = pixels_output_d2.t();
-
-
-    d = -2;
-    H_ref_o = K_o*R_rel*K_ref_inv + K_o*t_rel*n.t()*K_ref_inv * d ;
-    cv::Mat pixels_output_d2 = H_ref_o*pixels_input.t();
-
-    pixels_output_d2.rowRange(0,1) = pixels_output_d2.rowRange(0,1) / pixels_output_d2.rowRange(2,3) ;
-    pixels_output_d2.rowRange(1,2)  =  pixels_output_d2.rowRange(1,2)  / pixels_output_d2.rowRange(2,3);
-    pixels_output_d2.rowRange(2,3)   = pixels_output_d2.rowRange(2,3) / pixels_output_d2.rowRange(2,3);
-    //pixels_output_d2 = pixels_output_d2.t();
-
-
-   cv::Mat epipolar_gradients =  pixels_output_d2 - pixels_output_d1;
-
-
-
-   /// EPIPOLAR DIRECTION
-
-   cv::Mat epipolar_gradientX2,epipolar_gradientY2;
-   cv::Mat epipolar_gradientX = cv::abs(epipolar_gradients.colRange(0,epipolar_gradients.cols).rowRange(0,1));
-   cv::pow(epipolar_gradientX,2,epipolar_gradientX2);
-   cv::Mat epipolar_gradientY = cv::abs(epipolar_gradients.colRange(0,epipolar_gradients.cols).rowRange(1,2));
-   cv::pow(epipolar_gradientY,2,epipolar_gradientY2);
-   cv::Mat epipolar_gradientT = epipolar_gradientX2+epipolar_gradientY2;
-   cv::pow(epipolar_gradientT,0.5,epipolar_gradientT);
-
-   cv::divide( epipolar_gradientX, epipolar_gradientT, epipolar_gradientX,1);
-   cv::divide( epipolar_gradientY, epipolar_gradientT, epipolar_gradientY,1);
-   /// EPIPOLAR DIRECTION
-
-
-   for (int i= 0; i < pixels_input.rows; i++)
-   {
-
-       int ii = round(pixels_input.at<float>(i,1));
-       int jj = round(pixels_input.at<float>(i,0));
-
-
-       if ( ii > 0 && ii < GX.rows && jj > 0 && jj < GX.cols)
-         { gradient_by_epipolar.at<float>(i,0) = GX.at<float>(ii,jj)*epipolar_gradientX.at<float>(0,i) +\
-                   GY.at<float>(ii,jj)*epipolar_gradientY.at<float>(0,i);
-           if (gradient_by_epipolar.at<float>(i,0)  < 0.3)
-           {gradient_by_epipolar.at<float>(i,0) = 0.5;
-
-           }
-           else
-           {
-               gradient_by_epipolar.at<float>(i,0) = 1;
-           }
-       }
-   }
 }

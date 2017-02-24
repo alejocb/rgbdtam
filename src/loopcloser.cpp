@@ -52,13 +52,16 @@ loopcloser::loopcloser()
    cv::Mat matchings_inliers_aux(0,2,CV_32FC1);
    matchings_inliers = matchings_inliers_aux.clone();
 
-
-   viewer_mutex = false;
    camera2PCLadded = false;
 
    viewer = new pcl::visualization::PCLVisualizer("Dense Map and camera position");
-   viewer->setBackgroundColor (0.75,0.75, 0.75);
+   viewer->setBackgroundColor (0.75f,0.75f, 0.75f);
+   /* viewer->setCameraPosition(0.0f,0.0f,0.0f
+                             ,0.0f,0.0f,0.0f,
+                             0.0f,1.0f,0.0f);*/
    viewer->setSize(1100,1100);
+
+
 
    pcl::visualization::PCLVisualizer viewer1 ("adsffdsfsasd");
    viewer1.setSize(3,3);
@@ -1234,11 +1237,7 @@ void loopcloser::evaluation(cv::Mat poses,char buffer_evaluation[])
 
 }
 
-void loopcloser::addCameraPCL(cv::Mat &R, cv::Mat &t, char buffer[],bool blue){
-    pcl::PointCloud<pcl::PointXYZ>::Ptr camera (new pcl::PointCloud<pcl::PointXYZ>);
-
-
-    viewer_mutex = false;
+void loopcloser::addCameraPCL(cv::Mat &R, cv::Mat &t){
 
     cv::Mat R_inv = R.t();
     cv::Mat t_inv = -R.t()*t;
@@ -1247,26 +1246,15 @@ void loopcloser::addCameraPCL(cv::Mat &R, cv::Mat &t, char buffer[],bool blue){
     T(1,0) = R_inv.at<float>(1,0);     T(1,1) = R_inv.at<float>(1,1);     T(1,2) = R_inv.at<float>(1,2);  T(1,3) = t_inv.at<float>(1,0);
     T(2,0) = R_inv.at<float>(2,0);     T(2,1) = R_inv.at<float>(2,1);     T(2,2) = R_inv.at<float>(2,2);  T(2,3) = t_inv.at<float>(2,0);
     T(3,0) = 0;                    T(3,1) = 0;                    T(3,2) = 0;                 T(3,3) = 1;
-
     Eigen::Affine3f t_affine(T);
-
-
 
     if(!camera2PCLadded)
     {
-        viewer->addCoordinateSystem (0.25,  t_affine, "buffer", 0);
+        viewer->addCoordinateSystem (0.25,  t_affine, "camera", 0);
         camera2PCLadded = true;
     }else{
-        viewer->updateCoordinateSystemPose( "buffer",  t_affine);
+        viewer->updateCoordinateSystemPose( "camera",  t_affine);
     }
-    viewer_mutex = true;
-}
-
-void loopcloser::updateCameraPCL(cv::Mat &R, cv::Mat &t, char buffer[],bool blue){
-    viewer_mutex = false;
-    pcl::PointCloud<pcl::PointXYZ>::Ptr camera (new pcl::PointCloud<pcl::PointXYZ>);
-
-    cv::Mat C = -R.t()*t;
 }
 
 
@@ -1276,12 +1264,15 @@ void loopcloser::compute_keyframe(cv::Mat &R, cv::Mat &t, cv::Mat &image, int nu
                                   double stamps,int size_first_level)
 {
 
+
     num_keyframe = keyframes_vector.size();
     keyframe keyframe_aux;
 
     if(!viewer->wasStopped()){
 
-        viewer_mutex = false;
+        boost::mutex::scoped_lock lock(guard);
+
+
         char buffer[150];
         if(num_keyframe % depth_map_iterator == 0)
         {pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -1292,7 +1283,8 @@ void loopcloser::compute_keyframe(cv::Mat &R, cv::Mat &t, cv::Mat &image, int nu
         viewer->addPointCloud (cloud,buffer);
         keyframe_aux.point_cloud_toprint = point_cloud_toprint.clone();
         }
-        viewer_mutex = true;
+
+
     }
 
 
