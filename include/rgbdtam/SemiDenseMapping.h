@@ -66,7 +66,7 @@ using namespace std;
          a = tv.tv_sec + tv.tv_usec/1000000.0*/
 
 
-class SemiDenseMapping  :public Imagenes {
+class SemiDenseMapping  :public Images_class {
   public:
     SemiDenseMapping();
 
@@ -187,19 +187,19 @@ private:
 class SemiDenseTracking;  // It is defined also here due to cross reference (#include) issues
 
 ///semidesen mapper thread
-void ThreadSemiDenseMapper(Imagenes *images,Imagenes *images_previous_keyframe,SemiDenseMapping *semidense_mapper,\
+void ThreadSemiDenseMapper(Images_class *images,Images_class *images_previous_keyframe,SemiDenseMapping *semidense_mapper,\
                            SemiDenseTracking *semidense_tracker,DenseMapping *dense_mapper,MapShared *Map, ros::Publisher *pub_cloud);
 
 ///semidense mapper function
-void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_mapper,SemiDenseTracking *semidense_tracker,MapShared  *Map,Imagenes *pimages,Imagenes  *pimages_previous_keyframe,ros::Publisher *pub_cloud);
+void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_mapper,SemiDenseTracking *semidense_tracker,MapShared  *Map,Images_class *pimages,Images_class  *pimages_previous_keyframe,ros::Publisher *pub_cloud);
 
-//void copy_first_and_last_images(Imagenes &images, Imagenes &images_map);
-void copy_first_and_last_images(Imagenes &images, Imagenes &images_map,float &mean_value,float &translational_ratio_th_min);
+//void copy_first_and_last_images(Images_class &images, Images_class &images_map);
+void copy_first_and_last_images(Images_class &images, Images_class &images_map,float &mean_value,float &translational_ratio_th_min);
 
 ///Calculate the photometric reprojection error of the high gradient points
-void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_mapper,Imagenes  &images,  float camera_motion,cv::Mat &inv_depths, photometric_term &X,\
+void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_mapper,Images_class  &images,  float camera_motion,cv::Mat &inv_depths, photometric_term &X,\
                                       photometric_term &X_gx_ex, photometric_term &X_gy_ey, int reference_image, cv::Mat &initial_inv_depth , int image_to_be_added, \
-                                      photometric_term &points_i_todos,cv::Mat &points_ref_im_sd,int discretization, \
+                                      photometric_term &all_points,cv::Mat &points_ref_im_sd,int discretization, \
                                       int window_size, cv::Mat &epipolar_gradients, vector<cv::Mat> &initial_inv_depth_inEveryCamera_uncertainty,vector<cv::Mat> &initial_inv_depth_inEveryCamera_largeParallax, \
                                       cv::Mat &points_by_depth, cv::Mat &t_r_ref,
                                       cv::Mat &GX, cv::Mat &GY, int &num_cameras_mapping, cv::Mat &max_inv_depth_initial_seed, cv::Mat &min_inv_depth_initial_seed);
@@ -210,17 +210,17 @@ void convergence_test(SemiDenseMapping *semidense_mapper,cv::Mat &be_outlier,
                       cv::Mat &final_variances,float inv_depth_disparity_th,
                       float inv_depth_disparity_print_th,float camera_motion);
 
-void find_closest_maps(SemiDenseMapping *semidense_mapper,MapShared *Map,SemiDenseTracking *semidense_tracker);
+void find_closest_keyframes(SemiDenseMapping *semidense_mapper,MapShared *Map,SemiDenseTracking *semidense_tracker);
 
 
 
-void join_last_images(Imagenes *images,Imagenes *images_previous_keyframe,\
+void join_last_keyframes(Images_class *images,Images_class *images_previous_keyframe,\
                       DenseMapping *dense_mapper,SemiDenseMapping *semidense_mapper);
 
-void copy_imagenes_dense(Imagenes &images, Imagenes &images_map);
+void copy_images_dense(Images_class &images, Images_class &images_map);
 
 template <typename T>
-void filter_imagenes( T &images_dense, int num_keyframes );
+void filter_images( T &images_dense, int num_keyframes );
 
-void copy_imagenes(Imagenes &images, Imagenes &images_map);
+void copy_images(Images_class &images, Images_class &images_map);
 #endif

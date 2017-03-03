@@ -103,7 +103,7 @@ class loopcloser
                                      int features_size,float keyframe_number, float threshold,
                                      float min_kf_diff,float max_kf_diff);
 
-    void get_potential_keyframes(cv::Mat &image, cv::Mat &matchings);
+    void get_potential_keyframes(cv::Mat &image, cv::Mat &matchings, int points_tracked);
 
     void get_scores_for_mapreuse(vector<cv::Mat> feature,cv::Mat &matchings,
                                      int features_size,float keyframe_number, float threshold,

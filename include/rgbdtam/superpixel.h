@@ -99,7 +99,7 @@ private:
     cv::Mat m;
 };
 
-class SuperpixelesImagen {
+class SuperpixelsImage {
   public:
     struct Data
     {           cv::Mat R1;
@@ -108,7 +108,7 @@ class SuperpixelesImagen {
                 int reduction;
     }Data1;
 
-    SuperpixelesImagen(){}
+    SuperpixelsImage(){}
     cv::Mat image;
     char *image_name;
     char *sup_name;
@@ -118,7 +118,7 @@ class SuperpixelesImagen {
     {Data1.R1 = R1; Data1.t1 = t1; Data1.f1 = f1;}
     Data GetData(){return Data1;}
 
-    void cargarImagen();
+    void cargarImage_class();
 
     /// this function compute superpixels and calculate the contours, used for 3D superpixel matching
     int computeSuperpixels();
@@ -134,10 +134,10 @@ private:
 
 };
 
-class Imagen {
+class Image_class {
   public:
 
-    Imagen():is_used_for_mapping(0){}
+    Image_class():is_used_for_mapping(0){}
 
     int num_keyframes;
 
@@ -159,18 +159,18 @@ private:
 };
 
 
-class Imagenes {
+class Images_class {
   public:
-    Imagenes(){}
+    Images_class(){}
     void computeImage();
 
     void computeImageSup();
     int getNumberOfImages(){return Im.size();}
     int getNumberOfImageSuperpixels(){return supIm.size();}
 
-    vector<SuperpixelesImagen*> getSuperpixelesImagen(){return supIm;}
-    vector<Imagen*> Im;
-    vector<SuperpixelesImagen*> supIm;
+    vector<SuperpixelsImage*> getSuperpixelsImage(){return supIm;}
+    vector<Image_class*> Im;
+    vector<SuperpixelsImage*> supIm;
 
 private:
 
@@ -189,7 +189,7 @@ private:
 
 
 
-class MapShared  :public Imagenes {
+class MapShared  :public Images_class {
   public:
     MapShared(){}
 

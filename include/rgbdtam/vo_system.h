@@ -81,7 +81,7 @@ public:
     SemiDenseTracking semidense_tracker;
     SemiDenseMapping semidense_mapper;
     MapShared Map;
-    Imagenes images,images_previous_keyframe;
+    Images_class images,images_previous_keyframe;
 
 
     int cont_frames;

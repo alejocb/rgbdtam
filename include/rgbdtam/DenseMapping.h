@@ -51,7 +51,7 @@ using namespace std;
 #include "opencv2/imgproc/imgproc.hpp"
 
 
-class DenseMapping  :public Imagenes {
+class DenseMapping:public Images_class {
   public:
     DenseMapping();
 
@@ -114,29 +114,29 @@ void ThreadDenseMapper(DenseMapping *pdense_mapper, ros::Publisher *pub_cloud);
 void fullydense_mapping(DenseMapping *pdense_mapper,ros::Publisher *pub_cloud);
 ///dense mapping function
 
-void copy_from_dense2images(DenseMapping &dense, Imagenes &images);
+void copy_from_dense2images(DenseMapping &dense, Images_class &images);
 
-void get_inverse_depth(Imagenes images, cv::Mat &points,cv::Mat &inv_depths, float &depth_step, int reference_image, \
+void get_inverse_depth(Images_class images, cv::Mat &points,cv::Mat &inv_depths, float &depth_step, int reference_image, \
                        int discretization,float &mean_value,cv::Mat &depth_map, int set_maximo, cv::Mat &variance_points_tracked);
 
 
-void calculate_superpixels_and_setdata(Imagenes &images,  int reference_image);
+void calculate_superpixels_and_setdata(Images_class &images,  int reference_image);
 
-void calculate_3D_superpixels_from_semidense(float limit_ratio_sing_val,float limit_normalized_residual,Imagenes &images, cv::Mat &points6, int reference_image, float mean_value);
+void calculate_3D_superpixels_from_semidense(float limit_ratio_sing_val,float limit_normalized_residual,Images_class &images, cv::Mat &points6, int reference_image, float mean_value);
 
 ///active search of superpixels
-void  active_matching(Imagenes &images,vector<SuperpixelesImagen*> &supImg, int reference_image, int superpixels_index[], int size_sup_index);
+void  active_matching(Images_class &images,vector<SuperpixelsImage*> &supImg, int reference_image, int superpixels_index[], int size_sup_index);
 ///active search of superpixels
 
 
-void transform_points(Imagenes images, int frame, cv::Mat points, cv::Mat &transformed_points);
+void transform_points(Images_class images, int frame, cv::Mat points, cv::Mat &transformed_points);
 
-void distances_interval(Imagenes images, int frame, cv::Mat transformed_points, cv::Mat &projected_points,\
+void distances_interval(Images_class images, int frame, cv::Mat transformed_points, cv::Mat &projected_points,\
                         float &maximo, float &minimo, float &mean_value, cv::Mat &depth_map,cv::Mat &real_points, int set_maximo,cv::Mat &variance_points_tracked,
                         cv::Mat &inv_depths, float &depth_step,int discretization);
 
 /// reproject points into the image
-void get_3Dpoints_inImage2(Imagenes &images, cv::Mat &points,cv::Mat &depth_map, int reference_image,cv::Mat &points_already_estimated);
+void get_3Dpoints_inImage2(Images_class &images, cv::Mat &points,cv::Mat &depth_map, int reference_image,cv::Mat &points_already_estimated);
 /// reproject points into the image
 
 ///ransac to calculte 3D superpixels
@@ -144,7 +144,7 @@ void ransac_for_3Dspx(cv::Mat points_sup,cv::Mat &error_wrt_plane,cv::Mat &n, \
                       float &d, cv::Mat &singular_values, float limit_ratio_sing_val,float average_distance_btw_points, float limit_normalized_residual);
 ///ransac to calculte 3D superpixels
 
-void backproject_from_plane(Imagenes &images,cv::Mat &pixels,cv::Mat &n1,float &d1,cv::Mat &inv_depth_mat_total,cv::Mat &X_total, int reference_image);
+void backproject_from_plane(Images_class &images,cv::Mat &pixels,cv::Mat &n1,float &d1,cv::Mat &inv_depth_mat_total,cv::Mat &X_total, int reference_image);
 
 cv::Mat create_matrix(cv::Mat contour4, int limit, int imsize_x, int imsize_y);
 
@@ -155,15 +155,15 @@ struct DataToSend
             bool showim;
             float percentage_limit;
             float step_size ;
-            vector<SuperpixelesImagen*> SupImg;
+            vector<SuperpixelsImage*> SupImg;
 };
 
-float montecarlo_seed10(Imagenes &images,int a1, int b1, int c1, int d1,DataToSend DTS1 , int iterations, \
+float montecarlo_seed10(Images_class &images,int a1, int b1, int c1, int d1,DataToSend DTS1 , int iterations, \
                         cv::Mat &contour3D);
 
 
 /// reproject points into the image
-void get_3Dpoints_inImage(Imagenes &images, cv::Mat &points,cv::Mat &depth_map, int reference_image);
+void get_3Dpoints_inImage(Images_class &images, cv::Mat &points,cv::Mat &depth_map, int reference_image);
 
 
 //// Calculating image gradients
@@ -174,13 +174,13 @@ cv::Mat gradientY(cv::Mat &mat, float spacing);
 
 
 /// Reproject 3D countour into the image
-float reprojected_contour (Imagenes &images,DataToSend &DTS, cv::Mat matchings, int i,float &percentage,\
+float reprojected_contour (Images_class &images,DataToSend &DTS, cv::Mat matchings, int i,float &percentage,\
                            float threshold, cv::Mat &contour3D);
 /// Reproject 3D countour into the image
 
 /// Transform the 3D points
-void transformed_points(cv::Mat &points3D_cam, cv::Mat &R,cv::Mat &t,float fx,float fy,float cx,float cy, cv::Mat &points3D);
-void transformed_points_return_3Dpoints(cv::Mat &points3D_cam, cv::Mat &R,cv::Mat &t,float fx,float fy,float cx,float cy,cv::Mat &points3D, cv::Mat &transformed_points);
+void transform_points(cv::Mat &points3D_cam, cv::Mat &R,cv::Mat &t,float fx,float fy,float cx,float cy, cv::Mat &points3D);
+void transform_points_return_3Dpoints(cv::Mat &points3D_cam, cv::Mat &R,cv::Mat &t,float fx,float fy,float cx,float cy,cv::Mat &points3D, cv::Mat &transformed_points);
 /// Transform the 3D points
 
 #endif

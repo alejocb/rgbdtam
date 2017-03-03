@@ -65,7 +65,7 @@ struct FrameStruct{
     float fx,fy,cx,cy;
 };
 
-class SemiDenseTracking  :public Imagenes {
+class SemiDenseTracking  :public Images_class {
   public:
     SemiDenseTracking();
 
@@ -127,7 +127,7 @@ class SemiDenseTracking  :public Imagenes {
 
     int init_frame;
 
-    vector<cv::Mat> jacobian,jacobian_no_weight,  jacobian_geo_no_weight, hessian_vision_geo;
+    vector<cv::Mat> jacobian,jacobian_photo_no_weight,  jacobian_geo_no_weight, hessian_vision_geo;
     void inititialize_vectors_pyramid_levels_size(int);
 
 
@@ -226,23 +226,23 @@ void ThreadImageProcessing(SemiDenseTracking *semidense_tracker, SemiDenseMappin
 void ThreadViewerUpdater( SemiDenseTracking *semidense_tracker,SemiDenseMapping *semidense_mapper, DenseMapping *dense_mapper);
 
 ///Semidense tracker thread
-void ThreadSemiDenseTracker(Imagenes *images,SemiDenseMapping *semidense_mapper,\
+void ThreadSemiDenseTracker(Images_class *images,SemiDenseMapping *semidense_mapper,\
                             SemiDenseTracking *semidense_tracker,DenseMapping *dense_mapper,MapShared *Map,ros::Publisher *vis_pub,image_transport::Publisher *pub_image);
 ///semidense_tracking function
-void  semidense_tracking(Imagenes *images,SemiDenseMapping *semidense_mapper,\
+void  semidense_tracking(Images_class *images,SemiDenseMapping *semidense_mapper,\
                          SemiDenseTracking *semidense_tracker,DenseMapping *dense_mapper,MapShared *Map, ros::Publisher *vis_pub,image_transport::Publisher *pub_image);
 ///initialize semidense map to be tracked
-void initialization_sd(SemiDenseTracking *semidense_tracker, cv::Mat &R, cv::Mat &t, cv::Mat &R1, cv::Mat &t1, cv::Mat &image_rgb, cv::Mat &image_keyframe, \
+void initialization_semidense(SemiDenseTracking *semidense_tracker, cv::Mat &R, cv::Mat &t, cv::Mat &R1, cv::Mat &t1, cv::Mat &image_rgb, cv::Mat &image_keyframe, \
                     int &pyramid_levels, vector<int> &reduction_pyramid, vector<cv::Mat> &image_keyframe_pyramid);
 ///first semidense map initialization
-void initialization(SemiDenseTracking *semidense_tracker,cv::Mat &R,cv::Mat &t,cv::Mat &R1,cv::Mat &t1,cv::Mat &image_rgb,cv::Mat &image_keyframe,\
+void initialization_semidense(SemiDenseTracking *semidense_tracker,cv::Mat &R,cv::Mat &t,cv::Mat &R1,cv::Mat &t1,cv::Mat &image_rgb,cv::Mat &image_keyframe,\
                     int &pyramid_levels,vector<int> &reduction_pyramid, vector<float> &focalx,vector<float> &focaly,vector<cv::Mat> &image_keyframe_pyramid,\
                     vector<cv::Mat> &points_map,vector<cv::Mat> &color,vector<cv::Mat> &points3D,\
                     vector<cv::Mat> &jacobian,vector<cv::Mat> &error_vector,vector<cv::Mat> &weight, float fx,float fy, float depth,\
                     cv::Mat depth_frame, int kinect_initialization,\
                     float cx,float cy,  vector<float> &centerx,vector<float> &centery,cv::Mat image_gray,float limit_grad  );
 
-
+/// Get color from point cloud.
 void get_color (cv::Mat &points,cv::Mat &color);
 
 /// constant velocity motion model
@@ -251,21 +251,21 @@ void motion_model(vector<cv::Mat> &points_map,cv::Mat &R,cv::Mat &t,cv::Mat R_re
                   vector<cv::Mat> &image_keyframe_pyramid,int pyramid_levels, bool &good_seed);
 
 /// function to estimate the pose of the current frame
-void optimize_camera(int num_keyframes, SemiDenseTracking *semidense_tracker, SemiDenseMapping *semidense_mapper, Imagenes &images, cv::Mat &image_to_track, \
+void optimize_camera_pose(int num_keyframes, SemiDenseTracking *semidense_tracker, SemiDenseMapping *semidense_mapper, Images_class &images, cv::Mat &image_to_track, \
                     cv::Mat &image_rgb, cv::Mat &R, cv::Mat &t, cv::Mat &R1, cv::Mat &t1, \
                     vector<cv::Mat> &image_reduced, vector<cv::Mat> &image_keyframe_pyramid, float &variance, vector<int> &reduction_pyramid,
                     int &processed_frames, vector<cv::Mat> &jacobian, vector<cv::Mat> &points_map, \
                     vector<cv::Mat> &color, vector<cv::Mat> &points3D, vector<cv::Mat> &error_vector, vector<cv::Mat> &weight, vector<float> &focalx, vector<float> &focaly, \
                     vector<float> &centerx, vector<float> &centery, int &pyramid_levels, float &overlap_tracking, float &tracking_th, int iter_th, \
                     vector<float> &variances, cv::Mat &image_gray, double stamps,
-                    float mean_depth_value, ros::Publisher *vis_pub, cv::Mat &points3D_cam_to_print);
+                    float mean_depth_value, cv::Mat &points3D_cam_to_print);
 
 
 
-/// show the reprojection of the map into the current frame
-void show_error_photo( cv::Mat &points3D_cam, cv::Mat &image,  cv::Mat &image_print, int num_pixels_sd2project,image_transport::Publisher *pub_image,cv::Mat &weight);
+/// show the photometric reprojection of the map into the current frame
+void show_error_photo(cv::Mat &points3D_cam,  cv::Mat &image_print, int num_pixels_sd2project, image_transport::Publisher *pub_image, cv::Mat &weight);
 
-
+/// Shoe the geometric reprojection of the map into the current frame
 void show_error_geo(cv::Mat &coordinates_cam,  cv::Mat &image_print, cv::Mat& weight_geo);
 
 void resize_points(cv::Mat  &points2,cv::Mat  &points, float reduction,cv::Mat &image_p,
@@ -292,13 +292,16 @@ void  gauss_estimation(SemiDenseTracking *semidense_tracker, cv::Mat &points3D_c
                        cv::Mat &error_vector_opt, cv::Mat &weight, int &processed_frames, cv::Mat &jacobian1k, float &overlap_tracking,
                        float &tracking_th, int iter_th, int pyramid_level, cv::Mat &points3D_cam, bool first_frame);
 
-
+/// Reuse previous keyframes instead of creating a new one.
+void map_reuse(SemiDenseTracking *semidense_tracker, SemiDenseMapping *semidense_mapper, cv::Mat &image_frame_aux
+               , cv::Mat &R_kf, cv::Mat &t_kf);
 
 void compute_error_ic_ni(cv::Mat &points3D_cam, cv::Mat &points3D_cam_p, cv::Mat &image, \
                        cv::Mat &error_vector, float &variance, cv::Mat &error_vector_sqrt, float &error, cv::Mat &weight,
                          cv::Mat &color_p, float &overlap, float &gain, float &brightness, cv::Mat &error_vector_check);
 
-void transformed_points_return_3Dpoints(cv::Mat &points3D_cam, cv::Mat &R,cv::Mat &t,float fx,float fy,float cx,float cy,cv::Mat &img, cv::Mat &points3D, cv::Mat &transformed_points);
+void transform_points_return_3Dpoints(cv::Mat &points3D_cam, cv::Mat &R,cv::Mat &t,float fx,float fy,float cx,float cy,cv::Mat &img, cv::Mat &points3D, cv::Mat &transformed_points);
+
 void resize_points(cv::Mat  &points2,cv::Mat  &points, float reduction,
                    cv::Mat &image_p, int kinect_initialization,float limit_grad);
 
@@ -326,17 +329,17 @@ void decomposeR(cv::Mat &R, float &yaw, float &pitch, float &roll);
 cv::Mat MatToQuat(cv::Mat &Rot);
 
 /// join several 3D maps to make the tracking of the camera more robust to scale drift
-void join_maps(SemiDenseMapping *semidense_mapper,vector<cv::Mat> &points_map,cv::Mat R,cv::Mat t,vector<cv::Mat> point_clouds,int pyramid_levels,\
+void prepare_semidense(SemiDenseMapping *semidense_mapper,vector<cv::Mat> &points_map,cv::Mat R,cv::Mat t,vector<cv::Mat> point_clouds,int pyramid_levels,\
                 vector<float> &focalx, vector<float> &focaly, vector<float> &centerx, vector<float> &centery,   \
               vector<cv::Mat> &image_keyframe_pyramid, float  &points_projected_in_image);
 
-
+/// Search the depth image closer stamps_aux.
 void get_depth_image(SemiDenseTracking *semidense_tracker, SemiDenseMapping *semidense_mapper, double stamps_aux, cv::Mat &depth_frame);
 
 inline void bilinear_interpolation(cv::Mat &image, float x_2, float y_2, float &value);
 
 void compute_geo_error(cv::Mat &points3D_cam, cv::Mat &depth_map, cv::Mat &transformed_points,
-                       cv::Mat &geo_errors, cv::Mat &constant_error, cv::Mat &max_error_vector, bool use_inv_depth);
+                       cv::Mat &geo_errors, cv::Mat &geo_errors_sqrt, cv::Mat &constant_error, cv::Mat &max_error_vector, bool use_inv_depth);
 
 
 void calculate_jac_geo_diff(SemiDenseTracking* semidense_tracker, cv::Mat& R_rel, cv::Mat& t_rel, cv::Mat& jac_geo_diff,
