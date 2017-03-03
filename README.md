@@ -1,9 +1,9 @@
 #RGBDTAM:
 
-RGBDTAM is a RGBD SLAM algorithm that estimates a dense reconstruction of a scene in real-time on a CPU using RGB-D cameras. We are currently cleaning the code and working on the efficiency of the algorithm, it should be ready in the following days/weeks.
+RGBDTAM is a RGBD SLAM algorithm that estimates a dense reconstruction of a scene in real-time on a CPU using monocular or RGB-D cameras. We are currently cleaning the code and working on the efficiency of the algorithm, it should be ready in the following days/weeks.
 
 Related Publication:
-[1] Alejo Concha, Javier Civera. RGBDTAM: A cost-effective and accurate RGBD Tracking and Mapping system. Submitted to RA-L with IROS presentation.
+[1] Alejo Concha, Javier Civera. RGBDTAM: A cost-effective and accurate RGBD Tracking and Mapping System. Submitted to RA-L with IROS presentation.
 
 Video of the results that you should expect in the example sequences:
 Soon
