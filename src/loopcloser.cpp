@@ -1061,7 +1061,7 @@ void loopcloser::feature_matching_and_edge_estimation(cv::Mat &matchings,cv::Mat
     }
 }
 
-void loopcloser::get_potential_keyframes(cv::Mat &image, cv::Mat &matchings)
+void loopcloser::get_potential_keyframes(cv::Mat &image, cv::Mat &matchings, int points_tracked)
 {
     vector<cv::KeyPoint> keypoints_orb;
     cv::Mat descriptors_orb;
@@ -1069,7 +1069,7 @@ void loopcloser::get_potential_keyframes(cv::Mat &image, cv::Mat &matchings)
     calculate_orb_features( image, features_orb ,keypoints_orb,descriptors_orb);
 
 
-    if(matchings.rows == 0)
+    if(matchings.rows == 0 && points_tracked >  0.25*60*80)
     get_scores_for_mapreuse(features_orb,matchings,features_orb.size(),keyframes_vector.size(),0.30,5,1000);
 }
 

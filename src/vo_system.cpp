@@ -58,21 +58,32 @@ vo_system::vo_system(){
     semidense_tracker.cont_frames = &cont_frames;
     semidense_tracker.frame_struct = &frame_struct;
 
-    ///Launch semidense tracker thread*/
-    boost::thread thread_semidense_tracker(&ThreadSemiDenseTracker,&images,&semidense_mapper,&semidense_tracker,&dense_mapper,&Map,&vis_pub,&pub_image);
-
-    ///Launch semidense mapper thread
-    boost::thread thread_semidense_mapper(&ThreadSemiDenseMapper,&images,&images_previous_keyframe,&semidense_mapper,&semidense_tracker,&dense_mapper,&Map,&pub_cloud);
-
-    ///Launch viewer updater.
-    boost::thread thread_viewer_updater(&ThreadViewerUpdater, &semidense_tracker,&semidense_mapper,&dense_mapper);
-
-
+    #pragma omp parallel num_threads(3)
+    {
+       switch(omp_get_thread_num())
+       {
+           case 0:
+           {
+               ///Launch semidense tracker thread
+               boost::thread thread_semidense_tracker(&ThreadSemiDenseTracker,&images,&semidense_mapper,&semidense_tracker,&dense_mapper,&Map,&vis_pub,&pub_image);
+           };break;
+           case 1:
+           {
+               ///Launch semidense mapper thread
+               boost::thread thread_semidense_mapper(&ThreadSemiDenseMapper,&images,&images_previous_keyframe,&semidense_mapper,&semidense_tracker,&dense_mapper,&Map,&pub_cloud);
+           };break;
+           case 2:
+           {
+               ///Launch viewer updater.
+               boost::thread thread_viewer_updater(&ThreadViewerUpdater, &semidense_tracker,&semidense_mapper,&dense_mapper);
+           }
+        }
+    }
 
 
      if(use_ros == 1)
      {
-    ///Launch Image processing.
+     ///Launch Image processing.
      //boost::thread thread_image_processing(&ThreadImageProcessing, &semidense_tracker,&semidense_mapper,&dense_mapper);
      }
 
@@ -124,6 +135,8 @@ void vo_system::imgcb(const sensor_msgs::Image::ConstPtr& msg)
         frame_struct.image_frame =image.clone();
         frame_struct.stamps = cv_ptr->header.stamp.toSec();
 
+        semidense_tracker.frame_struct_vector.push_back(frame_struct);
+
 
         cont_frames++;
      }
@@ -147,7 +160,27 @@ void vo_system::depthcb(const sensor_msgs::Image::ConstPtr& msg)
         stamps_depth_ros =  cv_ptr->header.stamp;
         image_depth =  cv_ptr->image.clone();
 
-        semidense_mapper.image_depth_keyframes[counter_depth_images%101] = image_depth.clone();
+
+        image_depth.convertTo(image_depth,CV_32FC1);
+
+        for(int i =  0;i < image_depth.rows; i++){
+            for(int j = 0; j< image_depth.cols; j++){
+                 if( isnan( image_depth.at<float>(i,j)))
+                  image_depth.at<float>(i,j) = 0;
+            }
+        }
+        //UNDISTORT DEPTH MAP
+        cv::Size ksize;
+        ksize.width = image_depth.cols;
+        ksize.height = image_depth.rows;
+        cv::Mat undistorted_depth_map;
+        if(semidense_tracker.mapX.rows>0)
+        {cv::remap(image_depth,undistorted_depth_map,semidense_tracker.mapX,semidense_tracker.mapY,
+                  CV_INTER_NN,cv::BORDER_CONSTANT,cv::Scalar(0,0,0));
+        image_depth = undistorted_depth_map;}
+        //UNDISTORT DEPTH MAP
+
+        semidense_mapper.image_depth_keyframes[counter_depth_images%101] = image_depth;
         semidense_mapper.stamps_depth_ros[counter_depth_images%101] = stamps_depth_ros.toSec();
         counter_depth_images++;
     }

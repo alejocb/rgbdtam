@@ -12,29 +12,26 @@ local_maps_close_number: 1
 
 limit_grad: 0.7
 
+use_ros: 1
 use_kinect: 1
-use_ros: 0
 use_depth_tracking: 1
+kinect_initialization: 1
 
 
-bgr2rgb: 0
+bgr2rgb: 1
 camera_path:"/camera/rgb/image_color"
 cameraMatrix: !!opencv-matrix
    rows: 3
    cols: 3
    dt: f
-   data: [ 517.3, 0.,318.6, 0., 516.5, 255.3, 0., 0., 1. ]
+   data: [ 520.908620, 0., 325.141442, 0., 521.007327 , 249.701764, 0., 0., 1. ]
 distCoeffs: !!opencv-matrix
    rows: 5
    cols: 1
    dt: f
-   data: [0.2624,-0.9531,-0.0054,0.0026,1.1633]
-
+   data: [ 0.231222, -0.784899, -0.003257, -0.000105, 0.917205 ]
  
 
- 
-
-kinect_initialization: 1
 minim_points_converged: 66
 calculate_superpixels: 0
 num_cameras_mapping_th: 10

@@ -53,7 +53,6 @@
 #include <fstream>
 #include <iomanip>    // Needed for stream modifiers fixed and set precision
 
-
 #include <Eigen/Dense>
 using namespace Eigen;
 #include <opencv2/core/eigen.hpp>
@@ -92,34 +91,20 @@ using namespace std;
 #include "opencv2/opencv.hpp"
 
 
-
-
-/*#include <emmintrin.h>
-#include <pmmintrin.h>*/
-
-
  int main(int argc, char** argv)
  {
      ros::init(argc, argv, "camera_image");
      ros::start();
-
 
      //srand ( (unsigned)time(0) );
      omp_set_dynamic(0);
      omp_set_nested(1);
 
 
-
-
-
-
     ///Launching rgbdtam
     vo_system vo_system_object;
     ///Launching rgbdtam
-
-
-     ros::spin();
-
+    ros::spin();
 
     cout << "leaving..." << endl;
     return  0;

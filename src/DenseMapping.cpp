@@ -119,7 +119,7 @@ void fullydense_mapping(DenseMapping *pdense_mapper,ros::Publisher *pub_cloud)
 {
     if (pdense_mapper->get_do_dense()> 0.5)
     {
-        Imagenes images;
+        Images_class images;
         copy_from_dense2images(*pdense_mapper,images);
 
         cv::Mat points6 = pdense_mapper->get_last3Dpoints().clone();
@@ -400,7 +400,7 @@ void fullydense_mapping(DenseMapping *pdense_mapper,ros::Publisher *pub_cloud)
 }
 
 
-void copy_from_dense2images(DenseMapping &dense, Imagenes &images)
+void copy_from_dense2images(DenseMapping &dense, Images_class &images)
 {
     int images_size  = dense.getNumberOfImages()-1;
 
@@ -446,7 +446,7 @@ void copy_from_dense2images(DenseMapping &dense, Imagenes &images)
 
     }
 }
-void get_inverse_depth(Imagenes images, cv::Mat &points,cv::Mat &inv_depths, float &depth_step, int reference_image, \
+void get_inverse_depth(Images_class images, cv::Mat &points,cv::Mat &inv_depths, float &depth_step, int reference_image, \
                        int discretization,float &mean_value,cv::Mat &depth_map, int set_maximo,cv::Mat &variance_points_tracked)
 {
 
@@ -461,7 +461,7 @@ void get_inverse_depth(Imagenes images, cv::Mat &points,cv::Mat &inv_depths, flo
 
 
 
-void calculate_superpixels_and_setdata(Imagenes &images,  int reference_image)
+void calculate_superpixels_and_setdata(Images_class &images,  int reference_image)
 {
 
     char curre_dir[150];
@@ -495,7 +495,7 @@ void calculate_superpixels_and_setdata(Imagenes &images,  int reference_image)
     chdir(curre_dir);
 }
 
-void calculate_3D_superpixels_from_semidense(float limit_ratio_sing_val,float limit_normalized_residual,Imagenes &images, cv::Mat &points6, int reference_image, float mean_value)
+void calculate_3D_superpixels_from_semidense(float limit_ratio_sing_val,float limit_normalized_residual,Images_class &images, cv::Mat &points6, int reference_image, float mean_value)
 {
 
     cv::Mat image_reference = images.Im[reference_image]->image.clone();
@@ -683,10 +683,10 @@ void calculate_3D_superpixels_from_semidense(float limit_ratio_sing_val,float li
 }
 
 
-void  active_matching(Imagenes &images,vector<SuperpixelesImagen*> &supImg, int reference_image, int superpixels_index[],int size_sup_index)
+void  active_matching(Images_class &images,vector<SuperpixelsImage*> &supImg, int reference_image, int superpixels_index[],int size_sup_index)
 {
 
-     int imsize_x = images.Im[reference_image]->image.cols;
+    int imsize_x = images.Im[reference_image]->image.cols;
     int imsize_y = images.Im[reference_image]->image.rows;
 
     float  percentage =0;
@@ -721,7 +721,6 @@ void  active_matching(Imagenes &images,vector<SuperpixelesImagen*> &supImg, int 
                                 if ( number_contour_points1/ number_contour_points2 < 2 \
                                         && number_contour_points1/ number_contour_points2  > 0.5)
                                 {
-
                                          cv::Mat contour3D = supImg[keyframes_aux]-> getSuperpixeles()[i] -> getContour3D ();
                                          contour11 = supImg[keyframes_aux]->getSuperpixeles()[i]->getContour(); //
                                          contour22 = supImg[keyframes]->getSuperpixeles()[j]->getContour();
@@ -768,7 +767,7 @@ void  active_matching(Imagenes &images,vector<SuperpixelesImagen*> &supImg, int 
 }
 
 
-void transform_points(Imagenes images, int frame, cv::Mat points, cv::Mat &transformed_points)
+void transform_points(Images_class images, int frame, cv::Mat points, cv::Mat &transformed_points)
 {
    cv::Mat R =  images.Im[frame]->R;
    cv::Mat t =  images.Im[frame]->t;
@@ -780,7 +779,7 @@ void transform_points(Imagenes images, int frame, cv::Mat points, cv::Mat &trans
 }
 
 
-void distances_interval(Imagenes images, int frame, cv::Mat transformed_points, cv::Mat &projected_points,\
+void distances_interval(Images_class images, int frame, cv::Mat transformed_points, cv::Mat &projected_points,\
                         float &maximo, float &minimo, float &mean_value, cv::Mat &depth_map,\
                         cv::Mat &real_points, int set_maximo,cv::Mat &variance_points_tracked,\
                         cv::Mat &inv_depths, float &depth_step,int discretization)
@@ -850,9 +849,7 @@ void distances_interval(Imagenes images, int frame, cv::Mat transformed_points, 
 
     double minVal, maxVal;
     cv::minMaxLoc(abs(depths), &minVal,&maxVal);
-
     cv::Mat sorted_depths;
-
     cv::sort(abs(depths),sorted_depths,CV_SORT_EVERY_COLUMN + CV_SORT_ASCENDING);
 
 
@@ -868,11 +865,10 @@ void distances_interval(Imagenes images, int frame, cv::Mat transformed_points, 
 
             maximo = sorted_depths.at<float>(static_cast<int>(high_limit))*300;
             minimo = sorted_depths.at<float>(static_cast<int>(low_limit))*0.30;
-            ///STEREO rgbdtam
+
             maximo = sorted_depths.at<float>(static_cast<int>(high_limit))*300;
             minimo = sorted_depths.at<float>(static_cast<int>(low_limit))*0.70;
             minimo = sorted_depths.at<float>(static_cast<int>(low_limit))*0.50;
-            ///STEREO rgbdtam
 
 
 
@@ -915,7 +911,7 @@ void distances_interval(Imagenes images, int frame, cv::Mat transformed_points, 
 
 }
 
-void get_3Dpoints_inImage(Imagenes &images, cv::Mat &points,cv::Mat &depth_map, int reference_image)
+void get_3Dpoints_inImage(Images_class &images, cv::Mat &points,cv::Mat &depth_map, int reference_image)
 {
     cv::Mat transformed_points;
     transform_points(images,  reference_image,  points, transformed_points);
@@ -967,8 +963,10 @@ void get_3Dpoints_inImage(Imagenes &images, cv::Mat &points,cv::Mat &depth_map, 
          }
     }
 }
+
 void ransac_for_3Dspx(cv::Mat points_sup,cv::Mat &error_wrt_plane,cv::Mat &n, \
-                      float &d, cv::Mat &singular_values, float limit_ratio_sing_val,float average_distance_btw_points, float limit_normalized_residual)
+                      float &d, cv::Mat &singular_values, float limit_ratio_sing_val,
+                      float average_distance_btw_points, float limit_normalized_residual)
 {
     float error_final = INFINITY;
 
@@ -1031,7 +1029,7 @@ void ransac_for_3Dspx(cv::Mat points_sup,cv::Mat &error_wrt_plane,cv::Mat &n, \
     d = d_final;
 }
 
-void backproject_from_plane(Imagenes &images,cv::Mat &pixels,cv::Mat &n1,float &d1,
+void backproject_from_plane(Images_class &images,cv::Mat &pixels,cv::Mat &n1,float &d1,
                             cv::Mat &inv_depth_mat_total,cv::Mat &X_total, int reference_image)
 {
     float fx = images.Im[reference_image]->fx;
@@ -1116,9 +1114,7 @@ cv::Mat create_matrix(cv::Mat contour4, int limit, int imsize_x, int imsize_y)
     return m;
 }
 
-
-
-float montecarlo_seed10(Imagenes &images,int a1, int b1, int c1, int d1,DataToSend DTS1 , int iterations, \
+float montecarlo_seed10(Images_class &images,int a1, int b1, int c1, int d1,DataToSend DTS1 , int iterations, \
                         cv::Mat &contour3D)
 {
     DataToSend *DTS = &DTS1;
@@ -1153,8 +1149,6 @@ float montecarlo_seed10(Imagenes &images,int a1, int b1, int c1, int d1,DataToSe
     }
     return percentage_total;
 }
-
-
 
 
 cv::Mat gradientY(cv::Mat &mat, float spacing)
@@ -1221,8 +1215,7 @@ inline void centered_gradients_d(cv::Mat &grad_dx, cv::Mat &grad_dy, cv::Mat &gr
 }
 
 
-float reprojected_contour (Imagenes &images,DataToSend &DTS, cv::Mat matchings, int i,float &percentage,\
-                           float threshold, cv::Mat &contour3D)
+float reprojected_contour (Images_class &images,DataToSend &DTS, cv::Mat matchings, int i,float &percentage,float threshold, cv::Mat &contour3D)
 {
      cv::Mat contour1_2;
      cv::Mat R1;
@@ -1248,7 +1241,7 @@ float reprojected_contour (Imagenes &images,DataToSend &DTS, cv::Mat matchings, 
 
 
 
-     transformed_points (points3D_cam, R1,t1,fx, fy, cx, cy, contour3D);
+     transform_points (points3D_cam, R1,t1,fx, fy, cx, cy, contour3D);
      points3D_cam= points3D_cam.t();
      contour1_2 = points3D_cam.clone();
 
@@ -1294,7 +1287,7 @@ float reprojected_contour (Imagenes &images,DataToSend &DTS, cv::Mat matchings, 
 }
 
 
-void transformed_points(cv::Mat &points3D_cam, cv::Mat &R,cv::Mat &t,float fx,float fy,
+void transform_points(cv::Mat &points3D_cam, cv::Mat &R,cv::Mat &t,float fx,float fy,
                         float cx,float cy, cv::Mat &points3D)
 {
 
@@ -1313,13 +1306,13 @@ void transformed_points(cv::Mat &points3D_cam, cv::Mat &R,cv::Mat &t,float fx,fl
 
 }
 
-void transformed_points_return_3Dpoints(cv::Mat &points3D_cam, cv::Mat &R,cv::Mat &t,float fx,
+void transform_points_return_3Dpoints(cv::Mat &points3D_cam, cv::Mat &R,cv::Mat &t,float fx,
                                         float fy,float cx,float cy, cv::Mat &points3D, cv::Mat &transformed_points)
 {
     cv::Mat t_r =  cv::repeat(t,1,points3D.cols);
     points3D_cam = R*points3D  + t_r;
 
-    transformed_points = points3D_cam.clone();
+    points3D_cam.copyTo(transformed_points);
 
     points3D_cam.colRange(0,points3D_cam.cols).rowRange(0,1) = -points3D_cam.colRange(0,points3D_cam.cols).rowRange(0,1) * fx;
     points3D_cam.colRange(0,points3D_cam.cols).rowRange(1,2) = points3D_cam.colRange(0,points3D_cam.cols).rowRange(1,2) * fy;
