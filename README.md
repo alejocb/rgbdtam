@@ -6,7 +6,7 @@ Related Publication:
 [1] Alejo Concha, Javier Civera. RGBDTAM: A cost-effective and accurate RGBD Tracking and Mapping System. https://arxiv.org/pdf/1703.00754.pdf
 
 Video of the results that you should expect in the example sequences:
-https://www.youtube.com/watch?v=OA-Y9YpOVeo
+https://youtu.be/sc-hqtJtHD4
 
  
 
