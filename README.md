@@ -83,17 +83,6 @@ Launch the visualizer of the current frame
 
     rosrun image_view image_view image:=/rgbdtam/camera/image
 
-Launch the visualizer of the map
-
-    rosrun rviz rviz
-    
-We are working on an automatic visualizer, but for now, check the following screenshot to set up the rviz visualizer:
-
-    https://www.dropbox.com/s/pymufqi2i2aixys/visualization_rviz.png?oref=e&n=314995776
-      
-
-      
-
 
 You can use a sequence from the TUM dataset to test the algorithm:
 
@@ -150,9 +139,6 @@ matchings_active_search: [int]. Number of matches required of the 3D superpixel 
 
 7-) Kinect Initialization: 1
 kinect_initialization: [bool] If 1 it will use the kinect for initialization.
-
-8-) kinect_initialization: 1
-minim_points_converged: 66
 
 # Contact
 
