@@ -854,7 +854,7 @@ void get_depth_image( SemiDenseTracking *semidense_tracker,
       ksize.height = depth_frame.rows;
       cv::Mat undistorted_depth_map;
       cv::remap(depth_frame,undistorted_depth_map,semidense_tracker->mapX,semidense_tracker->mapY,
-                CV_INTER_NN,cv::BORDER_CONSTANT,cv::Scalakinect_initialization(0,0,0));
+                CV_INTER_NN,cv::BORDER_CONSTANT,cv::Scalar(0,0,0));
       depth_frame = undistorted_depth_map.clone();
       //UNDISTORT DEPTH MAP
 
