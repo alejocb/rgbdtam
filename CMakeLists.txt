@@ -7,10 +7,9 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 find_package(cmake_modules REQUIRED)
-find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs image_transport cv_bridge tf pcl_ros)
+find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs image_transport cv_bridge tf)
 
 find_package(PCL 1.7.2 REQUIRED)
-
 
 set(CMAKE_BUILD_TYPE Debug)
 catkin_package(CATKIN_DEPENDS roscpp sensor_msgs image_transport cv_bridge tf)
@@ -96,7 +95,6 @@ ${PROJECT_SOURCE_DIR}/ThirdParty/g2o/lib/libg2o_types_sba.so
 ${PROJECT_SOURCE_DIR}/ThirdParty/g2o/lib/libg2o_types_sim3.so
 ${PROJECT_SOURCE_DIR}/ThirdParty/g2o/lib/libg2o_types_slam3d.so
 )
-
  install(PROGRAMS
   scripts/run_bag
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
