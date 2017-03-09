@@ -41,7 +41,7 @@ Or check the following link if you have any issue:
 
 PCL library for visualization:
 
-     sudo apt-get install ros-indigo-pcl-ros
+     version >= 1.7.2
      
 BOOST library to launch the different threads:
     
