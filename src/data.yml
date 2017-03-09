@@ -34,8 +34,6 @@ distCoeffs: !!opencv-matrix
    data: [ 0.231222, -0.784899, -0.003257, -0.000105, 0.917205 ]
  
 
- 
-
 minim_points_converged: 66
 calculate_superpixels: 0
 num_cameras_mapping_th: 10
@@ -43,7 +41,4 @@ translational_ratio_th_min: 0.010
 limit_ratio_sing_val : 100
 limit_normalized_residual: 0.30
 matchings_active_search: 3
-
- 
-
 init_frame: 0
