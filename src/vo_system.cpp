@@ -81,17 +81,12 @@ vo_system::vo_system(){
     }
 
 
-     if(use_ros == 1)
-     {
-     ///Launch Image processing.
-     //boost::thread thread_image_processing(&ThreadImageProcessing, &semidense_tracker,&semidense_mapper,&dense_mapper);
-     }
 
 
-    /*if (calculate_superpixels > 0.5)
-    {
+    //if (calculate_superpixels > 0.5)
+    /*{
          ///launch dense mapper thread
-         //boost::thread thread_dense_mapper(&ThreadDenseMapper,&dense_mapper,&pub_cloud);
+         boost::thread thread_dense_mapper(&ThreadDenseMapper,&dense_mapper,&pub_cloud);
     }*/
 
     cout << "***    rgbdtam is working     *** " <<  endl << endl;
@@ -189,6 +184,3 @@ void vo_system::depthcb(const sensor_msgs::Image::ConstPtr& msg)
            ROS_ERROR("cv_bridge exception: %s", e.what());
         }
 }
-
-
-

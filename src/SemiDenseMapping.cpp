@@ -473,10 +473,11 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                                }
                            }
                        }
+                       semidense_mapper->num_potential_points = num_potential_points / 10;
 
 
 
-                      for(int i = 0; i<8;i++){
+                       for(int i = 0; i<8;i++){
                              for(int j = 0; j<8;j++){
                                  cv::sort( gradients_matrix[i][j], gradients_matrix[i][j],CV_SORT_EVERY_COLUMN + CV_SORT_ASCENDING);
                              }
@@ -510,7 +511,6 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                        }
 
 
-                       semidense_mapper->num_potential_points = num_potential_points / 10;
                        //cout << "POTENTIAL   " << num_potential_points << endl;
 
                         G = G_aux;

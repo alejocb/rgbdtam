@@ -103,14 +103,11 @@ void print_poses(cv::Mat &points, char buffer[],int color)
 
 void ThreadDenseMapper(DenseMapping *pdense_mapper ,ros::Publisher *pub_cloud)
 {
-    /// loopcloser
     while(ros::ok() && pdense_mapper->sequence_has_finished == false )
-    /// loopcloser
     {
         fullydense_mapping(pdense_mapper,pub_cloud);
         boost::this_thread::sleep(boost::posix_time::milliseconds(33));
     }
-
     cout << "thread dense mapping finished" << endl;
 }
 
@@ -154,24 +151,16 @@ void fullydense_mapping(DenseMapping *pdense_mapper,ros::Publisher *pub_cloud)
             images.computeImageSup();
         }
 
-
-
         cv::Mat depth_map;
-
         cv::Mat variance_points_tracked = depth_map*0;
         depth_map = depth_map*0;
         get_inverse_depth(images,points6,inv_depths,depth_step,reference_image,discretization,
                           mean_value,depth_map,1,variance_points_tracked);
 
-
-
         int  imsize_y =images.Im[reference_image]->image.rows;
         int  imsize_x =images.Im[reference_image]->image.cols;
 
         cv::Mat dense_uncertainty = cv::Mat::zeros(imsize_y,imsize_x, CV_32FC1);
-
-
-
         cv::Mat points_superpixels(0,6,CV_32FC1);
 
 
@@ -344,10 +333,8 @@ void fullydense_mapping(DenseMapping *pdense_mapper,ros::Publisher *pub_cloud)
          }
 
 
-         // PUBLISH SUPERPIXELS
-
+         /*// PUBLISH SUPERPIXELS
          pcl::PointCloud<pcl::PointXYZRGB> map_pcl;
-
          for (int i = 1; i < points_superpixels_all.rows; i++)
          {
              float a = points_superpixels_all.at<float>(i,0);
@@ -370,7 +357,7 @@ void fullydense_mapping(DenseMapping *pdense_mapper,ros::Publisher *pub_cloud)
          out_points.header.frame_id = "rgbdtam/map";
          out_points.header.stamp = ros::Time::now();
          pub_cloud->publish(out_points);
-         // PUBLISH SUPERPIXELS
+         // PUBLISH SUPERPIXELS*/
 
 
          pdense_mapper->dense_kf++;
@@ -427,8 +414,6 @@ void copy_from_dense2images(DenseMapping &dense, Images_class &images)
                 }
                 // if images are too large, reduce them by a factor of 2 to calculate 3D superpixels efficiently
 
-
-
                 images.Im[images_map_size ]->image = image.clone();
                 images.Im[images_map_size ]->R = dense.Im[l]->R.clone();
                 images.Im[images_map_size ]->image_gray= image_gray.clone();
@@ -446,6 +431,7 @@ void copy_from_dense2images(DenseMapping &dense, Images_class &images)
 
     }
 }
+
 void get_inverse_depth(Images_class images, cv::Mat &points,cv::Mat &inv_depths, float &depth_step, int reference_image, \
                        int discretization,float &mean_value,cv::Mat &depth_map, int set_maximo,cv::Mat &variance_points_tracked)
 {
@@ -458,8 +444,6 @@ void get_inverse_depth(Images_class images, cv::Mat &points,cv::Mat &inv_depths,
     distances_interval( images,  reference_image,  transformed_points, projected_points,
                         maximo, minimo,mean_value,depth_map,points,set_maximo,variance_points_tracked ,inv_depths, depth_step,discretization  );
 }
-
-
 
 void calculate_superpixels_and_setdata(Images_class &images,  int reference_image)
 {
@@ -737,14 +721,12 @@ void  active_matching(Images_class &images,vector<SuperpixelsImage*> &supImg, in
                                              supImg[keyframes] -> getSuperpixeles()[j]-> set_contourR(contour2);
                                          }
 
-
                                          DataToSend DTS;
                                          DTS.showim = 1;
                                          DTS.percentage_limit = percentage_limit2;DTS.step_size = 1;
                                          DTS.SupImg = supImg;DTS.RefIm=keyframes_aux;DTS.RefSup =i;
 
-                                         percentage = montecarlo_seed10(images,keyframes_aux,i,keyframes,j,DTS,\
-                                                                       1,contour3D);
+                                         percentage = montecarlo_seed10(images,keyframes_aux,i,keyframes,j,DTS,1,contour3D);
 
                                          if (percentage > percentage_limit2)
                                          {
@@ -809,7 +791,6 @@ void distances_interval(Images_class images, int frame, cv::Mat transformed_poin
              transformed_points.at<float>(ii,0) /= (depth/fx);
              transformed_points.at<float>(ii,1) /= (depth/fy);
 
-
              projected_points.at<float>(ii,0) = (cy + (transformed_points.at<float>(ii,1)));
              projected_points.at<float>(ii,1) = (-(transformed_points.at<float>(ii,0)) + cx);
              projected_points.at<float>(ii,2) = 1.0;
@@ -845,13 +826,10 @@ void distances_interval(Images_class images, int frame, cv::Mat transformed_poin
              }
     }
 
-
-
     double minVal, maxVal;
     cv::minMaxLoc(abs(depths), &minVal,&maxVal);
     cv::Mat sorted_depths;
     cv::sort(abs(depths),sorted_depths,CV_SORT_EVERY_COLUMN + CV_SORT_ASCENDING);
-
 
     if ( sorted_depths.rows > 50)
     {
@@ -908,7 +886,6 @@ void distances_interval(Images_class images, int frame, cv::Mat transformed_poin
                 inv_depths.at<float>(i,0) = minVal + i*depth_step;
             }
     }
-
 }
 
 void get_3Dpoints_inImage(Images_class &images, cv::Mat &points,cv::Mat &depth_map, int reference_image)
@@ -1055,18 +1032,12 @@ void backproject_from_plane(Images_class &images,cv::Mat &pixels,cv::Mat &n1,flo
 
     inv_depth_mat_total = (X_total *K1_inv * n1 / d1);
 
-
-
     X_total.colRange(0,1) = X_total.colRange(0,1) / (inv_depth_mat_total*fx);
     X_total.colRange(1,2) = X_total.colRange(1,2) / (inv_depth_mat_total*fy);
     X_total.colRange(2,3) = X_total.colRange(2,3) / (inv_depth_mat_total);
 
-
     cv::Mat t_r_ref = cv::repeat(images.Im[reference_image]->t, 1, pixels.rows).clone();
-
     X_total = R1.t() * (X_total.t() - t_r_ref);
-
-
     X_total = X_total.t();
 }
 
@@ -1273,11 +1244,8 @@ float reprojected_contour (Images_class &images,DataToSend &DTS, cv::Mat matchin
                 d_x1_y = (y_2-y_1) * m.at<float>(y_1,x_1) + (y_3-y_2) * m.at<float>(y_3,x_1);
                 d_x3_y = (y_2-y_1) * m.at<float>(y_1,x_3) + (y_3-y_2) * m.at<float>(y_3,x_3);
 
-                distance_opt = (x_2-x_1) * d_x1_y + (x_3-x_2) *  d_x3_y;
                 /////////
-                //if (distance_opt > threshold){distance_opt = threshold;}
             }
-            //distances.at<float>(k,0)=distance_opt;
             distance_total = distance_total + 1.0*distance_opt / contour1_2.rows;
             percentage2 = percentage2 + (distance_opt < 3) ;
      }

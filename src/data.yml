@@ -6,16 +6,18 @@ tracking_th: 0.001
 ph_error_th: 0.001
 
 iter_th: 40
-local_maps_number:10
+local_maps_number: 2
 local_maps_close_number: 1
 
 
 limit_grad: 0.7
 
 use_ros: 1
+path_to_folder:"/home/alejo/Downloads/TUM_images/rgbd_dataset_freiburg2_desk/"
 use_kinect: 1
 use_depth_tracking: 1
 kinect_initialization: 1
+depth_rgb_offset: -0.020
 
 
 bgr2rgb: 1
@@ -32,6 +34,8 @@ distCoeffs: !!opencv-matrix
    data: [ 0.231222, -0.784899, -0.003257, -0.000105, 0.917205 ]
  
 
+ 
+
 minim_points_converged: 66
 calculate_superpixels: 0
 num_cameras_mapping_th: 10
@@ -41,5 +45,5 @@ limit_normalized_residual: 0.30
 matchings_active_search: 3
 
  
-tum_dataset:  3
-init_frame: 30
+
+init_frame: 0
