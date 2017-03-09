@@ -98,7 +98,6 @@ class SemiDenseTracking  :public Images_class {
     cv::Mat image_keyframe_canny;
     int bgr2rgb;
 
-    int tum_dataset;
     int processed_frames;
     int processed_frames_since_keyframe;
 
@@ -197,6 +196,14 @@ class SemiDenseTracking  :public Images_class {
     bool SystemIsLost{false};
     bool image_processing_semaphore;
     float PhotoError{0.0};
+
+    std::string path_to_folder;
+
+
+    float depth_rgb_offset;
+
+    bool keepvisualizer{true};
+
 
 private:
     vector<cv::Mat> local_maps;
