@@ -1,4 +1,4 @@
-#RGBDTAM:
+# RGBDTAM:
 
 RGBDTAM is a SLAM algorithm that estimates a dense reconstruction of a scene in real-time on a CPU using monocular or RGB-D cameras. We are currently testing the code and solving compiling issues, it should be ready in the following days/weeks.
 
@@ -10,7 +10,7 @@ https://youtu.be/sc-hqtJtHD4
 
  
 
-#License
+# License
 
 RGBDTAM is licensed under the GNU General Public License Version 3 (GPLv3), please see http://www.gnu.org/licenses/gpl.html.
 
@@ -20,11 +20,11 @@ For commercial purposes, please contact the authors.
 
       
 
-#Disclaimer
+# Disclaimer
 
 This site and the code provided here are under active development. Even though we try to only release working high quality code, this version might still contain some issues. Please use it with caution.
 
-#Dependencies
+# Dependencies
 
 ROS:
 
@@ -52,11 +52,11 @@ Vocabulary used for loop closure and relocalization:
      We have used the vocabulary created by ORB-SLAM authors. Please, download the vocabulary from this link "www.github.com/raulmur/ORBvoc.txt.tar.gz" and place it in "ThirdParty/DBoW2/ORBvoc.txt"
 
 
-#Installation
+# Installation
 
      git clone  https://github.com/alejocb/rgbdtam.git
     
-#Compilation
+# Compilation
 
 
 
@@ -91,7 +91,7 @@ make -j
 
 4-) catkin_make --pkg rgbdtam
 
-#Usage
+# Usage
 
 Launch rgbdtam from your 'catkin_workspace' folder:
      
