@@ -49,7 +49,7 @@ BOOST library to launch the different threads:
 
 Vocabulary used for loop closure and relocalization:
     
-     We have used the vocabulary created by ORB-SLAM authors. Please, download the vocabulary from this link "www.github.com/raulmur/ORBvoc.txt.tar.gz" and place it in "ThirdParty/DBoW2/build/ORBvoc.txt"
+     We have used the vocabulary created by ORB-SLAM authors. Please, download the vocabulary from this link "www.github.com/raulmur/ORBvoc.txt.tar.gz" and place it in "ThirdParty/DBoW2/ORBvoc.txt"
 
 
 
