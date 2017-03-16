@@ -33,7 +33,7 @@ loopcloser::loopcloser()
    cout << "Reading the Vocabulary and creating a database..." << endl;
 
    char buffer[150];
-   sprintf (buffer,(ros::package::getPath("rgbdtam") + "/ThirdParty/DBoW2/build/ORBvoc.txt").c_str());
+   sprintf (buffer,(ros::package::getPath("rgbdtam") + "/ThirdParty/DBoW2/ORBvoc.txt").c_str());
 
    // Reading vocabulary created by ORB-SLAM authors
    orb_voc.loadFromTextFile(buffer);
@@ -43,7 +43,7 @@ loopcloser::loopcloser()
    cout << "end!!" << endl;
 
    pixel_error = 1.5;
-   pixel_error = 2.0;
+   //pixel_error = 2.0;
    inliers_minimun = 15;
    initial_kf = 0;
    patch_size_for_depths = 0;

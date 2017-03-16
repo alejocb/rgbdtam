@@ -28,7 +28,6 @@
 
 #include "rgbdtam/vo_system.h"
 
-
 #include <opencv2/opencv.hpp>
 #include "opencv2/imgproc/imgproc.hpp"
 
@@ -38,8 +37,8 @@
 #include <math.h>
 
 
-#define _USE_MATH_DEFINES
 
+#define _USE_MATH_DEFINES
 
 /////ROS IMAGE SUBSCRIBER
 #include <iostream>

@@ -240,8 +240,8 @@ void  SemiDenseTracking::read_image_names(vector<string> &left_image_names,vecto
     /// how to generalte files.txt -> file */* *>> ../files.txt
 
 
-     string string_path_data_aux_left ;
-     string_path_data_aux_left =  path_to_folder + "rgb/";
+    string string_path_data_aux_left ;
+    string_path_data_aux_left =  path_to_folder + "rgb/";
 
 
     string line;
@@ -260,14 +260,11 @@ void  SemiDenseTracking::read_image_names(vector<string> &left_image_names,vecto
         }
       }
 
-
-
       string_path_data_aux_left = path_to_folder + "depth/";
       ifstream myfile_depth (path_to_folder + "files_depth.txt");
 
-
-       if (myfile_depth.is_open())
-       {
+      if (myfile_depth.is_open())
+      {
          while ( getline (myfile_depth,line)  )
          {
              string image_name;
@@ -275,7 +272,7 @@ void  SemiDenseTracking::read_image_names(vector<string> &left_image_names,vecto
              string string_path_data =string_path_data_aux_left + image_name;
              depth_image_names.push_back(string_path_data);
          }
-       }
+      }
  }
 
 void undistort_image(cv::Mat &image_frame, cv::Mat &cameraMatrixAux,cv::Mat &distCoeffs,
@@ -302,7 +299,6 @@ void undistort_image(cv::Mat &image_frame, cv::Mat &cameraMatrixAux,cv::Mat &dis
 
          cv::Mat R;
          cv::initUndistortRectifyMap(cameraMatrixAux,distCoeffs,R,newCameraMatrix,ksize,CV_16SC2,mapX,mapY);
-
          image_frame = image_frame_undistorted.clone();
     }
     else
@@ -428,8 +424,6 @@ void ThreadImageProcessing( SemiDenseTracking *semidense_tracker,
                           depth_frame =  semidense_tracker->frame_depth_aux[j].clone();
                       }
                   }
-
-
                   semidense_tracker->image_processing_semaphore = true;
               }else{
                   boost::this_thread::sleep(boost::posix_time::milliseconds(1));
@@ -476,7 +470,7 @@ void ThreadSemiDenseTracker(Images_class *images,SemiDenseMapping *semidense_map
     /// WE keep the visualizer for a few seconds
 
 
-   /* chdir("/home/alejo/catkin_ws/src/evaluate_error_monocular/evaluate_all");
+    chdir("/home/alejo/catkin_ws/src/evaluate_error_monocular/evaluate_all");
     char buffer[200];
 
     sprintf(buffer,"cd");
@@ -504,7 +498,7 @@ void ThreadSemiDenseTracker(Images_class *images,SemiDenseMapping *semidense_map
             semidense_tracker->path_to_folder.substr(33,semidense_tracker->path_to_folder.size()-1-33) +
             "-groundtruth.txt  /home/alejo/catkin_ws/src/rgbdtam/src/evaluation/trajectory_posegraph.txt";
     const char *cstr2 = str.c_str();
-    system(cstr2);*/
+    system(cstr2);
 
 
     cout << "thread tracking finished" << endl;
@@ -622,7 +616,7 @@ void map_reuse(SemiDenseTracking *semidense_tracker,SemiDenseMapping *semidense_
                                   [matchings_mapreuse.at<float>(ii,1)].point_cloud_totrack[0].clone();
 
 
-                           correct_kf_after_posegraph_optimization(semidense_tracker,pointsKF,matchings_mapreuse.at<float>(ii,1));
+                           //correct_kf_after_posegraph_optimization(semidense_tracker,pointsKF,matchings_mapreuse.at<float>(ii,1));
 
                            pointsKF = pointsKF.colRange(0,3);
                            pointsKF = pointsKF.t();
@@ -661,7 +655,7 @@ void map_reuse(SemiDenseTracking *semidense_tracker,SemiDenseMapping *semidense_
 
                             if(overlap /  coordinates_cam.rows > 0.75  &&
                               (max_x - min_x) * (max_y-min_y) > image_frame_aux.cols/8*image_frame_aux.rows/8*0.25
-                               //&& max_x_t < 90 && max_y_t < 70 && min_x_t > -10 && min_y_t > -10
+                               && max_x_t < 90 && max_y_t < 70 && min_x_t > -10 && min_y_t > -10
                                )
                             {
                                 cv::Mat color;
@@ -697,7 +691,7 @@ void map_reuse(SemiDenseTracking *semidense_tracker,SemiDenseMapping *semidense_
                     for(int j = 0 ; j < semidense_tracker->pyramid_levels; j++){
                         semidense_tracker->points_map[j] =  semidense_tracker->loopcloser_obj.keyframes_vector
                                 [oldest_kf].point_cloud_totrack[j].clone();
-                        correct_kf_after_posegraph_optimization(semidense_tracker,semidense_tracker->points_map[j],oldest_kf);
+                        //correct_kf_after_posegraph_optimization(semidense_tracker,semidense_tracker->points_map[j],oldest_kf);
                     }
 
                     R_kf = semidense_tracker->loopcloser_obj.keyframes_vector
@@ -1781,7 +1775,7 @@ void resize_points(cv::Mat  &points2,cv::Mat  &points, float reduction,cv::Mat &
      {
          for (int j = 5; j < G.cols-5;j++)
          {
-             if (G.at<float>(i,j) < limit && edges.at<float>(i,j) > 100)
+             if (G.at<float>(i,j) < limit && edges.at<float>(i,j) > -100)
              {
                 G_expanded.at<float>(i,j) =   limit-0.1;
              }
@@ -2183,8 +2177,8 @@ void gauss_newton_ic(SemiDenseTracking *semidense_tracker,cv::Mat &coordinates_c
                    {
                         cv::Mat point_aux(1,3, CV_32FC1);
 
-                       int step_size = 1;if (pyramid_level == 1) step_size = 4;
-                       if (pyramid_level == 2) step_size = 4;
+                       int step_size = 1;if (pyramid_level == 1) step_size = 1;
+                       if (pyramid_level == 2) step_size = 2;
                        if (pyramid_level == 3) step_size = 4;
                        for (int i = 0; i < imsize_y; i = i+step_size)
                        {
@@ -2514,11 +2508,11 @@ void gauss_newton_ic(SemiDenseTracking *semidense_tracker,cv::Mat &coordinates_c
                              float count_close_points = weight_geo.rows;
                              count_close_points = 0;
 
-                             /*if(pyramid_level > 1)
+                             if(pyramid_level > 1)
                              {
                                    float overlap_aux =  1 - cv::sum(constant_error)[0] / constant_error.rows;
                                    if (overlap_aux*1.00 < overlap) overlap = overlap_aux;
-                             }*/
+                             }
                          }
                          else
                          {
@@ -3123,16 +3117,16 @@ void prepare_semidense(SemiDenseMapping *semidense_mapper,
 {
    vector<cv::Mat> color(pyramid_levels);
 
-    float  maximum_points_to_track = 10000 / 4 / 4 / 4 / 4;
-    //float  maximum_points_to_track = 600;
+    //float  maximum_points_to_track = 10000 / 4 / 4 / 4 / 4;
+    float  maximum_points_to_track = 600;
     for (int i = 0; i < pyramid_levels;i++)
     {
         int imsize_y = image_keyframe_pyramid[i].rows;
         int imsize_x = image_keyframe_pyramid[i].cols;
 
 
-        maximum_points_to_track *= 4;
-        //maximum_points_to_track *= 3;
+        //maximum_points_to_track *= 4;
+        maximum_points_to_track *= 3;
 
         cv::Mat edges;
         cv::Mat gray_image_aux = image_keyframe_pyramid[i]*255;

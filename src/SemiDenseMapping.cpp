@@ -19,11 +19,10 @@
 * along with rgbdtam. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <rgbdtam/SemiDenseMapping.h>
-#include <rgbdtam/vo_system.h>
-#include <rgbdtam/loopcloser.h>
+#include "rgbdtam/SemiDenseMapping.h"
+#include "rgbdtam/vo_system.h"
+#include "rgbdtam/loopcloser.h"
 #include <ros/package.h>
-
 
 #define U_SEGS(a)\
          gettimeofday(&tv,0);\
@@ -477,7 +476,7 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
 
 
 
-                       for(int i = 0; i<8;i++){
+                       /*for(int i = 0; i<8;i++){
                              for(int j = 0; j<8;j++){
                                  cv::sort( gradients_matrix[i][j], gradients_matrix[i][j],CV_SORT_EVERY_COLUMN + CV_SORT_ASCENDING);
                              }
@@ -508,9 +507,7 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                                      num_potential_points++;
                                 }
                            }
-                       }
-
-
+                       }*/
                        //cout << "POTENTIAL   " << num_potential_points << endl;
 
                         G = G_aux;
@@ -535,8 +532,8 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                             for (int j = corner; j < images.Im[reference_image]->image.cols-corner; j++)
                             {
                                 if (semidense_mapper->high_gradient_point.at<float>(i,j) > 100 &&
-                                        (semidense_mapper->point_was_previously_estimated.at<float>(i,j) < 100
-                                         ||semidense_mapper->num_keyframes <  semidense_mapper -> init_keyframes+1 ))
+                                   (semidense_mapper->point_was_previously_estimated.at<float>(i,j) < 100
+                                  ||semidense_mapper->num_keyframes <  semidense_mapper -> init_keyframes+1 ))
                                 {
                                     point_i_sd.at<float>(0,0) = (images.Im[reference_image]->cx-j)/images.Im[reference_image]->fx;
                                     point_i_sd.at<float>(0,1) = (i-images.Im[reference_image]->cy)/images.Im[reference_image]->fy;
