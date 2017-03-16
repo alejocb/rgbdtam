@@ -13,7 +13,8 @@ set(HDRS_DBOW2
   DBoW2/TemplatedVocabulary.h
   DBoW2/DBoW2.h
   DBoW2/QueryResults.h
-  DBoW2/TemplatedDatabase.h)
+  DBoW2/TemplatedDatabase.h
+)
 set(SRCS_DBOW2
   DBoW2/BowVector.cpp
   DBoW2/FORB.cpp      
@@ -23,10 +24,24 @@ set(SRCS_DBOW2
 
 set(HDRS_DUTILS
   DUtils/Random.h
-  DUtils/Timestamp.h)
+  DUtils/Timestamp.h
+  DUtils/DUtils.h
+  DUtils/DException.h
+  DUtils/FileModes.h
+  DUtils/LineFile.h
+  DUtils/BinaryFile.h
+  DUtils/FileFunctions.h
+  DUtils/ConfigFile.h
+  DUtils/StringFunctions.h
+  DUtils/TimeManager.h
+  DUtils/Profiler.h
+  DUtils/STL.h
+  DUtils/LUT.h
+  DUtils/DebugFunctions.h)
 set(SRCS_DUTILS
   DUtils/Random.cpp
-  DUtils/Timestamp.cpp)
+  DUtils/Timestamp.cpp
+  DUtils/Math.hpp)
 
 find_package(OpenCV REQUIRED)
 

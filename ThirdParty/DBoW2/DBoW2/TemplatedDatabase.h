@@ -24,7 +24,7 @@
 #include "FeatureVector.h"
 
 //#include <DUtils/DUtils.h>
-#include "DUtils/DUtils.h"
+#include "ThirdParty/DBoW2/DUtils/DUtils.h"
 
 
 using namespace std;
