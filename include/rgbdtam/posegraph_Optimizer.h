@@ -39,7 +39,6 @@
 #include "ThirdParty/g2o/g2o/types/sba/types_six_dof_expmap.h"
 //#include "ThirdParty/g2o/g2o/solvers/structure_only/structure_only_solver.h"
 
-/// MIO
 #include "ThirdParty/g2o/g2o/types/sim3/types_seven_dof_expmap.h"
 #include <Eigen/StdVector>
 #include <opencv2/core/core.hpp>
@@ -49,13 +48,9 @@
 #include <opencv2/opencv.hpp>
 #include "opencv2/imgproc/imgproc.hpp"
 #include <vector>
-/// MIO
 
 using namespace Eigen;
 using namespace std;
-
-
-
 
 class posegraphOptimizer
 {
@@ -72,6 +67,4 @@ class posegraphOptimizer
     Eigen::Matrix<double,3,3> convert_R_toEigen(cv::Mat &R_aux);
     Eigen::Matrix<double,3,1> convert_t_toEigen(cv::Mat &t_aux);
 };
-
-
 #endif
