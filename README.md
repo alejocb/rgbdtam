@@ -52,21 +52,44 @@ Vocabulary used for loop closure and relocalization:
      We have used the vocabulary created by ORB-SLAM authors. Please, download the vocabulary from this link "www.github.com/raulmur/ORBvoc.txt.tar.gz" and place it in "ThirdParty/DBoW2/ORBvoc.txt"
 
 
-
 #Installation
 
      git clone  https://github.com/alejocb/rgbdtam.git
     
 #Compilation
 
-     catkin_make --pkg rgbdtam
 
-Third Party: SUPERPIXELS COMPILATION
 
-Code used -> Efficient Graph-Based Image Segmentation. P. Felzenszwalb, D. Huttenlocher. International Journal of Computer Vision, Vol. 59, No. 2, September 2004
 
-    cd root/catkin_workspace/src/rgbdtam/ThirdParty/segment
-    make
+
+1-) Efficient Graph-Based Image Segmentation. P. Felzenszwalb, D. Huttenlocher. International Journal of Computer Vision, Vol. 59, No. 2, September 2004
+
+cd root/catkin_workspace/src/rgbdtam/ThirdParty/segment
+make
+
+
+
+
+2-) DBow2
+
+cd ThirdParty/DBoW2
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j
+
+
+
+3-) g2o
+
+cd ThirdParty/g2o
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j
+
+
+4-) catkin_make --pkg rgbdtam
 
 #Usage
 
