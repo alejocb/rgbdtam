@@ -33,7 +33,7 @@ loopcloser::loopcloser()
    cout << "Reading the Vocabulary and creating a database..." << endl;
 
    char buffer[150];
-   sprintf (buffer,(ros::package::getPath("rgbdtam") + "/ThirdParty/DBoW2/ORBvoc.txt").c_str());
+   sprintf (buffer,(ros::package::getPath("rgbdtam") + "/ThirdParty/DBoW2/build/ORBvoc.txt").c_str());
 
    // Reading vocabulary created by ORB-SLAM authors
    orb_voc.loadFromTextFile(buffer);
@@ -43,7 +43,6 @@ loopcloser::loopcloser()
    cout << "end!!" << endl;
 
    pixel_error = 1.5;
-   //pixel_error = 2.0;
    inliers_minimun = 15;
    initial_kf = 0;
    patch_size_for_depths = 0;
@@ -53,16 +52,13 @@ loopcloser::loopcloser()
    cv::Mat matchings_inliers_aux(0,2,CV_32FC1);
    matchings_inliers = matchings_inliers_aux.clone();
 
+
+   viewer_mutex = false;
    camera2PCLadded = false;
 
    viewer = new pcl::visualization::PCLVisualizer("Dense Map and camera position");
-   viewer->setBackgroundColor (0.75f,0.75f, 0.75f);
-   /* viewer->setCameraPosition(0.0f,0.0f,0.0f
-                             ,0.0f,0.0f,0.0f,
-                             0.0f,1.0f,0.0f);*/
+   viewer->setBackgroundColor (0.75,0.75, 0.75);
    viewer->setSize(1100,1100);
-
-
 
    pcl::visualization::PCLVisualizer viewer1 ("adsffdsfsasd");
    viewer1.setSize(3,3);
@@ -323,16 +319,6 @@ void loopcloser::print_keyframes_after_optimization()
                         point_cloud_keyframes_after_opt.push_back(point_cloud_keyframe);
 
                     point_cloud_keyframes_after_opt_total.push_back(point_cloud_keyframe);
-
-
-                    /// UPDATE POINTCLOUD IN THE VISUALIZER
-                    char buffer[150];
-                    point_cloud_keyframe.convertTo(point_cloud_keyframe,CV_32FC1);
-                    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-                    populate_denseMap(cloud, point_cloud_keyframe);
-                    sprintf(buffer,"denseMap%d", keyframes_vector.at(i).num_keyframe);
-                    viewer->updatePointCloud (cloud,buffer);
-                    /// UPDATE POINTCLOUD IN THE VISUALIZER
             }
         }
     }
@@ -369,26 +355,22 @@ void loopcloser::print_keyframes_after_optimization()
         }
 
     }
-    //if(use_kinect == 0)
+    if(use_kinect == 0)
+    {if (point_cloud_keyframes_after_opt.rows == 0)
     {
-        if (point_cloud_keyframes_after_opt.rows == 0)
-        {
-            if (point_cloud_keyframes_without_opt.rows == 0)
-            {
-                point_cloud_keyframes_after_opt = point_cloud_keyframes_without_opt.clone();
-                point_cloud_keyframes_after_opt_total = point_cloud_keyframes_without_opt_total.clone();
-            }
-        }
-        char buffer[150];
-        /*sprintf (buffer,"src/rgbdtam/src/results_depth_maps/reconstruction_after_optimization.ply");
-        print_point_cloud(point_cloud_keyframes_after_opt,buffer);
-        sprintf (buffer,"src/rgbdtam/src/results_depth_maps/reconstruction_without_optimization.ply");
-        print_point_cloud(point_cloud_keyframes_without_opt,buffer);*/
-        sprintf (buffer,"src/rgbdtam/src/results_depth_maps/reconstruction_after_optimization_total.ply");
-        print_point_cloud(point_cloud_keyframes_after_opt_total,buffer);
-        /*sprintf (buffer,"src/rgbdtam/src/results_depth_maps/reconstruction_without_optimization_total.ply");
-        print_point_cloud(point_cloud_keyframes_without_opt_total,buffer);*/
+        if (point_cloud_keyframes_without_opt.rows == 0)
+        {point_cloud_keyframes_after_opt = point_cloud_keyframes_without_opt.clone();
+         point_cloud_keyframes_after_opt_total = point_cloud_keyframes_without_opt_total.clone();}
     }
+    char buffer[150];
+    sprintf (buffer,"src/rgbdtam/src/results_depth_maps/reconstruction_after_optimization.ply");
+    print_point_cloud(point_cloud_keyframes_after_opt,buffer);
+    sprintf (buffer,"src/rgbdtam/src/results_depth_maps/reconstruction_without_optimization.ply");
+    print_point_cloud(point_cloud_keyframes_without_opt,buffer);
+    sprintf (buffer,"src/rgbdtam/src/results_depth_maps/reconstruction_after_optimization_total.ply");
+    print_point_cloud(point_cloud_keyframes_after_opt_total,buffer);
+    sprintf (buffer,"src/rgbdtam/src/results_depth_maps/reconstruction_without_optimization_total.ply");
+    print_point_cloud(point_cloud_keyframes_without_opt_total,buffer);}
 
     return;
 }
@@ -777,7 +759,7 @@ void loopcloser::ransac_for_alignment(cv::Mat &model,cv::Mat &data,cv::Mat  &R_r
 
 
                 float area_covered = 0;
-                check_area_covered_by_features(keyframes_vector[0].image.cols,keyframes_vector[0].image.rows,coordinates2,area_covered);
+                check_area_covered_by_features(640,480,coordinates2,area_covered);
 
                 if (model.cols > inliers  && area_covered > 0.15 && area_covered > area_min)
                 {
@@ -1076,7 +1058,7 @@ void loopcloser::feature_matching_and_edge_estimation(cv::Mat &matchings,cv::Mat
     }
 }
 
-void loopcloser::get_potential_keyframes(cv::Mat &image, cv::Mat &matchings, int points_tracked)
+void loopcloser::get_potential_keyframes(cv::Mat &image, cv::Mat &matchings)
 {
     vector<cv::KeyPoint> keypoints_orb;
     cv::Mat descriptors_orb;
@@ -1084,7 +1066,7 @@ void loopcloser::get_potential_keyframes(cv::Mat &image, cv::Mat &matchings, int
     calculate_orb_features( image, features_orb ,keypoints_orb,descriptors_orb);
 
 
-    if(matchings.rows == 0 && points_tracked >  0.25*image.rows/8*image.cols/8)
+    if(matchings.rows == 0)
     get_scores_for_mapreuse(features_orb,matchings,features_orb.size(),keyframes_vector.size(),0.30,5,1000);
 }
 
@@ -1252,7 +1234,11 @@ void loopcloser::evaluation(cv::Mat poses,char buffer_evaluation[])
 
 }
 
-void loopcloser::addCameraPCL(cv::Mat &R, cv::Mat &t){
+void loopcloser::addCameraPCL(cv::Mat &R, cv::Mat &t, char buffer[],bool blue){
+    pcl::PointCloud<pcl::PointXYZ>::Ptr camera (new pcl::PointCloud<pcl::PointXYZ>);
+
+
+    viewer_mutex = false;
 
     cv::Mat R_inv = R.t();
     cv::Mat t_inv = -R.t()*t;
@@ -1261,15 +1247,26 @@ void loopcloser::addCameraPCL(cv::Mat &R, cv::Mat &t){
     T(1,0) = R_inv.at<float>(1,0);     T(1,1) = R_inv.at<float>(1,1);     T(1,2) = R_inv.at<float>(1,2);  T(1,3) = t_inv.at<float>(1,0);
     T(2,0) = R_inv.at<float>(2,0);     T(2,1) = R_inv.at<float>(2,1);     T(2,2) = R_inv.at<float>(2,2);  T(2,3) = t_inv.at<float>(2,0);
     T(3,0) = 0;                    T(3,1) = 0;                    T(3,2) = 0;                 T(3,3) = 1;
+
     Eigen::Affine3f t_affine(T);
+
+
 
     if(!camera2PCLadded)
     {
-        viewer->addCoordinateSystem (0.25,  t_affine, "camera", 0);
+        viewer->addCoordinateSystem (0.25,  t_affine, "buffer", 0);
         camera2PCLadded = true;
     }else{
-        viewer->updateCoordinateSystemPose( "camera",  t_affine);
+        viewer->updateCoordinateSystemPose( "buffer",  t_affine);
     }
+    viewer_mutex = true;
+}
+
+void loopcloser::updateCameraPCL(cv::Mat &R, cv::Mat &t, char buffer[],bool blue){
+    viewer_mutex = false;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr camera (new pcl::PointCloud<pcl::PointXYZ>);
+
+    cv::Mat C = -R.t()*t;
 }
 
 
@@ -1278,41 +1275,50 @@ void loopcloser::compute_keyframe(cv::Mat &R, cv::Mat &t, cv::Mat &image, int nu
                                   float &fx, float &fy, float &cx, float &cy,
                                   double stamps,int size_first_level)
 {
+
     num_keyframe = keyframes_vector.size();
     keyframe keyframe_aux;
 
     if(!viewer->wasStopped()){
 
-        boost::mutex::scoped_lock lock(guard);
-
+        viewer_mutex = false;
         char buffer[150];
         if(num_keyframe % depth_map_iterator == 0)
-        {
-            pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-            populate_denseMap(cloud, point_cloud_toprint);
-            sprintf(buffer,"denseMap%d", num_keyframe);
-            viewer->addPointCloud (cloud,buffer);
-            keyframe_aux.point_cloud_toprint = point_cloud_toprint.clone();
+        {pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
+
+        cv::Mat aux2 = point_cloud_toprint.clone();
+        populate_denseMap(cloud, aux2);
+        sprintf(buffer,"denseMap%d", num_keyframe);
+        viewer->addPointCloud (cloud,buffer);
+        keyframe_aux.point_cloud_toprint = point_cloud_toprint.clone();
         }
+        viewer_mutex = true;
     }
 
+
+
+
     cv::Mat matchings(0,2,CV_32FC1);
+    cv::Mat matchings_mapreuse(0,2,CV_32FC1);
+
     cv::Mat U,V,S;
     cv::SVD::compute(R,S,U,V,cv::SVD::FULL_UV);
     R = U*V;
 
+
     keyframe_aux.R = R.clone();
     keyframe_aux.t = t.clone();
-    keyframe_aux.final_depth_map = final_depth_map;
+    keyframe_aux.final_depth_map = final_depth_map.clone();
     keyframe_aux.fx = fx;
     keyframe_aux.fy = fy;
     keyframe_aux.cx = cx;
     keyframe_aux.cy = cy;
     keyframe_aux.point_cloud_totrack = point_cloud_totrack;
     keyframe_aux.stamps = stamps;
-    keyframe_aux.image = image;
+    keyframe_aux.image = image.clone();
     keyframe_aux.num_keyframe = num_keyframe;
     keyframe_aux.scale = 1;
+
 
     vector<cv::KeyPoint> keypoints_orb;
     cv::Mat descriptors_orb;
@@ -1321,13 +1327,14 @@ void loopcloser::compute_keyframe(cv::Mat &R, cv::Mat &t, cv::Mat &image, int nu
     keyframe_aux.keypoints_orb = keypoints_orb;
     keyframe_aux.descriptors_orb = descriptors_orb.clone();
 
+
+
     orb_db.add(keyframe_aux.features);
 
-    if(size_first_level > 0.25*image.rows/8*image.cols/8)
+    if(size_first_level > 0.25*60*80)
     get_score_for_loopclosure(keyframe_aux.features,matchings,features.size(),num_keyframe,0.30,100,1000);
 
-    /*  cv::Mat matchings_mapreuse(0,2,CV_32FC1);
-    if(size_first_level > 0.25*image.rows/8*image.cols/8)
+    /*if(size_first_level > 0.25*60*80)
     get_score_for_loopclosure(keyframe_aux.features,matchings_mapreuse,features.size(),num_keyframe,0.50,5,100);
     keyframe_aux.matchings_mapreuse = matchings_mapreuse.clone();*/
 
@@ -1369,9 +1376,6 @@ void loopcloser::compute_keyframe(cv::Mat &R, cv::Mat &t, cv::Mat &image, int nu
 
         if (R_vector.size() > 5)
         {
-            if( matchings_inliers.rows > number_loops_found){
-                cout << "Closing loop. Number of links: " << matchings_inliers.rows << endl;
-            }
             number_loops_found = matchings_inliers.rows;
 
             cv::Mat poses;
@@ -1399,6 +1403,10 @@ void loopcloser::compute_keyframe(cv::Mat &R, cv::Mat &t, cv::Mat &image, int nu
         }
     }
 }
+
+
+
+
 
 void loopcloser::get_score_for_loopclosure(vector<cv::Mat> feature,cv::Mat &matchings,
                                  int features_size,float keyframe_number, float threshold,
@@ -1439,6 +1447,11 @@ void loopcloser::get_score_for_loopclosure(vector<cv::Mat> feature,cv::Mat &matc
           }
       }
 }
+
+
+
+
+
 
 void loopcloser::get_score_for_relocalization(vector<cv::Mat> feature,cv::Mat &matchings,
                                  int features_size,float keyframe_number, float threshold,

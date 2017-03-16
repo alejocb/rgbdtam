@@ -59,10 +59,11 @@ void superpixel::set_pixels (float a, float b,float c)
     pixels.push_back(mn.row(0));
 }
 
-int SuperpixelsImage::computeSuperpixels()
+int SuperpixelesImagen::computeSuperpixels()
 {
 
     cv::Mat image_sup;
+    char command[100];
 
     if(! image.data )
     {
@@ -163,23 +164,24 @@ int SuperpixelsImage::computeSuperpixels()
                      }
                 }
             }
+
         }
     }
 
     return C.rows;
 }
 
-void Images_class::computeImageSup()
+void Imagenes::computeImageSup()
 {
-    SuperpixelsImage *spxIm;
-    spxIm = new SuperpixelsImage();
+    SuperpixelesImagen *spxIm;
+    spxIm = new SuperpixelesImagen();
     supIm.push_back(spxIm);
 }
 
-void Images_class::computeImage()
+void Imagenes::computeImage()
 {
-    Image_class *spxIm;
-    spxIm = new Image_class();
+    Imagen *spxIm;
+    spxIm = new Imagen();
     Im.push_back(spxIm);
 }
 
