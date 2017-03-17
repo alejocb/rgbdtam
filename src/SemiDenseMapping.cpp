@@ -19,11 +19,10 @@
 * along with rgbdtam. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <rgbdtam/SemiDenseMapping.h>
-#include <rgbdtam/vo_system.h>
-#include <rgbdtam/loopcloser.h>
+#include "rgbdtam/SemiDenseMapping.h"
+#include "rgbdtam/vo_system.h"
+#include "rgbdtam/loopcloser.h"
 #include <ros/package.h>
-
 
 #define U_SEGS(a)\
          gettimeofday(&tv,0);\
@@ -61,7 +60,6 @@ SemiDenseMapping::SemiDenseMapping():do_initialization(1),do_optimization(0), do
     translational_ratio_th_min_aux = (float)fs2["translational_ratio_th_min"];
     num_cameras_mapping_th = (int)fs2["num_cameras_mapping_th"];
     num_cameras_mapping_th_aux = (int)fs2["num_cameras_mapping_th"];
-    int do_stereo = (int)fs2["do_stereo"];
     use_kinect = (int)fs2["use_kinect"];
 
 
@@ -101,13 +99,10 @@ SemiDenseMapping::SemiDenseMapping():do_initialization(1),do_optimization(0), do
     init_keyframes = 12;
 
 
-    if (do_stereo>0.5 || (kinect_initialization > 0.5))
+    if (kinect_initialization > 0.5)
     {
-        ///STEREO rgbdtam
         init_keyframes = 3;
-        ///STEREO rgbdtam
-        ///
-         if (use_kinect > 0.5) init_keyframes = -3;
+        if (use_kinect > 0.5 || kinect_initialization > 0.5) init_keyframes = -3;
     }
     fs2.release();
 }
@@ -139,7 +134,7 @@ cv::Mat SemiDenseMapping::get_map_points_print()
     return map_points_print;
 }
 
-void copy_previous_kf_images(Imagenes &images,Imagenes *pimages_previous_keyframe,SemiDenseMapping *semidense_mapper,int &init_mapping,int &end_mapping,int &images_size, bool &optimize_previous_frame)
+void copy_previous_kf_images(Images_class &images,Images_class *pimages_previous_keyframe,SemiDenseMapping *semidense_mapper,int &init_mapping,int &end_mapping,int &images_size, bool &optimize_previous_frame)
 {
     if (  (semidense_mapper->frames_previous_keyframe_used < pimages_previous_keyframe->getNumberOfImages()-1)   )
     {
@@ -168,17 +163,15 @@ void copy_previous_kf_images(Imagenes &images,Imagenes *pimages_previous_keyfram
     }
 }
 
-void semidense_mapping_old(DenseMapping *dense_mapper,SemiDenseMapping *semidense_mapper,SemiDenseTracking *semidense_tracker,\
-                       MapShared  *Map,Imagenes *pimages,Imagenes  *pimages_previous_keyframe,ros::Publisher *pub_cloud);
 
-void ThreadSemiDenseMapper(Imagenes *images,Imagenes *images_previous_keyframe,SemiDenseMapping *semidense_mapper,\
+void ThreadSemiDenseMapper(Images_class *images,Images_class *images_previous_keyframe,SemiDenseMapping *semidense_mapper,\
                            SemiDenseTracking *semidense_tracker,DenseMapping *dense_mapper,MapShared *Map, ros::Publisher *pub_cloud)
 {
     /// loopcloser
     while(ros::ok() && dense_mapper->sequence_has_finished == false  || semidense_mapper->num_keyframes < 2)
     /// loopcloser
     {
-                 boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+                boost::this_thread::sleep(boost::posix_time::milliseconds(1));
 
                 semidense_mapper->images_size = images->getNumberOfImages();
                 bool insert_frame4mapping = false;
@@ -220,7 +213,6 @@ void calculate_min_translation(SemiDenseMapping *semidense_mapper, SemiDenseTrac
          }
      }
 
-     //RGBDrgbdtam
     if(semidense_mapper -> use_kinect == 1)
     {
         if( semidense_mapper->num_cameras_mapping == 0){
@@ -232,13 +224,10 @@ void calculate_min_translation(SemiDenseMapping *semidense_mapper, SemiDenseTrac
             semidense_mapper->do_var_mapping = 1;
         }
     }
-    ///RGBDrgbdtam
 }
 
-
-
 void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_mapper,SemiDenseTracking *semidense_tracker,\
-                       MapShared  *Map,Imagenes *pimages,Imagenes  *pimages_previous_keyframe,ros::Publisher *pub_cloud)
+                       MapShared  *Map,Images_class *pimages,Images_class  *pimages_previous_keyframe,ros::Publisher *pub_cloud)
 {
                 float translational_ratio_th_min = semidense_mapper-> translational_ratio_th_min;
 
@@ -250,7 +239,6 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                 float spatial_threshold = spatio_temporal_th;
 
 
-                /// STEREO rgbdtam
                 if (semidense_mapper->num_keyframes <  semidense_mapper -> init_keyframes)
                 {semidense_mapper->num_cameras_mapping_th= 8; if (semidense_mapper->num_keyframes < 2 && semidense_mapper->kinect_initialization == 0) semidense_mapper->num_cameras_mapping_th= 6;
                 translational_ratio_th_min = 0.06;}
@@ -265,20 +253,17 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                         {count_points_converged++;}
                      }
 
-                     if( 100* count_points_converged/ semidense_mapper->points_convergence.rows <   semidense_mapper -> minim_points_converged &&  semidense_mapper->num_keyframes > semidense_mapper->init_keyframes+3
+                     if( 100 * count_points_converged/ semidense_mapper->points_convergence.rows <   semidense_mapper -> minim_points_converged &&  semidense_mapper->num_keyframes > semidense_mapper->init_keyframes+3
                          && semidense_mapper-> num_cameras_mapping < semidense_mapper->num_cameras_mapping_th_aux*3)
                      {
                          semidense_mapper->num_cameras_mapping_th += 2;
                          semidense_mapper->do_var_mapping = 0;
                      }
                 }
-                /// STEREO rgbdtam
 
-                ///
                calculate_min_translation(semidense_mapper,semidense_tracker,translational_ratio_th_min);
-                Imagenes images;
-               // copy_first_and_last_images(*pimages,images);
-                copy_first_and_last_images(*pimages,images,semidense_mapper->mean_value,translational_ratio_th_min);
+               Images_class images;
+               copy_first_and_last_images(*pimages,images,semidense_mapper->mean_value,translational_ratio_th_min);
 
 
 
@@ -347,7 +332,7 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
 
                 if (semidense_mapper->num_keyframes > semidense_mapper->init_keyframes - 1)
                 {
-                    if (semidense_mapper->num_cameras_mapping %1 == 0)
+                    if (semidense_mapper->num_cameras_mapping % 2 == 0)
                        copy_previous_kf_images(images,pimages_previous_keyframe,semidense_mapper,init_mapping,end_mapping,images_size, optimize_previous_frame);
 
                      if (semidense_mapper->num_cameras_mapping  >  semidense_mapper->num_cameras_mapping_th_aux)
@@ -363,7 +348,7 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                 }
                 else
                 {
-                    if (semidense_mapper->num_cameras_mapping % 1 == 0)
+                    if (semidense_mapper->num_cameras_mapping % 2 == 0)
                     copy_previous_kf_images(images,pimages_previous_keyframe,semidense_mapper,init_mapping,end_mapping,images_size, optimize_previous_frame);
                 }
 
@@ -382,13 +367,12 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                         semidense_mapper->depth_map = semidense_mapper->depth_map*0;
 
                         cv::Mat inv_depths_aux = semidense_mapper-> inv_depths.clone();
-                        cv::Mat depth_map_points_tracked = semidense_mapper->depth_map*0;
-                        cv::Mat variance_points_tracked = semidense_mapper->depth_map*0;
+                        cv::Mat depth_map_points_tracked = cv::Mat::zeros(images.Im[reference_image]->image.rows,images.Im[reference_image]->image.cols,CV_32FC1);
+                        cv::Mat variance_points_tracked = cv::Mat::zeros(images.Im[reference_image]->image.rows,images.Im[reference_image]->image.cols,CV_32FC1);
                         cv::Mat points3D_tracked = semidense_mapper->points3D_tracked.clone();
                         cv::Mat points_aux(0,points3D_tracked.cols,CV_32FC1);
 
 
-                        ///
                         float points_without_enough_parallax  = 0;
                         for (int i = 0;i<points3D_tracked.rows;i++)
                         {
@@ -404,10 +388,6 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                         }
 
 
-
-
-
-                        ///RGBDrgbdtam
                         if (semidense_tracker->use_kinect == 1)
                         {
                             cv::Mat depth_frame;
@@ -419,9 +399,6 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                             depth_map_points_tracked = depth_frame.clone();
                             variance_points_tracked = cv::abs(depth_frame);
                         }
-                        ///RGBDrgbdtam
-
-
 
 
                         get_inverse_depth(images,points_aux,inv_depths_aux,semidense_mapper-> depth_step,
@@ -435,9 +412,6 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
 
 
                         cv::Mat gray_image = images.Im[reference_image]->image_gray.clone();
-
-
-                      //cv::blur(gray_image,gray_image,cv::Size(3,3));
 
                        cv::Mat GX =gradientX(gray_image,1);
                        cv::Mat GY =gradientY(gray_image,1);
@@ -459,7 +433,6 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
 
 
                        cv::Mat G_aux =cv::Mat::zeros(G.rows,G.cols,CV_32FC1) + 255;
-
                        cv::Mat  gradients(0,1,CV_32FC1);
 
 
@@ -498,6 +471,9 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                                }
                            }
                        }
+                       semidense_mapper->num_potential_points = num_potential_points / 10;
+
+
 /*
                        for(int i = 0; i<8;i++){
                              for(int j = 0; j<8;j++){
@@ -517,10 +493,10 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                            {
                                int idx_x = j/size_x;
 
-                              // int max_number_aux = 155;
-                              // if(max_number_aux > gradients_matrix[idx_y][idx_x].rows-1) max_number_aux = gradients_matrix[idx_y][idx_x].rows-1;
-                              // if(max_number_aux > 10)
-                              // limit_grad = gradients_matrix[idx_y][idx_x].at<float>(max_number_aux,0);
+                               int max_number_aux = 155;
+                               if(max_number_aux > gradients_matrix[idx_y][idx_x].rows-1) max_number_aux = gradients_matrix[idx_y][idx_x].rows-1;
+                               if(max_number_aux > 10)
+                               limit_grad = gradients_matrix[idx_y][idx_x].at<float>(max_number_aux,0);
 
 
                                if (edges.at<float>(i,j) >  100 &  G.at<float>(i,j) < limit_grad )
@@ -528,36 +504,13 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                                      G_aux.at<float>(i,j) = 0;
                                      potential_points++;
                                      num_potential_points++;
-
-
                                 }
                            }
-                       }
-
-
-                       cout << "POTENTIAL   " << num_potential_points << endl;*/
-
-
-
-
-                      /* for (int i=corner; i<G.rows-corner ; i=i+1)
-                       {
-                           for (int j=corner; j < G.cols-corner;j = j+1)
-                           {
-                               //if (fabs(semidense_mapper->image_depth_keyframe.at<float>(i,j)) < 4)
-                               {
-                                     G_aux.at<float>(i,j) = 0;
-                                     potential_points++;
-                                     num_potential_points++;
-                               }
-                           }
                        }*/
+                       //cout << "POTENTIAL   " << num_potential_points << endl;
 
-                       G = G_aux.clone();
-
-
-
-                        semidense_mapper->G_expanded = G_aux.clone();
+                        G = G_aux;
+                        semidense_mapper->G_expanded = G_aux;
                         semidense_mapper->high_gradient_point = G_aux < limit_grad & gray_image < semidense_mapper -> max_pixel_color ;
                         semidense_mapper->point_was_previously_estimated = G_aux < limit_grad & gray_image < semidense_mapper -> max_pixel_color ;
                         if (semidense_mapper-> num_keyframes >  semidense_mapper -> init_keyframes)
@@ -578,8 +531,8 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                             for (int j = corner; j < images.Im[reference_image]->image.cols-corner; j++)
                             {
                                 if (semidense_mapper->high_gradient_point.at<float>(i,j) > 100 &&
-                                        (semidense_mapper->point_was_previously_estimated.at<float>(i,j) < 100
-                                         ||semidense_mapper->num_keyframes <  semidense_mapper -> init_keyframes+1 ))
+                                   (semidense_mapper->point_was_previously_estimated.at<float>(i,j) < 100
+                                  ||semidense_mapper->num_keyframes <  semidense_mapper -> init_keyframes+1 ))
                                 {
                                     point_i_sd.at<float>(0,0) = (images.Im[reference_image]->cx-j)/images.Im[reference_image]->fx;
                                     point_i_sd.at<float>(0,1) = (i-images.Im[reference_image]->cy)/images.Im[reference_image]->fy;
@@ -699,8 +652,7 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
 
                                                 semidense_mapper->using_prev_frame = optimize_previous_frame;
 
-                                                //tic();
-                                                 get_photometric_errors_matrix_sd_exhaustive(semidense_mapper,images, camera_motion, semidense_mapper-> inv_depths, semidense_mapper->X,\
+                                                get_photometric_errors_matrix_sd_exhaustive(semidense_mapper,images, camera_motion, semidense_mapper-> inv_depths, semidense_mapper->X,\
                                                                                   semidense_mapper->X_gx_ex,semidense_mapper->X_gy_ey,reference_image,
                                                                                   semidense_mapper-> initial_inv_depth_sd, keyframe_obj,  \
                                                                                   semidense_mapper->point_limits_for_sd,semidense_mapper->points_ref_im_sd,discretization,window_size,  \
@@ -720,13 +672,12 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                                                 }
 
                                                   if (semidense_mapper->num_cameras_mapping > semidense_mapper->num_cameras_mapping_th+1  &&\
-                                                          100* count_points_converged/ semidense_mapper->points_convergence.rows >  semidense_mapper -> minim_points_converged)
+                                                          100 * count_points_converged/ semidense_mapper->points_convergence.rows >  semidense_mapper -> minim_points_converged)
                                                  {semidense_mapper->do_var_mapping = 1;}
                                             }
                                     } // if used for mapping
                     } // for init end mapping
                 }
-
 
 
                 if (semidense_mapper->do_var_mapping > 0.5  )
@@ -755,7 +706,7 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                                               fabs(C1.at<float>(1,0) - C2.at<float>(1,0)) + \
                                               fabs(C1.at<float>(2,0) - C2.at<float>(2,0)) );
                         float camera_motion = camera_translation;
-                        camera_translation = semidense_mapper->mean_value* semidense_mapper->translational_ratio_th_min;
+                        camera_translation = semidense_mapper->mean_value * semidense_mapper->translational_ratio_th_min;
 
 
                         semidense_mapper -> convergence = 0;
@@ -770,11 +721,11 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                         }
 
                         cv::Mat gray_image = images.Im[reference_image]->image_gray.clone();
-                        cv::Mat depth_map_points_tracked = semidense_mapper->depth_map*0;
-                        cv::Mat variance_points_tracked = semidense_mapper->depth_map*0;
+                        cv::Mat depth_map_points_tracked = cv::Mat::zeros(images.Im[reference_image]->image.rows,images.Im[reference_image]->image.cols,CV_32FC1);
+                        cv::Mat variance_points_tracked = cv::Mat::zeros(images.Im[reference_image]->image.rows,images.Im[reference_image]->image.cols,CV_32FC1);
 
-                        depth_map_points_tracked = semidense_mapper -> depth_map_points_tracked.clone();
-                        variance_points_tracked = semidense_mapper -> variance_points_tracked.clone();
+                        depth_map_points_tracked = semidense_mapper -> depth_map_points_tracked;
+                        variance_points_tracked = semidense_mapper -> variance_points_tracked;
 
                         vector<cv::Mat> init_inv_dephts_maps_scale(2);
                         init_inv_dephts_maps_scale[0] = cv::abs(semidense_mapper->depth_map.clone());
@@ -806,8 +757,9 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                         cv::Mat point_ref_im_sd(1,3, CV_32FC1);
 
                         /// loopcloser
-                        cv::Mat final_depth_map = depths2regularize.clone();
+                        cv::Mat final_depth_map = cv::Mat::zeros(images.Im[reference_image]->image.rows,images.Im[reference_image]->image.cols,CV_32FC1);
                         /// loopcloser
+
 
 
                         int cont_depths=0;
@@ -888,19 +840,19 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                             }
                         }
 
-                        be_outlier_print = be_outlier_print_aux.clone();
-                        be_outlier = be_outlier_aux.clone();
-                        semidense_mapper-> initial_inv_depth_sd = initial_inv_depth_sd.clone();
-                        deviation_inv_depth = deviation_inv_depth_aux.clone();
-                        semidense_mapper->points_ref_im_sd = points_ref_im_sd.clone();
-                        semidense_mapper->image_points_byFocal_sd = image_points_byFocal_sd.clone();
-                        final_variances = final_variances_aux.clone();
+                        be_outlier_print = be_outlier_print_aux;
+                        be_outlier = be_outlier_aux;
+                        semidense_mapper-> initial_inv_depth_sd = initial_inv_depth_sd;
+                        deviation_inv_depth = deviation_inv_depth_aux;
+                        semidense_mapper->points_ref_im_sd = points_ref_im_sd;
+                        semidense_mapper->image_points_byFocal_sd = image_points_byFocal_sd;
+                        final_variances = final_variances_aux;
 
                         cont_depths = 0;
 
                         cv::Mat baseline_convergence = cv::Mat::zeros(semidense_mapper-> initial_inv_depth_sd.rows,1,CV_32FC1);
 
-                        #pragma omp parallel for num_threads(3)
+                        #pragma omp parallel for num_threads(4)
                         for (cont_depths = 0; cont_depths <semidense_mapper-> initial_inv_depth_sd.rows;cont_depths++ )
                         {
                             if (be_outlier.at<float>(cont_depths,0) == 0)
@@ -956,7 +908,8 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
 
                                            if( semidense_mapper->high_gradient_point.at<float>(i,j) > 100 && \
                                                    semidense_mapper->point_was_previously_estimated.at<float>(i,j) < 100)
-                                           { semidense_mapper-> initial_inv_depth_sd.at<float>(cont_depths,0) = mean_depths / cont_depths2reg ;
+                                           {
+                                               semidense_mapper-> initial_inv_depth_sd.at<float>(cont_depths,0) = mean_depths / cont_depths2reg ;
 
 
                                                /// loopcloser
@@ -970,7 +923,6 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                                                }
                                                /// loopcloser
                                            }
-
                                          } // cont_depths2reg > 2
                                         else
                                         {
@@ -980,8 +932,7 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
 
                                         if(fabs(stereo_baseline.at<float>(cont_depths,0)*semidense_mapper-> initial_inv_depth_sd.at<float>(cont_depths,0)) < 0.12 )
                                         {
-                                            final_depth_map.at<float>(i,j) = 0;
-
+                                             final_depth_map.at<float>(i,j) = 0;
                                              be_outlier_print.at<float>(cont_depths,0) = 1;
                                         }
                                         else
@@ -1006,10 +957,8 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                     cv::Mat points_aux2(0,9,CV_32FC1);
                     cv::Mat points_aux2_print(0,6,CV_32FC1);
 
-                    ///STEREO rgbdtam
                     cv::Mat additional_points_aux2(0,9,CV_32FC1);
                     cv::Mat additional_points_aux2_print(0,6,CV_32FC1);
-                    ///STEREO rgbdtam
 
 
                     float number_of_points_estimated = 0;
@@ -1064,9 +1013,6 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                                         points_aux.at<float>(0,1) = seed_points_to_print.at<float>(i,1);
                                         points_aux.at<float>(0,2) = seed_points_to_print.at<float>(i,2);
 
-                                       // depths_map_2be_expanded.at<float>(n_y_ref,n_x_ref) = semidense_mapper-> initial_inv_depth_sd.at<float>(i,0);
-                                       // variances_2be_expanded.at<float>(n_y_ref,n_x_ref) = final_variances.at<float>(i,0);;
-
                                         float n_x_ref = semidense_mapper->points_ref_im_sd.at<float>(i,1);
                                         float n_y_ref = semidense_mapper->points_ref_im_sd.at<float>(i,0);
 
@@ -1074,16 +1020,13 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                                         float n_x_ref_aux = n_x_ref;
 
                                         int color1 = gray_image.at<float>(n_y_ref,n_x_ref);
-                                        int color2 = gray_image.at<float>(n_y_ref,n_x_ref);
-                                        int color3 = gray_image.at<float>(n_y_ref,n_x_ref);
 
                                         points_aux.at<float>(0,3) = color1;
-                                        points_aux.at<float>(0,4) = color2;
-                                        points_aux.at<float>(0,5) = color3;
+                                        points_aux.at<float>(0,4) = color1;
+                                        points_aux.at<float>(0,5) = color1;
                                         points_aux.at<float>(0,6) = final_variances.at<float>(i,0);
                                         points_aux.at<float>(0,7) = baseline_convergence.at<float>(i,0);
                                         points_aux.at<float>(0,8) = 1;
-                                        //points_aux.at<float>(0,8) = gradient_by_epipolar.at<float>(i,0);
 
                                         if (pixel_taken .at<float>(n_y_ref,n_x_ref) < 1.5)
                                         {
@@ -1123,12 +1066,10 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                                                 if (pixel_taken.at<float>(n_y_ref_aux,n_x_ref_aux) < 0.5  )
                                                 {
                                                         int color1 = gray_image.at<float>(n_y_ref_aux,n_x_ref_aux);
-                                                        int color2 = gray_image.at<float>(n_y_ref_aux,n_x_ref_aux);
-                                                        int color3 = gray_image.at<float>(n_y_ref_aux,n_x_ref_aux);
 
                                                         points_aux.at<float>(0,3) = color1;
-                                                        points_aux.at<float>(0,4) = color2;
-                                                        points_aux.at<float>(0,5) = color3;
+                                                        points_aux.at<float>(0,4) = color1;
+                                                        points_aux.at<float>(0,5) = color1;
 
                                                         cv::Mat point_i_sd(1,3, CV_32FC1);
                                                         point_i_sd.at<float>(0,0) = ((images.Im[reference_image]->cx-n_x_ref_aux)/images.Im[reference_image]->fx)/(initial_inv_depth1.at<float>(i,0)*scale);
@@ -1312,9 +1253,6 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                    }  // if use_kinect
 
 
-
-
-                    ///
                     /// ADD ADITIONAL (NEIGHBOURING) POINTS TO THE MAP
 
                     int pyramid_levels = semidense_mapper->get_points_new_map().size();
@@ -1335,42 +1273,10 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                         }
                     }
 
-
-                     ///
-
                     points_new_map_aux[pyramid_levels-1] = points_no_augmented.clone();
                     semidense_mapper->set_points_new_map(points_new_map_aux);
 
 
-
-
-                   //borrar
-                   cv::Mat GX =gradientX(gray_image,1);
-                   cv::Mat GY =gradientY(gray_image,1);
-                   cv::Mat G = cv::abs(GX)  + cv::abs(GY);
-                   float alpha = 0.05;
-                   cv::exp(-G*alpha,G);
-                   cv::Mat edges;
-                   cv::Mat gray_image_aux = gray_image.clone();
-                   gray_image_aux.convertTo(gray_image_aux,CV_8U);
-                   cv::Canny(gray_image_aux,edges,50,200,5,true);
-                   edges.convertTo(edges,CV_32FC1);
-                   float num_potential_points = 0;
-                   for (int i=corner; i<G.rows-corner ; i++)
-                   {
-                       for (int j=corner; j < G.cols-corner;j++)
-                       {
-                           if (edges.at<float>(i,j) >  100 &  G.at<float>(i,j) < limit_grad)
-                           {
-                                 num_potential_points++;
-                           }
-                       }
-                   }
-                   num_potential_points/=10;
-                   //borrar
-
-
-                   // !semidense_mapper->reusing_map &&
                    if(!semidense_mapper->reusing_map && num_keyframes > semidense_mapper->init_keyframes)
                    {
                         /// loopcloser -> look for loop closures and optimize the pose-graph if enough loop closures are found
@@ -1385,7 +1291,7 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                                                                             images.Im[reference_image]->cx,\
                                                                             images.Im[reference_image]->cy,\
                                                                             images.Im[reference_image]->stamps,\
-                                                                            num_potential_points);
+                                                                            semidense_mapper->num_potential_points);
                          /// loopcloser -> look for loop closures and optimize the pose-graph if enough loop closures are found
                    }
 
@@ -1398,8 +1304,8 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                     }
 
                     //////////////////////////////////////////////////// JOIN CLOSEST MAPS and prepare initialize dense mapper
-                    find_closest_maps(semidense_mapper,Map,semidense_tracker);
-                    join_last_images(pimages,pimages_previous_keyframe,dense_mapper,semidense_mapper);
+                    find_closest_keyframes(semidense_mapper,Map,semidense_tracker);
+                    join_last_keyframes(pimages,pimages_previous_keyframe,dense_mapper,semidense_mapper);
                     ///////////////////////////////////////////////////////////////
 
                     semidense_mapper->do_initialization_tracking=1;
@@ -1415,11 +1321,9 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                     }
 
                    semidense_mapper -> points3D_toprint[num_keyframes]=points_aux2_print.clone();
-
                    semidense_mapper->set_map_points_print(semidense_mapper->map_points);
 
                 } // do_Var_mapping > 0.5
-
 
                 /// RELEASE MEMORY
                 for (int j = 0; j< images.getNumberOfImages(); j = j+1)
@@ -1433,7 +1337,7 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
 }
 
 
-void copy_first_and_last_images(Imagenes &images, Imagenes &images_map,float &mean_value,float &translational_ratio_th_min)
+void copy_first_and_last_images(Images_class &images, Images_class &images_map,float &mean_value,float &translational_ratio_th_min)
 {
     int images_size  = images.getNumberOfImages()-1;
     for (int l = 0 ; l < images_size; l = l+1)
@@ -1445,8 +1349,6 @@ void copy_first_and_last_images(Imagenes &images, Imagenes &images_map,float &me
         cv::Mat t2 = images.Im[l]->t;
         cv::Mat C1 = -R1.t()*t1;
         cv::Mat C2 = -R2.t()*t2;
-
-
 
         float translational_ratio = (fabs(C1.at<float>(0,0) - C2.at<float>(0,0)) +\
                                      fabs(C1.at<float>(1,0) - C2.at<float>(1,0)) + \
@@ -1474,16 +1376,15 @@ void copy_first_and_last_images(Imagenes &images, Imagenes &images_map,float &me
             images_map.Im[images_map_size]->is_used_for_mapping = images.Im[l]-> is_used_for_mapping;
             images.Im[l]-> is_used_for_mapping = 1;
 
-
             if (translational_ratio > translational_ratio_th_min) break;
         }
     }
 }
 
 
-void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_mapper, Imagenes  &images,  float camera_motion,cv::Mat &inv_depths, photometric_term &X,\
+void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_mapper, Images_class  &images,  float camera_motion,cv::Mat &inv_depths, photometric_term &X,\
                                       photometric_term &X_gx_ex, photometric_term &X_gy_ey, int reference_image, cv::Mat &initial_inv_depth , int image_to_be_added, \
-                                      photometric_term &points_i_todos,cv::Mat &points_ref_im_sd,int discretization, \
+                                      photometric_term &all_points,cv::Mat &points_ref_im_sd,int discretization, \
                                       int window_size, cv::Mat &epipolar_gradients, vector<cv::Mat> &initial_inv_depth_inEveryCamera_uncertainty,
                                       vector<cv::Mat> &initial_inv_depth_inEveryCamera_largeParallax, cv::Mat &points_by_depth, cv::Mat &t_r_ref, \
                                       cv::Mat &GX, cv::Mat &GY, int &num_cameras_mapping, cv::Mat &max_inv_depth_initial_seed, cv::Mat &min_inv_depth_initial_seed)
@@ -1495,7 +1396,7 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
             inv_depths_vector_end = inv_depths.at<float>(discretization-1,0);
             float sigma_times = 2;
 
-            #pragma omp parallel for num_threads(3)
+            #pragma omp parallel for num_threads(4)
             for (int i = 0; i < inv_depths_vector.cols; i++)
             {
                 if (initial_inv_depth_inEveryCamera_largeParallax[i].rows > 1)
@@ -1522,18 +1423,17 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
             /// LINEAR RELATION BETWEEN INVERSE DEPTH AND 3D point
             if (num_cameras_mapping == 0)
             {
-
                 semidense_mapper->points_convergence = cv::Mat::zeros( inv_depths_vector.cols,1,CV_32FC1);
                 semidense_mapper->stereo_baseline = cv::Mat::zeros( inv_depths_vector.cols,1,CV_32FC1);
 
                 points_i2_sd = points_by_depth / inv_depths_vector ;
                 points_i2_sd = images.Im[reference_image]->R.t() * (points_i2_sd - t_r_ref);
-                points_i_todos.ph_error[0] = points_i2_sd.clone();
+                all_points.ph_error[0] = points_i2_sd.clone();
 
                 cv::Mat init_points3D = points_i2_sd.clone();
                 points_i2_sd = points_by_depth / inv_depths_vector_end;
                 points_i2_sd = images.Im[reference_image]->R.t() * (points_i2_sd - t_r_ref);
-                points_i_todos.ph_error[discretization-1] = points_i2_sd.clone();
+                all_points.ph_error[discretization-1] = points_i2_sd.clone();
 
                 cv::Mat end_points3D = points_i2_sd.clone();
                 semidense_mapper->linear_relation_btw_3D_and_inv_depth1   = (end_points3D-init_points3D)/(1/inv_depths_vector_end - 1/inv_depths_vector);
@@ -1541,14 +1441,14 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
             }
             else
             {
-                points_i_todos.ph_error[0] = (1/inv_depths_vector).mul(semidense_mapper->linear_relation_btw_3D_and_inv_depth1 ) +
+                all_points.ph_error[0] = (1/inv_depths_vector).mul(semidense_mapper->linear_relation_btw_3D_and_inv_depth1 ) +
                         semidense_mapper->linear_relation_btw_3D_and_inv_depth2;
 
-                points_i_todos.ph_error[discretization-1] = (1/inv_depths_vector_end).mul(semidense_mapper->linear_relation_btw_3D_and_inv_depth1 ) +
+                all_points.ph_error[discretization-1] = (1/inv_depths_vector_end).mul(semidense_mapper->linear_relation_btw_3D_and_inv_depth1 ) +
                         semidense_mapper->linear_relation_btw_3D_and_inv_depth2;
             }
 
-            points_i_todos.ph_error[10] = ((1/inv_depths_vector_end + 1/inv_depths_vector)/2).mul(semidense_mapper->linear_relation_btw_3D_and_inv_depth1 ) +
+            all_points.ph_error[10] = ((1/inv_depths_vector_end + 1/inv_depths_vector)/2).mul(semidense_mapper->linear_relation_btw_3D_and_inv_depth1 ) +
                     semidense_mapper->linear_relation_btw_3D_and_inv_depth2;
 
             /// LINEAR RELATION BETWEEN INVERSE DEPTH AND 3D point
@@ -1594,7 +1494,7 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
             cv::Mat points_i_2;
             cv::Mat points_o;
 
-            points_i_todos.ph_error[0].copyTo(points_i_2);
+            all_points.ph_error[0].copyTo(points_i_2);
             points_o  = images.Im[image_to_be_added]->R  * (points_i_2) + t_r;
             points_o.colRange(0,points_o.cols).rowRange(0,1) = points_o.colRange(0,points_o.cols).rowRange(0,1) * images.Im[image_to_be_added]->fx;
             points_o.colRange(0,points_o.cols).rowRange(1,2) = points_o.colRange(0,points_o.cols).rowRange(1,2) * images.Im[image_to_be_added]->fy;
@@ -1615,7 +1515,7 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
 
 
 
-            points_i_todos.ph_error[discretization-1].copyTo(points_i_2);
+            all_points.ph_error[discretization-1].copyTo(points_i_2);
             points_o  = images.Im[image_to_be_added]->R  * (points_i_2) + t_r;
             points_o.colRange(0,points_o.cols).rowRange(0,1) = points_o.colRange(0,points_o.cols).rowRange(0,1) * images.Im[image_to_be_added]->fx;
             points_o.colRange(0,points_o.cols).rowRange(1,2) = points_o.colRange(0,points_o.cols).rowRange(1,2) * images.Im[image_to_be_added]->fy;
@@ -1668,14 +1568,12 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
             cv::Mat yvalues_final = yvalues_init.clone();
 
 
-            ///STEREO rgbdtam
             cv::Mat errores_mas_uno = cv::Mat::zeros(initial_inv_depth.rows,1,CV_32FC1) + 1;
             cv::Mat errores_menos_uno = cv::Mat::zeros(initial_inv_depth.rows,1,CV_32FC1) + 1;
             cv::Mat gradient_by_epipolar_x = cv::Mat::zeros(initial_inv_depth.rows,1,CV_32FC1);
             cv::Mat gradient_by_epipolar_y = cv::Mat::zeros(initial_inv_depth.rows,1,CV_32FC1);
             cv::Mat xvalues_final_menos_uno = xvalues_final-1;
             cv::Mat xvalues_final_mas_uno = xvalues_final+1;
-            /// STEREO rgbdtam
 
             int image_cols = images.Im[reference_image]->image.cols;
             int image_rows = images.Im[reference_image]->image.rows;
@@ -1691,7 +1589,7 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
             cv::Mat GX_copy = GX.clone();
             cv::Mat GY_copy = GY.clone();
 
-            #pragma omp parallel for num_threads(3)
+            #pragma omp parallel for num_threads(4)
             for (int i = 0; i < initial_inv_depth.rows; i++)
             {
                 float X_gx_ex_aux = 0.0;
@@ -1859,9 +1757,7 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
                                            r = interpolated_values_o.at<float>(round(epipolar_counter+mm),0);
                                        }
 
-
                                        float r3;
-
 
                                        if (interpolated_values_ref.at<float>(counter_interpolated_values_ref,0) == 0)
                                        {
@@ -1906,12 +1802,6 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
                     if (n_x > window_size*2 && n_x < image_cols-(window_size+1)*2 && n_y > window_size*2 && n_y < image_rows-(window_size+1)*2\
                        && n_x_ref > window_size*2 && n_x_ref< image_cols-(window_size+1)*2 && n_y_ref >window_size*2 && n_y_ref < image_rows-(window_size+1)*2)
                     {
-                          /* if (X_gx_ex_aux+ X_gy_ey_aux > 0.3  && num_cameras_mapping == 1 )
-                           {
-                               int   n_x_ref = n_x;
-                               int   n_y_ref = n_y;
-                               image_o_gray.at<float>(n_y_ref,n_x_ref)  = 0 ;
-                           }*/
 
                            xvalues_final.at<float>(0,i) = pos_x;
                            yvalues_final.at<float>(0,i) = pos_y;
@@ -1929,10 +1819,6 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
                            errores_menos_uno.at<float>(i,0) = error_menos_1;
                       }
                 }
-
-
-                ///X_gx_ex.ph_error[0].at<float>(i,0) += X_gx_ex_aux;
-                ///X_gy_ey.ph_error[0].at<float>(i,0) += X_gy_ey_aux;
             } // points
 
             cv::Mat inv_depths_opt =linear_relation1.mul(xvalues_final-linear_relation4) / (linear_relation3 - linear_relation2.mul(xvalues_final-linear_relation4));
@@ -1961,7 +1847,6 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
                    inv_depths_opt_aux.at<float>(i,0) += update.at<float>(i,0);
                }
            }
-            //inv_depths_opt_aux = inv_depths_opt_aux + update_num / update_den;
            inv_depths_opt_aux = inv_depths_opt_aux.t();
            inv_depths_opt     = inv_depths_opt_aux.clone();
 
@@ -1984,16 +1869,14 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
 
 
 
-             #pragma omp parallel for num_threads(3)
+             #pragma omp parallel for num_threads(4)
             for (int i = 0; i < initial_inv_depth.rows; i++)
             {
-                 /// STEREO rgbdtam
                  /// //1.2*semidense_mapper->num_cameras_mapping_th_aux * semidense_mapper-> translational_ratio_th_min_aux
               if (  (fabs(camera_motion*inv_depths_opt.at<float>(i,0)) > 0.12|| errores.at<float>(i,0) > 25) && num_cameras_mapping > semidense_mapper->num_cameras_mapping_th_aux/2 + 1  ) \
                {semidense_mapper->points_convergence.at<float>(i,0) += 1;}
 
                 if (inv_depths_opt.at<float>(i,0) < 0  && errores.at<float>(i,0) < 25 && fabs(camera_motion*inv_depths_opt.at<float>(i,0)) < 10.4  && fabs(camera_motion*inv_depths_opt.at<float>(i,0)) > 0.005)
-               /// STEREO rgbdtam
                 {
                     if ( semidense_mapper->points_convergence.at<float>(i,0)  <= 2 &&   gradient_by_epipolar_y.at<float>(i,0) +  gradient_by_epipolar_x.at<float>(i,0) > 0.30)
                     {
@@ -2016,7 +1899,6 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
                                         initial_inv_depth_inEveryCamera_uncertainty[i].push_back(uncertainty_1.at<float>(i,0));
                             }
                    }
-
                 }
           }
 }
@@ -2039,7 +1921,7 @@ void convergence_test(SemiDenseMapping *semidense_mapper,cv::Mat &be_outlier,
     minim_prev_and_post_images  = 0;
     minim_images  = semidense_mapper->num_cameras_mapping_th_aux / 2;
 
-     #pragma omp parallel for num_threads(3)
+     #pragma omp parallel for num_threads(4)
      for (int i=0; i<semidense_mapper-> initial_inv_depth_sd.rows; i++)
      {
 
@@ -2114,7 +1996,7 @@ void convergence_test(SemiDenseMapping *semidense_mapper,cv::Mat &be_outlier,
 }
 
 
-void find_closest_maps(SemiDenseMapping *semidense_mapper,MapShared *Map,SemiDenseTracking *semidense_tracker)
+void find_closest_keyframes(SemiDenseMapping *semidense_mapper,MapShared *Map,SemiDenseTracking *semidense_tracker)
 {
     vector<cv::Mat> points_last_keyframes(semidense_tracker->pyramid_levels);
 
@@ -2167,7 +2049,7 @@ void find_closest_maps(SemiDenseMapping *semidense_mapper,MapShared *Map,SemiDen
 }
 
 
-void join_last_images(Imagenes *images,Imagenes *images_previous_keyframe,\
+void join_last_keyframes(Images_class *images,Images_class *images_previous_keyframe,\
                       DenseMapping *dense_mapper,SemiDenseMapping *semidense_mapper)
 {
     int c = (int)(semidense_mapper->num_keyframes) / dense_mapper->points3D4spx.size();
@@ -2177,8 +2059,8 @@ void join_last_images(Imagenes *images,Imagenes *images_previous_keyframe,\
     cv::Mat local_map_points_init(0,6,CV_32FC1);
     semidense_mapper->local_map_points = local_map_points_init.clone();
 
-    copy_imagenes_dense(*images,*dense_mapper);
-    filter_imagenes(*dense_mapper,4);
+    copy_images_dense(*images,*dense_mapper);
+    filter_images(*dense_mapper,4);
 
     if (semidense_mapper->num_keyframes >  semidense_mapper -> init_keyframes && dense_mapper->get_do_dense() < 0.5)
     {
@@ -2193,8 +2075,8 @@ void join_last_images(Imagenes *images,Imagenes *images_previous_keyframe,\
         {dense_mapper->set_do_dense(1);}
     }
 
-    copy_imagenes(*images,*images_previous_keyframe);
-    filter_imagenes(*images_previous_keyframe,4);
+    copy_images(*images,*images_previous_keyframe);
+    filter_images(*images_previous_keyframe,4);
 
 
     semidense_mapper->frames_previous_keyframe_processed = 0;
@@ -2202,7 +2084,7 @@ void join_last_images(Imagenes *images,Imagenes *images_previous_keyframe,\
 }
 
 
-void copy_imagenes_dense(Imagenes &images, Imagenes &images_map)
+void copy_images_dense(Images_class &images, Images_class &images_map)
 {
     int images_size  = images.getNumberOfImages()-1;
 
@@ -2228,7 +2110,7 @@ void copy_imagenes_dense(Imagenes &images, Imagenes &images_map)
     }
 }
 template <typename T>
-void filter_imagenes( T &images_dense, int num_keyframes )
+void filter_images( T &images_dense, int num_keyframes )
 {
     int num_images = images_dense.getNumberOfImages()-1;
     int last_keyframe = images_dense.Im[images_dense.getNumberOfImages()-2]->num_keyframes;
@@ -2243,8 +2125,7 @@ void filter_imagenes( T &images_dense, int num_keyframes )
     }
 }
 
-
-void copy_imagenes(Imagenes &images, Imagenes &images_map)
+void copy_images(Images_class &images, Images_class &images_map)
 {
     int images_size  = images.getNumberOfImages();
 
