@@ -59,38 +59,12 @@ We have used the vocabulary created by ORB-SLAM authors. Please, download the vo
 # Compilation
 
 
+1-) Run the script build_thirdparty.sh to compile the ThirdParty directories (segmentation, DbOw2 and g20).
+       
+    sh build_thirdparty.sh
 
 
-
-1-) Efficient Graph-Based Image Segmentation. P. Felzenszwalb, D. Huttenlocher. International Journal of Computer Vision, Vol. 59, No. 2, September 2004
-
-    cd root/catkin_workspace/src/rgbdtam/ThirdParty/segment
-    
-    make
-
-
-
-
-2-) DBow2
-
-    cd ThirdParty/DBoW2
-    mkdir build
-    cd build
-    cmake .. -DCMAKE_BUILD_TYPE=Release
-    make -j
-
-
-
-3-) g2o
-
-    cd ThirdParty/g2o
-    mkdir build
-    cd build
-    cmake .. -DCMAKE_BUILD_TYPE=Release
-    make -j
-
-
-4-) Compile rgbdtam
+2-) Compile rgbdtam
       
     catkin_make --pkg rgbdtam
 
