@@ -467,7 +467,7 @@ void ThreadSemiDenseTracker(Images_class *images,SemiDenseMapping *semidense_map
     /// WE keep the visualizer for a few seconds
 
 
-    chdir("/home/alejo/catkin_ws/src/evaluate_error_monocular/evaluate_all");
+    /*chdir("/home/alejo/catkin_ws/src/evaluate_error_monocular/evaluate_all");
     char buffer[200];
 
     sprintf(buffer,"cd");
@@ -495,7 +495,7 @@ void ThreadSemiDenseTracker(Images_class *images,SemiDenseMapping *semidense_map
             semidense_tracker->path_to_folder.substr(33,semidense_tracker->path_to_folder.size()-1-33) +
             "-groundtruth.txt  /home/alejo/catkin_ws/src/rgbdtam/src/evaluation/trajectory_posegraph.txt";
     const char *cstr2 = str.c_str();
-    system(cstr2);
+    system(cstr2);*/
 
 
     cout << "thread tracking finished" << endl;
