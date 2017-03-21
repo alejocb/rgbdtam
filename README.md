@@ -59,7 +59,7 @@ We have used the vocabulary created by ORB-SLAM authors. Please, download the vo
 # Compilation
 
 
-1-) Run the script build_thirdparty.sh to compile the ThirdParty directories (segmentation, DbOw2 and g20).
+1-) Run the script build_thirdparty.sh to compile the ThirdParty directories (segmentation, DBoW2 and g20).
        
     sh build_thirdparty.sh
 
