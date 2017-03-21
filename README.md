@@ -98,14 +98,8 @@ There are two parameters that you have to modify (before executing a sequence) i
 
 2-) Camera topic
 
-camera_path:"/image_raw"
+'camera_path'
 
-
-
-Update the the 'camera_path', 'cameraMatrix' and 'distCoeffs'  in the file rgbdtam/src/data.yml  
-
-
-  
 
 # Parameters
 
