@@ -713,8 +713,20 @@ void map_reuse(SemiDenseTracking *semidense_tracker,SemiDenseMapping *semidense_
                     cv::Mat depth_frame;
                     if(semidense_tracker->use_kinect == 1)
                     {
-                        get_depth_image( semidense_tracker, semidense_mapper,semidense_tracker->loopcloser_obj.keyframes_vector
+                        if(semidense_tracker->use_ros == 0)
+                        {
+                            get_depth_image( semidense_tracker, semidense_mapper,semidense_tracker->loopcloser_obj.keyframes_vector
                                 [oldest_kf].stamps,depth_frame);
+                        }else{
+                            semidense_tracker->loopcloser_obj.keyframes_vector
+                                                               [oldest_kf].final_depth_map.copyTo(depth_frame);
+                            for (int i = 0; i<depth_frame.rows; i++)
+                            {for (int j = 0; j<depth_frame.cols; j++){
+                              if(fabs(depth_frame.at<float>(i,j)) > 0 )
+                              {depth_frame.at<float>(i,j) = -1/depth_frame.at<float>(i,j);}
+                            }
+                            }
+                        }
 
                         for (int j = semidense_tracker->pyramid_levels-1 ; j > -1; j--)
                         {
@@ -799,8 +811,20 @@ void relocalization(SemiDenseTracking *semidense_tracker,SemiDenseMapping *semid
                  cv::Mat depth_frame;
                  if(semidense_tracker->use_kinect == 1)
                  {
-                     get_depth_image( semidense_tracker, semidense_mapper,semidense_tracker->loopcloser_obj.keyframes_vector
+                     if(semidense_tracker->use_ros == 0)
+                     {
+                         get_depth_image( semidense_tracker, semidense_mapper,semidense_tracker->loopcloser_obj.keyframes_vector
                              [oldest_kf].stamps,depth_frame);
+                     }else{
+                         semidense_tracker->loopcloser_obj.keyframes_vector
+                                                            [oldest_kf].final_depth_map.copyTo(depth_frame);
+                         for (int i = 0; i<depth_frame.rows; i++)
+                         {for (int j = 0; j<depth_frame.cols; j++){
+                           if(fabs(depth_frame.at<float>(i,j)) > 0 )
+                           {depth_frame.at<float>(i,j) = -1/depth_frame.at<float>(i,j);}
+                         }
+                         }
+                     }
 
 
                      for (int j = semidense_tracker->pyramid_levels-1 ; j > -1; j--)
@@ -864,6 +888,48 @@ void get_depth_image( SemiDenseTracking *semidense_tracker,
     }
     else
     {
+
+
+
+        double stamp_ref_image = stamps_aux;
+        double depth_stamp = stamps_aux;
+        double stamp_error = 10000;
+        int depth_index = 0;
+
+        bool found_depth_stamp_newer_than_rgb_stamp = false;
+        int num_checks = 0;
+
+        while(!found_depth_stamp_newer_than_rgb_stamp)
+        {
+            num_checks++;
+            for (int i = 0; i< semidense_mapper->image_depth_keyframes.size();i++)
+            {
+                depth_stamp = semidense_mapper->stamps_depth_ros[i];
+
+                if (fabs(depth_stamp-stamp_ref_image + semidense_tracker->depth_rgb_offset) < stamp_error)
+                {
+                    stamp_error = fabs(depth_stamp-stamp_ref_image);
+                    depth_index = i;
+
+                }
+                if(semidense_mapper->stamps_depth_ros[i] - stamp_ref_image + semidense_tracker->depth_rgb_offset > 0)
+                    found_depth_stamp_newer_than_rgb_stamp = true;
+            }
+
+            if(!found_depth_stamp_newer_than_rgb_stamp || num_checks > 15)
+            {boost::this_thread::sleep(boost::posix_time::milliseconds(1));}else
+            {depth_frame = semidense_mapper->image_depth_keyframes[depth_index].clone();
+            if(stamp_error > 0.050) cout << "WARNING!!, stamp error = " << stamp_error << endl;}
+        }
+
+
+
+
+
+
+
+/*
+
         double stamp_ref_image = stamps_aux;
 
         double stamp_error = 10000;
@@ -878,7 +944,7 @@ void get_depth_image( SemiDenseTracking *semidense_tracker,
                 depth_index = i;
             }
         }
-        depth_frame = semidense_mapper->image_depth_keyframes[depth_index];
+        depth_frame = semidense_mapper->image_depth_keyframes[depth_index];*/
     }
 }
 

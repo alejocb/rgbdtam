@@ -64,8 +64,8 @@ SemiDenseMapping::SemiDenseMapping():do_initialization(1),do_optimization(0), do
 
 
     ///ROSKINECT
-    image_depth_keyframes.resize(101);
-    stamps_depth_ros.resize(101,0);
+    image_depth_keyframes.resize(SIZE_DEPTH_VECTOR);
+    stamps_depth_ros.resize(SIZE_DEPTH_VECTOR,0);
     associated_frames = 0;
     ///ROSKINECT
 

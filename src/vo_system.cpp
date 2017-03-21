@@ -175,8 +175,8 @@ void vo_system::depthcb(const sensor_msgs::Image::ConstPtr& msg)
         image_depth = undistorted_depth_map;}
         //UNDISTORT DEPTH MAP
 
-        semidense_mapper.image_depth_keyframes[counter_depth_images%101] = image_depth;
-        semidense_mapper.stamps_depth_ros[counter_depth_images%101] = stamps_depth_ros.toSec();
+        semidense_mapper.image_depth_keyframes[counter_depth_images%SIZE_DEPTH_VECTOR] = image_depth;
+        semidense_mapper.stamps_depth_ros[counter_depth_images%SIZE_DEPTH_VECTOR] = stamps_depth_ros.toSec();
         counter_depth_images++;
     }
         catch (const cv_bridge::Exception& e)
