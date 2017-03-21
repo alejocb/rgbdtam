@@ -464,7 +464,7 @@ void ThreadSemiDenseTracker(Images_class *images,SemiDenseMapping *semidense_map
     /// WE keep the visualizer for a few seconds even though the sequence has already finished
     boost::this_thread::sleep(boost::posix_time::milliseconds(5000));
     semidense_tracker->keepvisualizer = false;
-    /// WE keep the visualizer for a few seconds
+    /// WE keep the visualizer for a few seconds even though the sequence has already finished
 
 
     /*chdir("/home/alejo/catkin_ws/src/evaluate_error_monocular/evaluate_all");
@@ -2185,7 +2185,7 @@ void gauss_newton_ic(SemiDenseTracking *semidense_tracker,cv::Mat &coordinates_c
                    {
                         cv::Mat point_aux(1,3, CV_32FC1);
 
-                       int step_size = 1;if (pyramid_level == 1) step_size = 4;
+                       int step_size = 1;if (pyramid_level == 1) step_size = 2;
                        if (pyramid_level == 2) step_size = 4;
                        if (pyramid_level == 3) step_size = 4;
                        for (int i = 0; i < imsize_y; i = i+step_size)
@@ -2516,7 +2516,7 @@ void gauss_newton_ic(SemiDenseTracking *semidense_tracker,cv::Mat &coordinates_c
                              float count_close_points = weight_geo.rows;
                              count_close_points = 0;
 
-                             /*if(pyramid_level > 1)
+                            /* if(pyramid_level > 1)
                              {
                                    float overlap_aux =  1 - cv::sum(constant_error)[0] / constant_error.rows;
                                    if (overlap_aux*1.00 < overlap) overlap = overlap_aux;

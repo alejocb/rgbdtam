@@ -57,19 +57,14 @@ loopcloser::loopcloser()
 
    viewer = new pcl::visualization::PCLVisualizer("Dense Map and camera position");
    viewer->setBackgroundColor (0.75f,0.75f, 0.75f);
-   /* viewer->setCameraPosition(0.0f,0.0f,0.0f
-                             ,0.0f,0.0f,0.0f,
-                             0.0f,1.0f,0.0f);*/
    viewer->setSize(1100,1100);
 
-
-
-   pcl::visualization::PCLVisualizer viewer1 ("adsffdsfsasd");
+   //TODO: the viewer will not work if this auxiliar viewer1 is not added.
+   pcl::visualization::PCLVisualizer viewer1 ("aux viewer");
    viewer1.setSize(3,3);
 
-
    depth_map_iterator = 1;
-   if(use_kinect == 1) depth_map_iterator = 10;
+   if(use_kinect == 1) depth_map_iterator = 6;
 }
 
 void print_evaluation_(cv::Mat points,  char buffer[])

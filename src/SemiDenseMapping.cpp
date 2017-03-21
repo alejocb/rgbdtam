@@ -76,6 +76,7 @@ SemiDenseMapping::SemiDenseMapping():do_initialization(1),do_optimization(0), do
     max_pixel_color  = 255;
     minim_points_converged  = (int)fs2["minim_points_converged"];
     overlap_tracking = 1;
+    num_potential_points = 0;
 
     int discretization = 100;
     for (int l=0; l<discretization; l++)
@@ -316,23 +317,20 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
 
 
                 bool optimize_previous_frame  = false;
-
-
-                float previous_images_limit  = semidense_mapper->previous_images + 1;
-                if (translational_ratio_th_min   < 0.05)
-                {previous_images_limit  = semidense_mapper->previous_images ;}
-
-                if(semidense_mapper-> num_keyframes > semidense_mapper -> init_keyframes)
-                {previous_images_limit =1000;}
-
-
- 
                 int images_size,init_mapping,end_mapping;
 
+                bool little_texture = false;
+                /// if there is little texture, we have experimentally observed that keyframes must be inserted faster. Threfore
+                /// if little_texture = true then we only use old frames for mapping and now wait for new frames with enough parallax
+                /// to create a new keyframe.
+                if(semidense_mapper-> num_potential_points <  0.25*images.Im[reference_image]->image_gray.rows/8*
+                        images.Im[reference_image]->image_gray.cols/8){
+                    little_texture = true;
+                }
 
                 if (semidense_mapper->num_keyframes > semidense_mapper->init_keyframes - 1)
                 {
-                    if (semidense_mapper->num_cameras_mapping % 2 == 0)
+                    if (semidense_mapper->num_cameras_mapping % 2 == 0 || little_texture)
                        copy_previous_kf_images(images,pimages_previous_keyframe,semidense_mapper,init_mapping,end_mapping,images_size, optimize_previous_frame);
 
                      if (semidense_mapper->num_cameras_mapping  >  semidense_mapper->num_cameras_mapping_th_aux)
@@ -348,7 +346,7 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                 }
                 else
                 {
-                    if (semidense_mapper->num_cameras_mapping % 2 == 0)
+                    if (semidense_mapper->num_cameras_mapping % 2 == 0 || little_texture)
                     copy_previous_kf_images(images,pimages_previous_keyframe,semidense_mapper,init_mapping,end_mapping,images_size, optimize_previous_frame);
                 }
 

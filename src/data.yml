@@ -20,8 +20,6 @@ kinect_initialization: 1
 depth_rgb_offset: -0.020
 
 
-
-
 bgr2rgb: 1
 camera_path:"/camera/rgb/image_color"
 cameraMatrix: !!opencv-matrix
@@ -34,9 +32,7 @@ distCoeffs: !!opencv-matrix
    cols: 1
    dt: f
    data: [0.2624,-0.9531,-0.0054,0.0026,1.1633]
-
-
-
+ 
 
 minim_points_converged: 66
 calculate_superpixels: 0
