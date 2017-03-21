@@ -1,6 +1,6 @@
 # RGBDTAM:
 
-RGBDTAM is a SLAM algorithm that estimates a dense reconstruction of a scene in real-time on a CPU using monocular or RGB-D cameras. We are currently testing the code and solving compiling issues, it should be ready in the following days/weeks.
+RGBDTAM is a SLAM algorithm that estimates a dense reconstruction of a scene in real-time on a CPU using monocular or RGB-D cameras. 
 
 Related Publication:
 [1] Alejo Concha, Javier Civera. RGBDTAM: A cost-effective and accurate RGBD Tracking and Mapping System. https://arxiv.org/pdf/1703.00754.pdf
@@ -49,7 +49,7 @@ BOOST library to launch the different threads:
 
 Vocabulary used for loop closure and relocalization:
     
-We have used the vocabulary created by ORB-SLAM authors. Please, download the vocabulary from this link "www.github.com/raulmur/ORBvoc.txt.tar.gz" and place it in "ThirdParty/DBoW2/ORBvoc.txt"
+We have used the vocabulary created by ORB-SLAM authors. Please, download the vocabulary from this link "https://github.com/raulmur/ORB_SLAM/blob/master/Data/ORBvoc.txt.tar.gz" and place it in "ThirdParty/DBoW2/ORBvoc.txt"
 
 
 # Installation
