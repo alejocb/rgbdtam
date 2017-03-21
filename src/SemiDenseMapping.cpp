@@ -1306,7 +1306,7 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
                     join_last_keyframes(pimages,pimages_previous_keyframe,dense_mapper,semidense_mapper);
                     ///////////////////////////////////////////////////////////////
 
-                    semidense_mapper->do_initialization_tracking=1;
+                    semidense_mapper->do_initialization_tracking = 1;
 
 
                     if (semidense_mapper->do_var_mapping > 0.5)

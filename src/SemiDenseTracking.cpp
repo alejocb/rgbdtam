@@ -888,9 +888,6 @@ void get_depth_image( SemiDenseTracking *semidense_tracker,
     }
     else
     {
-
-
-
         double stamp_ref_image = stamps_aux;
         double depth_stamp = stamps_aux;
         double stamp_error = 10000;
@@ -916,40 +913,18 @@ void get_depth_image( SemiDenseTracking *semidense_tracker,
                     found_depth_stamp_newer_than_rgb_stamp = true;
             }
 
-            if(!found_depth_stamp_newer_than_rgb_stamp)
+
+            if(found_depth_stamp_newer_than_rgb_stamp || num_checks > 15)
             {
-                boost::this_thread::sleep(boost::posix_time::milliseconds(1));
-            }else if(found_depth_stamp_newer_than_rgb_stamp || num_checks > 15)
-            {
+
                 depth_frame = semidense_mapper->image_depth_keyframes[depth_index].clone();
                 if(stamp_error > 0.050) cout << "WARNING!!, stamp error = " << stamp_error << endl;
+            }else{
+                boost::this_thread::sleep(boost::posix_time::milliseconds(3));
             }
         }
-
-
-
-
-
-
-
-/*
-
-        double stamp_ref_image = stamps_aux;
-
-        double stamp_error = 10000;
-        int depth_index = 0;
-        for (int i = 0; i< semidense_mapper->image_depth_keyframes.size();i++)
-        {
-            double depth_stamp = semidense_mapper->stamps_depth_ros[i];
-
-            if (fabs(depth_stamp-stamp_ref_image-1*0.020) < stamp_error)
-            {
-                stamp_error = fabs(depth_stamp-stamp_ref_image);
-                depth_index = i;
-            }
-        }
-        depth_frame = semidense_mapper->image_depth_keyframes[depth_index];*/
     }
+
 }
 
 void semidense_tracking(Images_class *images,SemiDenseMapping *semidense_mapper,\
@@ -984,7 +959,7 @@ void semidense_tracking(Images_class *images,SemiDenseMapping *semidense_mapper,
     // && *semidense_tracker->cont_frames > semidense_tracker->last_cont_frames
      if ((semidense_tracker->frames.size() > 2 && semidense_tracker->use_ros == 0) ||
              (semidense_tracker->use_ros == 1   &&
-              semidense_tracker->frame_struct_vector.size() > 1))
+              semidense_tracker->frame_struct_vector.size() > 3))
      {
              cv::Mat image_frame_aux ;
              double stamps_aux;
@@ -1006,8 +981,9 @@ void semidense_tracking(Images_class *images,SemiDenseMapping *semidense_mapper,
                  /* image_frame_aux  = (semidense_tracker->frame_struct->image_frame).clone();
                  stamps_aux = semidense_tracker->frame_struct->stamps;*/
 
-                 image_frame_aux  = (semidense_tracker->frame_struct_vector[0].image_frame).clone();
-                 stamps_aux = semidense_tracker->frame_struct_vector[0].stamps;
+                 int image_number = semidense_tracker->frame_struct_vector.size() / 2;
+                 image_frame_aux  = (semidense_tracker->frame_struct_vector[image_number].image_frame).clone();
+                 stamps_aux = semidense_tracker->frame_struct_vector[image_number].stamps;
 
                    semidense_tracker->last_cont_frames = *semidense_tracker->cont_frames;
 
@@ -1015,8 +991,8 @@ void semidense_tracking(Images_class *images,SemiDenseMapping *semidense_mapper,
                                  semidense_tracker->image_n,semidense_tracker->image_gray,semidense_tracker->cameraMatrix,semidense_tracker->distCoeffs,\
                                  semidense_tracker->fx,semidense_tracker->fy,semidense_tracker->cx,semidense_tracker->cy);
 
-                   semidense_tracker->frame_struct_vector.erase (semidense_tracker->frame_struct_vector.begin(),semidense_tracker->frame_struct_vector.begin()+1);
-                   while(semidense_tracker->frame_struct_vector.size()>2){
+                   semidense_tracker->frame_struct_vector.erase (semidense_tracker->frame_struct_vector.begin()+image_number,semidense_tracker->frame_struct_vector.begin()+image_number+1);
+                   while(semidense_tracker->frame_struct_vector.size()>4){
                        semidense_tracker->frame_struct_vector.erase (semidense_tracker->frame_struct_vector.begin(),semidense_tracker->frame_struct_vector.begin()+1);
                    }
               }
@@ -2362,9 +2338,16 @@ void gauss_newton_ic(SemiDenseTracking *semidense_tracker,cv::Mat &coordinates_c
                     int number_geo_points_removed = 0;
                     int number_photo_points_removed = 0;*/
 
+                    int iterations_limit = 1000;
+                    float error_limit = 0.001; // it is a percentage
+                    if(semidense_tracker->use_ros == 1){
+                        error_limit = 0.005;
+                        //if(pyramid_level > 1)
+                        //iterations_limit = 8;
+                    }
 
-                    while (  (error_total_curr < error_total_min  &&
-                           ((error_total_min-error_total_curr)/(error_total_min + 0.00001) > 0.001) || init_it ))
+                    while ( iterations < iterations_limit && (error_total_curr < error_total_min  &&
+                           ((error_total_min-error_total_curr)/(error_total_min + 0.00001) > error_limit) || init_it ))
                     {
                         ++iterations;
 
