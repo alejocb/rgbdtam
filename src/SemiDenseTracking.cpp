@@ -916,10 +916,14 @@ void get_depth_image( SemiDenseTracking *semidense_tracker,
                     found_depth_stamp_newer_than_rgb_stamp = true;
             }
 
-            if(!found_depth_stamp_newer_than_rgb_stamp || num_checks > 15)
-            {boost::this_thread::sleep(boost::posix_time::milliseconds(1));}else
-            {depth_frame = semidense_mapper->image_depth_keyframes[depth_index].clone();
-            if(stamp_error > 0.050) cout << "WARNING!!, stamp error = " << stamp_error << endl;}
+            if(!found_depth_stamp_newer_than_rgb_stamp)
+            {
+                boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+            }else if(found_depth_stamp_newer_than_rgb_stamp || num_checks > 15)
+            {
+                depth_frame = semidense_mapper->image_depth_keyframes[depth_index].clone();
+                if(stamp_error > 0.050) cout << "WARNING!!, stamp error = " << stamp_error << endl;
+            }
         }
 
 
