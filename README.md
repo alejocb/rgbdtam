@@ -111,34 +111,18 @@ Update the the 'camera_path', 'cameraMatrix' and 'distCoeffs'  in the file rgbdt
 
 There are a few tuneable parameters that you can modify in rgbdtam/src/data.yml:
 
- 
 
-1-) Superpixel calculation
+1-) Number of frames for mapping
 
-calculate_superpixels: [bool] If 1 it will calculate 3D superpixels.
+num_cameras_mapping_th: [int]. Number of frames that you want to use to estimate the depth maps. Default: 10.
 
-2-) Number of frames for mapping
+2-) Minimum parallax required for mapping
 
-num_cameras_mapping_th: [int]. Number of frames that you want to use to estimate the depth maps. Default: 9.
+translational_ratio_th_min: [double]. Minimum parallax to insert a keyframe. Default: 0.01. Typical values [0.03-0.15].
 
-3-) Minimum parallax required for mapping
+3-) Depth - RGB offset
 
-translational_ratio_th_min: [double]. Minimum parallax to insert a keyframe. Default: 0.075. Typical values [0.03-0.15].
-
-4-) Degenerated cases in 3D superpixel matching
-
-limit_ratio_sing_val: [double]. This threshold deals with the degenerated cases in 3D superpixel calculation. Smaller values -> less outliers. Default: 100. Typical values [10-1000].
-
-5-) Minimum normalized residual threshold required.
-
-limit_normalized_residual: [double]. This threshold accounts for the minimum error required in superpixel calculation. Smaller values -> less outliers. Default: 0.30. Typical values [0.05-0.50].
-
-6-) Minimum number of matches of 3D superpixels in multiple views to achieve multiview consistency.
-
-matchings_active_search: [int]. Number of matches required of the 3D superpixel in multiple views. Larger values -> less outliers. Default: 3. Typical values [0-4].
-
-7-) Kinect Initialization: 1
-kinect_initialization: [bool] If 1 it will use the kinect for initialization.
+depth_rgb_offset: [double]. Offset between the timestamps of depth and rgb images. Default: -0.020 (TUM dataset).
 
 # Contact
 
