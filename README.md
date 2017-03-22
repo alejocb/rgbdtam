@@ -1,11 +1,11 @@
 # RGBDTAM:
 
-RGBDTAM is a SLAM algorithm that estimates a dense reconstruction of a scene in real-time on a CPU using monocular or RGB-D cameras. 
+RGBDTAM is a SLAM algorithm that estimates a dense reconstruction of a scene in real-time on a CPU RGB-D cameras. 
 
 Related Publication:
 [1] Alejo Concha, Javier Civera. RGBDTAM: A cost-effective and accurate RGBD Tracking and Mapping System. https://arxiv.org/pdf/1703.00754.pdf
 
-Video of the results that you should expect in the example sequences:
+Video of the results that you should expect:
 https://youtu.be/sc-hqtJtHD4
 
  
@@ -88,7 +88,10 @@ You can use a sequence from the TUM dataset to test the algorithm:
 
     rosbag play sequence.bag
 
-There are two parameters that you have to modify (before executing a sequence) in rgbdtam/src/data.yml:
+Do not move the visualizer point of view until the sequence has finished (only zoom in/out), or it will get lost otherwise. We are fixing this issue.
+
+
+There are three parameters that you have to modify (before executing a sequence) in rgbdtam/src/data.yml:
 
 1-) Intrinsic parameters of the camera:
 
