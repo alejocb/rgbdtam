@@ -33,11 +33,25 @@ loopcloser::loopcloser()
     cout << "Reading the Vocabulary and creating a database..." << endl;
 
     char buffer[150];
+
     sprintf (buffer,(ros::package::getPath("rgbdtam") + "/ThirdParty/DBoW2/ORBvoc.txt").c_str());
 
-    // Reading vocabulary created by ORB-SLAM authors
-    orb_voc.loadFromTextFile(buffer);
+
+    try{
+        std::ifstream infile(buffer);
+        if(!infile.good()) throw 100;
+        // Reading vocabulary created by ORB-SLAM authors
+        orb_voc.loadFromTextFile(buffer);
+     }
+      catch (int e){
+        cout <<  "Vocabulary not found,  place it in ThirdParty/DBoW2/ORBvoc.txt (check README.md)" << endl ;
+        exit(0);
+     }
+
+
+
     ORBDatabase orb_db_aux(orb_voc, false, 0);
+
     orb_db = orb_db_aux;
     cout << orb_db << endl;
     cout << "end!!" << endl;

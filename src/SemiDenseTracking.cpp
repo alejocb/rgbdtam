@@ -467,8 +467,6 @@ void ThreadSemiDenseTracker(Images_class *images,SemiDenseMapping *semidense_map
 
 
 
-
-
     cout << "thread tracking finished" << endl;
     ros::shutdown();
     return;
@@ -833,8 +831,11 @@ void get_depth_image( SemiDenseTracking *semidense_tracker,
         {
             string data = semidense_tracker->depth_image_names[i];
             data = data.substr((data.length()-21),data.length());
-            std::string::size_type sz;     // alias of size_t
-            double depth_stamp = std::stod (data,&sz);
+            /*std::string::size_type sz;     // alias of size_t
+            double depth_stamp = std::stod (data,&sz);*/
+
+            data = data.substr((0),data.length()-4) ;
+            double depth_stamp = boost::lexical_cast<double>(data);
 
             if (fabs(depth_stamp-stamp_ref_image + semidense_tracker->depth_rgb_offset) < stamp_error)
             {
@@ -921,8 +922,12 @@ void semidense_tracking(Images_class *images,SemiDenseMapping *semidense_mapper,
             semidense_tracker->frames.push_back(image2read);
             string data = semidense_tracker->left_image_names[semidense_tracker->image_n + semidense_tracker->init_frame];
             data = data.substr((data.length()-21),data.length());
-            std::string::size_type sz;     // alias of size_t
-            double earth = std::stod (data,&sz);
+            /*std::string::size_type sz;     // alias of size_t
+            double earth = std::stod (data,&sz);*/
+
+            data = data.substr((0),data.length()-4) ;
+            double earth = boost::lexical_cast<double>(data);
+
             semidense_tracker->frames_stamps.push_back(earth);
         }
     }
