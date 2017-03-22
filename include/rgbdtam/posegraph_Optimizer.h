@@ -54,15 +54,15 @@ using namespace std;
 
 class posegraphOptimizer
 {
-  public:
+public:
     void posegraphOptimization(vector<cv::Mat> &R_vector,vector<cv::Mat> &t_vector,
                                vector<cv::Mat> &R_vector_after_opt,vector<cv::Mat> &t_vector_after_opt, vector<float> &s_vector_after_opt,
                                vector<cv::Mat> &R_vector_edges,vector<cv::Mat> &t_vector_edges,
                                cv::Mat &edges_index,cv::Mat &poses1);
     void posegraphOptimization_Sim3(vector<cv::Mat> &R_vector,vector<cv::Mat> &t_vector,
-                               vector<cv::Mat> &R_vector_after_opt,vector<cv::Mat> &t_vector_after_opt, vector<float> &s_vector_after_opt,
-                               vector<cv::Mat> &R_vector_edges,vector<cv::Mat> &t_vector_edges,vector<float> &s_vector_edges,
-                               cv::Mat &edges_index,cv::Mat &poses1);
+                                    vector<cv::Mat> &R_vector_after_opt,vector<cv::Mat> &t_vector_after_opt, vector<float> &s_vector_after_opt,
+                                    vector<cv::Mat> &R_vector_edges,vector<cv::Mat> &t_vector_edges,vector<float> &s_vector_edges,
+                                    cv::Mat &edges_index,cv::Mat &poses1);
     g2o::SE3Quat convert_SE3_to_quat(cv::Mat &R_aux, cv::Mat &t_aux);
     Eigen::Matrix<double,3,3> convert_R_toEigen(cv::Mat &R_aux);
     Eigen::Matrix<double,3,1> convert_t_toEigen(cv::Mat &t_aux);

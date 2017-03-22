@@ -80,7 +80,7 @@ using namespace DBoW2;
 
 class loopcloser
 {
-  public:
+public:
     loopcloser();
 
     // function borrowed from ORB_SLAM code
@@ -88,10 +88,10 @@ class loopcloser
 
     void changeStructure_orb(const cv::Mat &plain, vector<cv::Mat> &out,int L);
     void  calculate_orb_and_load_features( cv::Mat &image,vector<cv::Mat> &features_back,vector<cv::KeyPoint> &keypoints_orb,
-    cv::Mat &descriptors_orb);
+                                           cv::Mat &descriptors_orb);
 
     void calculate_orb_features(  cv::Mat &image,vector<cv::Mat> &features_back,
-                                                       vector<cv::KeyPoint> &keypoints_orb,cv::Mat &descriptors_orb);
+                                  vector<cv::KeyPoint> &keypoints_orb,cv::Mat &descriptors_orb);
 
     void feature_matching_and_edge_estimation(cv::Mat &matchings,cv::Mat &matchings_inliers,vector<cv::Mat>
                                               &R_vector_edges,vector<cv::Mat> &t_vector_edges,vector<float> &s_vector_edges);
@@ -100,26 +100,26 @@ class loopcloser
 
 
     void get_score_for_relocalization(vector<cv::Mat> feature,cv::Mat &matchings,
-                                     int features_size,float keyframe_number, float threshold,
-                                     float min_kf_diff,float max_kf_diff);
+                                      int features_size,float keyframe_number, float threshold,
+                                      float min_kf_diff,float max_kf_diff);
 
     void get_potential_keyframes(cv::Mat &image, cv::Mat &matchings, int points_tracked);
 
     void get_scores_for_mapreuse(vector<cv::Mat> feature,cv::Mat &matchings,
-                                     int features_size,float keyframe_number, float threshold,
-                                     float min_kf_diff,float max_kf_diff);
+                                 int features_size,float keyframe_number, float threshold,
+                                 float min_kf_diff,float max_kf_diff);
 
     posegraphOptimizer posegraph_Optimizer_obj;
 
     void compute_keyframe(cv::Mat &R, cv::Mat &t, cv::Mat &image, int num_keyframe,
-                                      cv::Mat &final_depth_map, cv::Mat &point_cloud_toprint, vector<cv::Mat> &point_cloud_totrack,
-                                      float &fx, float &fy, float &cx, float &cy, double stamps, int size_first_level);
+                          cv::Mat &final_depth_map, cv::Mat &point_cloud_toprint, vector<cv::Mat> &point_cloud_totrack,
+                          float &fx, float &fy, float &cx, float &cy, double stamps, int size_first_level);
     void get_score_for_loopclosure(vector<cv::Mat> feature,cv::Mat &matchings,
-                                     int features_size,float keyframe_number, float threshold,
-                                     float min_kf_diff,float max_kf_diff);
+                                   int features_size,float keyframe_number, float threshold,
+                                   float min_kf_diff,float max_kf_diff);
     void backproject_matchedKpts_from_depth_map(cv::Mat &coordinates1, cv::Mat &final_depth_map1, cv::Mat &R1, cv::Mat &t1,
-                                    cv::Mat &coordinates2, cv::Mat &final_depth_map2, cv::Mat &R2, cv::Mat &t2, \
-                                    float &fx, float &fy, float &cx, float &cy, cv::Mat &points3D1, cv::Mat &points3D2);
+                                                cv::Mat &coordinates2, cv::Mat &final_depth_map2, cv::Mat &R2, cv::Mat &t2, \
+                                                float &fx, float &fy, float &cx, float &cy, cv::Mat &points3D1, cv::Mat &points3D2);
     void print_poses(cv::Mat &points, char buffer[],int color,int points1rows);
     void horn_alignment(cv::Mat &model, cv::Mat &data, cv::Mat  &R_rel, cv::Mat  &t_rel, float &scale);
     void project_points_calculate_geometric_error(cv::Mat &points3D1, double fx,double fy,

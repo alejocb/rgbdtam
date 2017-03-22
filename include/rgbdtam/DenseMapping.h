@@ -52,7 +52,7 @@ using namespace std;
 
 
 class DenseMapping:public Images_class {
-  public:
+public:
     DenseMapping();
 
     static boost::mutex mutex;
@@ -99,9 +99,6 @@ private:
     cv::Mat  superpixels3Dprint;
     int images_dense_ready;
 };
-
-
-
 
 
 void print_poses(cv::Mat &points, char buffer[],int color);
@@ -151,11 +148,11 @@ cv::Mat create_matrix(cv::Mat contour4, int limit, int imsize_x, int imsize_y);
 struct DataToSend
 {           cv::Mat matchings;
             float RefIm;
-            float RefSup;
-            bool showim;
-            float percentage_limit;
-            float step_size ;
-            vector<SuperpixelsImage*> SupImg;
+                    float RefSup;
+                            bool showim;
+                                    float percentage_limit;
+                                            float step_size ;
+                                                    vector<SuperpixelsImage*> SupImg;
 };
 
 float montecarlo_seed10(Images_class &images,int a1, int b1, int c1, int d1,DataToSend DTS1 , int iterations, \

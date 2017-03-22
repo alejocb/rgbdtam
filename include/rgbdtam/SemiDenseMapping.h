@@ -66,8 +66,10 @@ using namespace std;
          a = tv.tv_sec + tv.tv_usec/1000000.0*/
 
 
+#define  SIZE_DEPTH_VECTOR 101
+
 class SemiDenseMapping  :public Images_class {
-  public:
+public:
     SemiDenseMapping();
 
     float mean_depth_value;
@@ -198,15 +200,15 @@ void copy_first_and_last_images(Images_class &images, Images_class &images_map,f
 
 ///Calculate the photometric reprojection error of the high gradient points
 void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_mapper,Images_class  &images,  float camera_motion,cv::Mat &inv_depths, photometric_term &X,\
-                                      photometric_term &X_gx_ex, photometric_term &X_gy_ey, int reference_image, cv::Mat &initial_inv_depth , int image_to_be_added, \
-                                      photometric_term &all_points,cv::Mat &points_ref_im_sd,int discretization, \
-                                      int window_size, cv::Mat &epipolar_gradients, vector<cv::Mat> &initial_inv_depth_inEveryCamera_uncertainty,vector<cv::Mat> &initial_inv_depth_inEveryCamera_largeParallax, \
-                                      cv::Mat &points_by_depth, cv::Mat &t_r_ref,
-                                      cv::Mat &GX, cv::Mat &GY, int &num_cameras_mapping, cv::Mat &max_inv_depth_initial_seed, cv::Mat &min_inv_depth_initial_seed);
+                                                 photometric_term &X_gx_ex, photometric_term &X_gy_ey, int reference_image, cv::Mat &initial_inv_depth , int image_to_be_added, \
+                                                 photometric_term &all_points,cv::Mat &points_ref_im_sd,int discretization, \
+                                                 int window_size, cv::Mat &epipolar_gradients, vector<cv::Mat> &initial_inv_depth_inEveryCamera_uncertainty,vector<cv::Mat> &initial_inv_depth_inEveryCamera_largeParallax, \
+                                                 cv::Mat &points_by_depth, cv::Mat &t_r_ref,
+                                                 cv::Mat &GX, cv::Mat &GY, int &num_cameras_mapping, cv::Mat &max_inv_depth_initial_seed, cv::Mat &min_inv_depth_initial_seed);
 
 ///Filtering points of the semidense map that are not consistent temporally
 void convergence_test(SemiDenseMapping *semidense_mapper,cv::Mat &be_outlier,
-                        cv::Mat &be_outlier_print,cv::Mat &deviation_inv_depth,
+                      cv::Mat &be_outlier_print,cv::Mat &deviation_inv_depth,
                       cv::Mat &final_variances,float inv_depth_disparity_th,
                       float inv_depth_disparity_print_th,float camera_motion);
 
@@ -215,7 +217,7 @@ void find_closest_keyframes(SemiDenseMapping *semidense_mapper,MapShared *Map,Se
 
 
 void join_last_keyframes(Images_class *images,Images_class *images_previous_keyframe,\
-                      DenseMapping *dense_mapper,SemiDenseMapping *semidense_mapper);
+                         DenseMapping *dense_mapper,SemiDenseMapping *semidense_mapper);
 
 void copy_images_dense(Images_class &images, Images_class &images_map);
 

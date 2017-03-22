@@ -66,7 +66,7 @@ struct FrameStruct{
 };
 
 class SemiDenseTracking  :public Images_class {
-  public:
+public:
     SemiDenseTracking();
 
     FrameStruct* frame_struct;
@@ -216,19 +216,19 @@ private:
 class SemiDenseMapping;  // It is defined also here due to cross reference (#include) issues
 
 /// undistort image
- void undistort_image(cv::Mat &image_frame, cv::Mat &cameraMatrixAux,cv::Mat &distCoeffs,
-                            cv::Mat &newCameraMatrix,cv::Mat &mapX,cv::Mat &mapY);
+void undistort_image(cv::Mat &image_frame, cv::Mat &cameraMatrixAux,cv::Mat &distCoeffs,
+                     cv::Mat &newCameraMatrix,cv::Mat &mapX,cv::Mat &mapY);
 
 ///prepare the image for tracking
- void prepare_image(SemiDenseTracking *semidense_tracker, cv::Mat &image_frame,
-                          cv::Mat &image_to_track, int &image_n,
-                          cv::Mat &image_gray, cv::Mat cameraMatrix, cv::Mat distCoeffs, \
-                          float &fx, float &fy, float &cx, float &cy);
+void prepare_image(SemiDenseTracking *semidense_tracker, cv::Mat &image_frame,
+                   cv::Mat &image_to_track, int &image_n,
+                   cv::Mat &image_gray, cv::Mat cameraMatrix, cv::Mat distCoeffs, \
+                   float &fx, float &fy, float &cx, float &cy);
 
- cv::Mat reduce_depth_image(cv::Mat &depth_image,int reduction);
+cv::Mat reduce_depth_image(cv::Mat &depth_image,int reduction);
 /// Image processing thread
 void ThreadImageProcessing(SemiDenseTracking *semidense_tracker, SemiDenseMapping *semidense_mapper,
-                             DenseMapping *dense_mapper);
+                           DenseMapping *dense_mapper);
 ///Viewer updater thread
 void ThreadViewerUpdater( SemiDenseTracking *semidense_tracker,SemiDenseMapping *semidense_mapper, DenseMapping *dense_mapper);
 
@@ -240,32 +240,32 @@ void  semidense_tracking(Images_class *images,SemiDenseMapping *semidense_mapper
                          SemiDenseTracking *semidense_tracker,DenseMapping *dense_mapper,MapShared *Map, ros::Publisher *vis_pub,image_transport::Publisher *pub_image);
 ///initialize semidense map to be tracked
 void initialization_semidense(SemiDenseTracking *semidense_tracker, cv::Mat &R, cv::Mat &t, cv::Mat &R1, cv::Mat &t1, cv::Mat &image_rgb, cv::Mat &image_keyframe, \
-                    int &pyramid_levels, vector<int> &reduction_pyramid, vector<cv::Mat> &image_keyframe_pyramid);
+                              int &pyramid_levels, vector<int> &reduction_pyramid, vector<cv::Mat> &image_keyframe_pyramid);
 ///first semidense map initialization
 void initialization_semidense(SemiDenseTracking *semidense_tracker,cv::Mat &R,cv::Mat &t,cv::Mat &R1,cv::Mat &t1,cv::Mat &image_rgb,cv::Mat &image_keyframe,\
-                    int &pyramid_levels,vector<int> &reduction_pyramid, vector<float> &focalx,vector<float> &focaly,vector<cv::Mat> &image_keyframe_pyramid,\
-                    vector<cv::Mat> &points_map,vector<cv::Mat> &color,vector<cv::Mat> &points3D,\
-                    vector<cv::Mat> &jacobian,vector<cv::Mat> &error_vector,vector<cv::Mat> &weight, float fx,float fy, float depth,\
-                    cv::Mat depth_frame, int kinect_initialization,\
-                    float cx,float cy,  vector<float> &centerx,vector<float> &centery,cv::Mat image_gray,float limit_grad  );
+                              int &pyramid_levels,vector<int> &reduction_pyramid, vector<float> &focalx,vector<float> &focaly,vector<cv::Mat> &image_keyframe_pyramid,\
+                              vector<cv::Mat> &points_map,vector<cv::Mat> &color,vector<cv::Mat> &points3D,\
+                              vector<cv::Mat> &jacobian,vector<cv::Mat> &error_vector,vector<cv::Mat> &weight, float fx,float fy, float depth,\
+                              cv::Mat depth_frame, int kinect_initialization,\
+                              float cx,float cy,  vector<float> &centerx,vector<float> &centery,cv::Mat image_gray,float limit_grad  );
 
 /// Get color from point cloud.
 void get_color (cv::Mat &points,cv::Mat &color);
 
 /// constant velocity motion model
 void motion_model(vector<cv::Mat> &points_map,cv::Mat &R,cv::Mat &t,cv::Mat R_rel,cv::Mat t_rel,\
-                vector<float> &focalx, vector<float> &focaly, vector<float> &centerx, vector<float> &centery,
+                  vector<float> &focalx, vector<float> &focaly, vector<float> &centerx, vector<float> &centery,
                   vector<cv::Mat> &image_keyframe_pyramid,int pyramid_levels, bool &good_seed);
 
 /// function to estimate the pose of the current frame
 void optimize_camera_pose(int num_keyframes, SemiDenseTracking *semidense_tracker, SemiDenseMapping *semidense_mapper, Images_class &images, cv::Mat &image_to_track, \
-                    cv::Mat &image_rgb, cv::Mat &R, cv::Mat &t, cv::Mat &R1, cv::Mat &t1, \
-                    vector<cv::Mat> &image_reduced, vector<cv::Mat> &image_keyframe_pyramid, float &variance, vector<int> &reduction_pyramid,
-                    int &processed_frames, vector<cv::Mat> &jacobian, vector<cv::Mat> &points_map, \
-                    vector<cv::Mat> &color, vector<cv::Mat> &points3D, vector<cv::Mat> &error_vector, vector<cv::Mat> &weight, vector<float> &focalx, vector<float> &focaly, \
-                    vector<float> &centerx, vector<float> &centery, int &pyramid_levels, float &overlap_tracking, float &tracking_th, int iter_th, \
-                    vector<float> &variances, cv::Mat &image_gray, double stamps,
-                    float mean_depth_value, cv::Mat &points3D_cam_to_print);
+                          cv::Mat &image_rgb, cv::Mat &R, cv::Mat &t, cv::Mat &R1, cv::Mat &t1, \
+                          vector<cv::Mat> &image_reduced, vector<cv::Mat> &image_keyframe_pyramid, float &variance, vector<int> &reduction_pyramid,
+                          int &processed_frames, vector<cv::Mat> &jacobian, vector<cv::Mat> &points_map, \
+                          vector<cv::Mat> &color, vector<cv::Mat> &points3D, vector<cv::Mat> &error_vector, vector<cv::Mat> &weight, vector<float> &focalx, vector<float> &focaly, \
+                          vector<float> &centerx, vector<float> &centery, int &pyramid_levels, float &overlap_tracking, float &tracking_th, int iter_th, \
+                          vector<float> &variances, cv::Mat &image_gray, double stamps,
+                          float mean_depth_value, cv::Mat &points3D_cam_to_print);
 
 
 
@@ -288,14 +288,14 @@ void compute_error_ic( cv::Mat &points3D_cam,cv::Mat &points3D_cam_p, cv::Mat &i
 /// gauss newton optimization using inverse compotional approach
 void gauss_newton_ic(SemiDenseTracking *semidense_tracker, cv::Mat &points3D_cam_to_print, cv::Mat &R, cv::Mat &t, \
                      cv::Mat &R_p, cv::Mat &t_p, float fx, float fy, cv::Mat &points, cv::Mat &img, cv::Mat &img_p, \
-                     float &error_opt, cv::Mat &color, float variance, cv::Mat &points3D,\
+                     float &error_opt, float variance, cv::Mat &points3D, \
                      cv::Mat &error_vector_opt, int initial_iteration, cv::Mat &jacobian, cv::Mat &init , \
                      cv::Mat &weight, cv::Mat &points3D_cam_p, cv::Mat &points3D_cam, \
                      cv::Mat &error_vector_inicial, cv::Mat &error_vector_sqrt_inicial, float &has_decreased, cv::Mat &color_p, \
                      int &processed_frames, cv::Mat &jacobian1k, float &overlap, float cx, float cy, int pyramid_level, bool first_frame);
 ///estimation of the pose of the camera using gauss newton
 void  gauss_estimation(SemiDenseTracking *semidense_tracker, cv::Mat &points3D_cam_to_print, cv::Mat &R2, cv::Mat &t2, cv::Mat &R_p, cv::Mat &t_p, float &fx, float &fy, float &cx, float &cy, cv::Mat & points, \
-                       cv::Mat &img, cv::Mat &img_p, float &error_p, cv::Mat &color, int &iter, float variance, cv::Mat &points3D, \
+                       cv::Mat &img, cv::Mat &img_p, float &error_p, int &iter, float variance, cv::Mat &points3D, \
                        cv::Mat &error_vector_opt, cv::Mat &weight, int &processed_frames, cv::Mat &jacobian1k, float &overlap_tracking,
                        float &tracking_th, int iter_th, int pyramid_level, cv::Mat &points3D_cam, bool first_frame);
 
@@ -304,7 +304,7 @@ void map_reuse(SemiDenseTracking *semidense_tracker, SemiDenseMapping *semidense
                , cv::Mat &R_kf, cv::Mat &t_kf);
 
 void compute_error_ic_ni(cv::Mat &points3D_cam, cv::Mat &points3D_cam_p, cv::Mat &image, \
-                       cv::Mat &error_vector, float &variance, cv::Mat &error_vector_sqrt, float &error, cv::Mat &weight,
+                         cv::Mat &error_vector, float &variance, cv::Mat &error_vector_sqrt, float &error, cv::Mat &weight,
                          cv::Mat &color_p, float &overlap, float &gain, float &brightness, cv::Mat &error_vector_check);
 
 void transform_points_return_3Dpoints(cv::Mat &points3D_cam, cv::Mat &R,cv::Mat &t,float fx,float fy,float cx,float cy,cv::Mat &img, cv::Mat &points3D, cv::Mat &transformed_points);
@@ -337,8 +337,8 @@ cv::Mat MatToQuat(cv::Mat &Rot);
 
 /// join several 3D maps to make the tracking of the camera more robust to scale drift
 void prepare_semidense(SemiDenseMapping *semidense_mapper,vector<cv::Mat> &points_map,cv::Mat R,cv::Mat t,vector<cv::Mat> point_clouds,int pyramid_levels,\
-                vector<float> &focalx, vector<float> &focaly, vector<float> &centerx, vector<float> &centery,   \
-              vector<cv::Mat> &image_keyframe_pyramid, float  &points_projected_in_image);
+                       vector<float> &focalx, vector<float> &focaly, vector<float> &centerx, vector<float> &centery,   \
+                       vector<cv::Mat> &image_keyframe_pyramid, float  &points_projected_in_image);
 
 /// Search the depth image closer stamps_aux.
 void get_depth_image(SemiDenseTracking *semidense_tracker, SemiDenseMapping *semidense_mapper, double stamps_aux, cv::Mat &depth_frame);
@@ -353,5 +353,5 @@ void calculate_jac_geo_diff(SemiDenseTracking* semidense_tracker, cv::Mat& R_rel
                             float fx, float fy, float cx, float cy, cv::Mat &error_init, cv::Mat &points3D_geo, int pyramid_level, float max_error, cv::Mat& max_error_vector, bool use_inv_depth);
 
 void calculate_jacobian_geo(cv::Mat &frame_depth, cv::Mat &points3D_cam, cv::Mat &transformed_points_cam, float fx, float fy, cv::Mat&jacobian_geo,
-                        cv::Mat &constant_error, cv::Mat &max_error_vector,bool use_inv_depht);
+                            cv::Mat &constant_error, cv::Mat &max_error_vector,bool use_inv_depht);
 #endif

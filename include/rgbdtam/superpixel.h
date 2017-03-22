@@ -44,7 +44,7 @@ using namespace std;
 #define SPX_IS_LARGE 1000
 
 class superpixel {
-  public:
+public:
     superpixel(){informative = 0;size = 0; bGoodSp=false; bLargeEnough=false; bMatched = false;}
 
     int informative;
@@ -54,7 +54,7 @@ class superpixel {
     void set_color (int a, int b, int c)
     {     color[0] = a;
           color[1] = b;
-          color[2] = c;
+            color[2] = c;
     };
     void set_contour (float,float,float);
     void set_contourR (cv::Mat contourR1) { contourR=contourR1.clone();}
@@ -100,12 +100,12 @@ private:
 };
 
 class SuperpixelsImage {
-  public:
+public:
     struct Data
     {           cv::Mat R1;
                 cv::Mat t1;
-                float f1;
-                int reduction;
+                        float f1;
+                                int reduction;
     }Data1;
 
     SuperpixelsImage(){}
@@ -135,7 +135,7 @@ private:
 };
 
 class Image_class {
-  public:
+public:
 
     Image_class():is_used_for_mapping(0){}
 
@@ -160,7 +160,7 @@ private:
 
 
 class Images_class {
-  public:
+public:
     Images_class(){}
     void computeImage();
 
@@ -179,18 +179,18 @@ private:
 
 
 class photometric_term {
-  public:
+public:
 
-     photometric_term(){}
-     void computeError();
-     vector<cv::Mat> ph_error;
+    photometric_term(){}
+    void computeError();
+    vector<cv::Mat> ph_error;
 private:
 };
 
 
 
 class MapShared  :public Images_class {
-  public:
+public:
     MapShared(){}
 
     void set_R(cv::Mat R_aux) { R = R_aux.clone();}
