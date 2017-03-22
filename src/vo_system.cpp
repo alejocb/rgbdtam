@@ -45,7 +45,7 @@ vo_system::vo_system(){
 
     image_transport::ImageTransport it(nh);
 
-   // sub1_right = it.subscribe(camera_path_right,1, & vo_system::imgcb_right,this);
+    // sub1_right = it.subscribe(camera_path_right,1, & vo_system::imgcb_right,this);
     odom_pub = nh.advertise<nav_msgs::Odometry>("odom1", 50);
     /// advertising 3D map and camera poses in rviz
     pub_cloud = nh.advertise<sensor_msgs::PointCloud2> ("rgbdtam/map", 1);
@@ -60,23 +60,23 @@ vo_system::vo_system(){
 
     #pragma omp parallel num_threads(3)
     {
-       switch(omp_get_thread_num())
-       {
-           case 0:
-           {
-               ///Launch semidense tracker thread
-               boost::thread thread_semidense_tracker(&ThreadSemiDenseTracker,&images,&semidense_mapper,&semidense_tracker,&dense_mapper,&Map,&vis_pub,&pub_image);
-           };break;
-           case 1:
-           {
-               ///Launch semidense mapper thread
-               boost::thread thread_semidense_mapper(&ThreadSemiDenseMapper,&images,&images_previous_keyframe,&semidense_mapper,&semidense_tracker,&dense_mapper,&Map,&pub_cloud);
-           };break;
-           case 2:
-           {
-               ///Launch viewer updater.
-               boost::thread thread_viewer_updater(&ThreadViewerUpdater, &semidense_tracker,&semidense_mapper,&dense_mapper);
-           }
+        switch(omp_get_thread_num())
+        {
+        case 0:
+        {
+            ///Launch semidense tracker thread
+            boost::thread thread_semidense_tracker(&ThreadSemiDenseTracker,&images,&semidense_mapper,&semidense_tracker,&dense_mapper,&Map,&vis_pub,&pub_image);
+        };break;
+        case 1:
+        {
+            ///Launch semidense mapper thread
+            boost::thread thread_semidense_mapper(&ThreadSemiDenseMapper,&images,&images_previous_keyframe,&semidense_mapper,&semidense_tracker,&dense_mapper,&Map,&pub_cloud);
+        };break;
+        case 2:
+        {
+            ///Launch viewer updater.
+            boost::thread thread_viewer_updater(&ThreadViewerUpdater, &semidense_tracker,&semidense_mapper,&dense_mapper);
+        }
         }
     }
 
@@ -94,9 +94,9 @@ vo_system::vo_system(){
 
     if(use_ros == 1)
     {
-      sub1 = it.subscribe(camera_path,1, & vo_system::imgcb,this);
-      if(semidense_tracker.use_kinect)
-      sub2 = it.subscribe("/camera/depth/image",1, & vo_system::depthcb,this);
+        sub1 = it.subscribe(camera_path,1, & vo_system::imgcb,this);
+        if(semidense_tracker.use_kinect)
+            sub2 = it.subscribe("/camera/depth/image",1, & vo_system::depthcb,this);
     }
 }
 
@@ -134,7 +134,7 @@ void vo_system::imgcb(const sensor_msgs::Image::ConstPtr& msg)
 
 
         cont_frames++;
-     }
+    }
     catch (const cv_bridge::Exception& e)
     {
         ROS_ERROR("cv_bridge exception: %s", e.what());
@@ -160,8 +160,8 @@ void vo_system::depthcb(const sensor_msgs::Image::ConstPtr& msg)
 
         for(int i =  0;i < image_depth.rows; i++){
             for(int j = 0; j< image_depth.cols; j++){
-                 if( isnan( image_depth.at<float>(i,j)))
-                  image_depth.at<float>(i,j) = 0;
+                if( isnan( image_depth.at<float>(i,j)))
+                    image_depth.at<float>(i,j) = 0;
             }
         }
         //UNDISTORT DEPTH MAP
@@ -171,16 +171,16 @@ void vo_system::depthcb(const sensor_msgs::Image::ConstPtr& msg)
         cv::Mat undistorted_depth_map;
         if(semidense_tracker.mapX.rows>0)
         {cv::remap(image_depth,undistorted_depth_map,semidense_tracker.mapX,semidense_tracker.mapY,
-                  CV_INTER_NN,cv::BORDER_CONSTANT,cv::Scalar(0,0,0));
-        image_depth = undistorted_depth_map;}
+                   CV_INTER_NN,cv::BORDER_CONSTANT,cv::Scalar(0,0,0));
+            image_depth = undistorted_depth_map;}
         //UNDISTORT DEPTH MAP
 
         semidense_mapper.image_depth_keyframes[counter_depth_images%SIZE_DEPTH_VECTOR] = image_depth;
         semidense_mapper.stamps_depth_ros[counter_depth_images%SIZE_DEPTH_VECTOR] = stamps_depth_ros.toSec();
         counter_depth_images++;
     }
-        catch (const cv_bridge::Exception& e)
-        {
-           ROS_ERROR("cv_bridge exception: %s", e.what());
-        }
+    catch (const cv_bridge::Exception& e)
+    {
+        ROS_ERROR("cv_bridge exception: %s", e.what());
+    }
 }

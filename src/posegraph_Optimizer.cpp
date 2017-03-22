@@ -25,17 +25,17 @@
 
 void print_poses_(cv::Mat &points, char buffer[])
 {
-      ofstream out(buffer);
+    ofstream out(buffer);
 
-     int num_points = points.rows;
+    int num_points = points.rows;
 
-     int val = points.rows-1;
-     val = num_points;
-     out << "ply" << endl;out << "format ascii 1.0" << endl;out << "element face 0" << endl;out << "property list uchar int vertex_indices" << endl;
-     out << "element vertex ";out << val << endl;out << "property float x" << endl;out << "property float y" << endl;out << "property float z" << endl;
-     out <<  "property uchar diffuse_red"<<endl;out << "property uchar diffuse_green" << endl;out << "property uchar diffuse_blue" << endl;out << "end_header" << endl;
-     for (int i = 0; i<= points.rows-1;i++)
-     {
+    int val = points.rows-1;
+    val = num_points;
+    out << "ply" << endl;out << "format ascii 1.0" << endl;out << "element face 0" << endl;out << "property list uchar int vertex_indices" << endl;
+    out << "element vertex ";out << val << endl;out << "property float x" << endl;out << "property float y" << endl;out << "property float z" << endl;
+    out <<  "property uchar diffuse_red"<<endl;out << "property uchar diffuse_green" << endl;out << "property uchar diffuse_blue" << endl;out << "end_header" << endl;
+    for (int i = 0; i<= points.rows-1;i++)
+    {
 
         double val1 = points.at<double>(i,0);
         double val2 = points.at<double>(i,1);
@@ -48,38 +48,38 @@ void print_poses_(cv::Mat &points, char buffer[])
 
         {
             out << fixed << setprecision(5) << val1<< " " << fixed << setprecision(5) << val2 <<  " " << fixed << setprecision(5) << val3 \
-            << " "<< color1 << " "<< color2 << " "<< color3 << endl;
+                << " "<< color1 << " "<< color2 << " "<< color3 << endl;
         }
-     }
-     out.close();
- }
+    }
+    out.close();
+}
 
 g2o::SE3Quat posegraphOptimizer::convert_SE3_to_quat(cv::Mat &R_aux, cv::Mat &t_aux)
 {
-       Eigen::Matrix<double,3,3> R_eigen;
-       R_eigen << R_aux.at<float>(0,0), R_aux.at<float>(0,1), R_aux.at<float>(0,2),
+    Eigen::Matrix<double,3,3> R_eigen;
+    R_eigen << R_aux.at<float>(0,0), R_aux.at<float>(0,1), R_aux.at<float>(0,2),
             R_aux.at<float>(1,0), R_aux.at<float>(1,1), R_aux.at<float>(1,2),
             R_aux.at<float>(2,0), R_aux.at<float>(2,1), R_aux.at<float>(2,2);
-       Eigen::Matrix<double,3,1> t_eigen(t_aux.at<float>(0,0), t_aux.at<float>(1,0), t_aux.at<float>(2,0));
+    Eigen::Matrix<double,3,1> t_eigen(t_aux.at<float>(0,0), t_aux.at<float>(1,0), t_aux.at<float>(2,0));
 
-       return g2o::SE3Quat(R_eigen,t_eigen);
+    return g2o::SE3Quat(R_eigen,t_eigen);
 }
 
 Eigen::Matrix<double,3,3> posegraphOptimizer::convert_R_toEigen(cv::Mat &R_aux)
 {
-       Eigen::Matrix<double,3,3> R_eigen;
-       R_eigen << R_aux.at<float>(0,0), R_aux.at<float>(0,1), R_aux.at<float>(0,2),
+    Eigen::Matrix<double,3,3> R_eigen;
+    R_eigen << R_aux.at<float>(0,0), R_aux.at<float>(0,1), R_aux.at<float>(0,2),
             R_aux.at<float>(1,0), R_aux.at<float>(1,1), R_aux.at<float>(1,2),
             R_aux.at<float>(2,0), R_aux.at<float>(2,1), R_aux.at<float>(2,2);
 
-       return  R_eigen;
+    return  R_eigen;
 }
 
 
 Eigen::Matrix<double,3,1> posegraphOptimizer::convert_t_toEigen(cv::Mat &t_aux)
 {
-       Eigen::Matrix<double,3,1> t_eigen(t_aux.at<float>(0,0), t_aux.at<float>(1,0), t_aux.at<float>(2,0));
-       return  t_eigen;
+    Eigen::Matrix<double,3,1> t_eigen(t_aux.at<float>(0,0), t_aux.at<float>(1,0), t_aux.at<float>(2,0));
+    return  t_eigen;
 }
 
 
@@ -125,29 +125,29 @@ void posegraphOptimizer::posegraphOptimization(vector<cv::Mat> &R_vector,vector<
     /// EDGES BETWEEN CONSECUTIVE KEYFRAMES
     for(int i=0; i<num_kfs-1;i++)
     {
-            int j = i+1;
+        int j = i+1;
 
-            g2o::SE3Quat T_world_i;
-            g2o::SE3Quat T_world_j;
+        g2o::SE3Quat T_world_i;
+        g2o::SE3Quat T_world_j;
 
 
-            cv::Mat R2graph = R_vector.at(i);
-            cv::Mat t2graph = t_vector.at(i);
-            T_world_i = convert_SE3_to_quat( R2graph,  t2graph);
+        cv::Mat R2graph = R_vector.at(i);
+        cv::Mat t2graph = t_vector.at(i);
+        T_world_i = convert_SE3_to_quat( R2graph,  t2graph);
 
-            R2graph = R_vector.at(j);
-            t2graph = t_vector.at(j);
-            T_world_j = convert_SE3_to_quat( R2graph,  t2graph);
+        R2graph = R_vector.at(j);
+        t2graph = t_vector.at(j);
+        T_world_j = convert_SE3_to_quat( R2graph,  t2graph);
 
-            g2o::SE3Quat T_j_i = T_world_j*T_world_i.inverse();
+        g2o::SE3Quat T_j_i = T_world_j*T_world_i.inverse();
 
-            g2o::EdgeSE3Expmap* edge = new g2o::EdgeSE3Expmap();
-            edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(i)));
-            edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(j)));
-            edge->setMeasurement(T_j_i);
+        g2o::EdgeSE3Expmap* edge = new g2o::EdgeSE3Expmap();
+        edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(i)));
+        edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(j)));
+        edge->setMeasurement(T_j_i);
 
-            edge->information() = information_matrix;
-            sparse_optimizer.addEdge(edge);
+        edge->information() = information_matrix;
+        sparse_optimizer.addEdge(edge);
     }
 
 
@@ -207,9 +207,9 @@ void posegraphOptimizer::posegraphOptimization(vector<cv::Mat> &R_vector,vector<
 
 
 void posegraphOptimizer::posegraphOptimization_Sim3(vector<cv::Mat> &R_vector,vector<cv::Mat> &t_vector,
-                                               vector<cv::Mat> &R_vector_after_opt,vector<cv::Mat> &t_vector_after_opt,vector<float> &s_vector_after_opt,
-                                               vector<cv::Mat> &R_vector_edges,vector<cv::Mat> &t_vector_edges, vector<float> &s_vector_edges,
-                                               cv::Mat &edges_index_aux,cv::Mat &poses1)
+                                                    vector<cv::Mat> &R_vector_after_opt,vector<cv::Mat> &t_vector_after_opt,vector<float> &s_vector_after_opt,
+                                                    vector<cv::Mat> &R_vector_edges,vector<cv::Mat> &t_vector_edges, vector<float> &s_vector_edges,
+                                                    cv::Mat &edges_index_aux,cv::Mat &poses1)
 {
     cv::Mat edges_index = edges_index_aux.clone();
     edges_index.convertTo(edges_index,CV_16UC1);
@@ -253,30 +253,30 @@ void posegraphOptimizer::posegraphOptimization_Sim3(vector<cv::Mat> &R_vector,ve
     for(int i=0; i<num_kfs-1;i++)
     {
 
-            int j = i+1;
+        int j = i+1;
 
-            cv::Mat R2graph = R_vector.at(i);
-            cv::Mat t2graph = t_vector.at(i);
-
-
-            g2o::Sim3 Sim3_world_i(convert_R_toEigen(R2graph),convert_t_toEigen(t2graph),1.0);
-
-            R2graph = R_vector.at(j);
-            t2graph = t_vector.at(j);
+        cv::Mat R2graph = R_vector.at(i);
+        cv::Mat t2graph = t_vector.at(i);
 
 
-            g2o::Sim3 Sim3_world_j(convert_R_toEigen(R2graph),convert_t_toEigen(t2graph),1.0);
-            g2o::Sim3 Sim3_j_i = Sim3_world_j*Sim3_world_i.inverse();
+        g2o::Sim3 Sim3_world_i(convert_R_toEigen(R2graph),convert_t_toEigen(t2graph),1.0);
+
+        R2graph = R_vector.at(j);
+        t2graph = t_vector.at(j);
+
+
+        g2o::Sim3 Sim3_world_j(convert_R_toEigen(R2graph),convert_t_toEigen(t2graph),1.0);
+        g2o::Sim3 Sim3_j_i = Sim3_world_j*Sim3_world_i.inverse();
 
 
 
-            g2o::EdgeSim3* edge = new g2o::EdgeSim3();
-            edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(i)));
-            edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(j)));
-            edge->setMeasurement(Sim3_j_i);
+        g2o::EdgeSim3* edge = new g2o::EdgeSim3();
+        edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(i)));
+        edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(j)));
+        edge->setMeasurement(Sim3_j_i);
 
-            edge->information() = information_matrix;
-            sparse_optimizer.addEdge(edge);
+        edge->information() = information_matrix;
+        sparse_optimizer.addEdge(edge);
     }
 
     /// LOOP CLOSURE EDGES

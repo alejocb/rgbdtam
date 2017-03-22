@@ -26,58 +26,58 @@
 
 loopcloser::loopcloser()
 {
-   cv::FileStorage  fs2( (ros::package::getPath("rgbdtam")+"/src/data.yml").c_str(), cv::FileStorage::READ);
+    cv::FileStorage  fs2( (ros::package::getPath("rgbdtam")+"/src/data.yml").c_str(), cv::FileStorage::READ);
 
-   use_kinect  = (int)fs2["use_kinect"];
+    use_kinect  = (int)fs2["use_kinect"];
 
-   cout << "Reading the Vocabulary and creating a database..." << endl;
+    cout << "Reading the Vocabulary and creating a database..." << endl;
 
-   char buffer[150];
-   sprintf (buffer,(ros::package::getPath("rgbdtam") + "/ThirdParty/DBoW2/ORBvoc.txt").c_str());
+    char buffer[150];
+    sprintf (buffer,(ros::package::getPath("rgbdtam") + "/ThirdParty/DBoW2/ORBvoc.txt").c_str());
 
-   // Reading vocabulary created by ORB-SLAM authors
-   orb_voc.loadFromTextFile(buffer);
-   ORBDatabase orb_db_aux(orb_voc, false, 0);
-   orb_db = orb_db_aux;
-   cout << orb_db << endl;
-   cout << "end!!" << endl;
+    // Reading vocabulary created by ORB-SLAM authors
+    orb_voc.loadFromTextFile(buffer);
+    ORBDatabase orb_db_aux(orb_voc, false, 0);
+    orb_db = orb_db_aux;
+    cout << orb_db << endl;
+    cout << "end!!" << endl;
 
-   pixel_error = 1.5;
-   //pixel_error = 2.0;
-   inliers_minimun = 15;
-   initial_kf = 0;
-   patch_size_for_depths = 0;
-   if(use_kinect == 0) patch_size_for_depths = 2;
+    pixel_error = 1.5;
+    //pixel_error = 2.0;
+    inliers_minimun = 15;
+    initial_kf = 0;
+    patch_size_for_depths = 0;
+    if(use_kinect == 0) patch_size_for_depths = 2;
 
-   number_loops_found = 0;
-   cv::Mat matchings_inliers_aux(0,2,CV_32FC1);
-   matchings_inliers = matchings_inliers_aux.clone();
+    number_loops_found = 0;
+    cv::Mat matchings_inliers_aux(0,2,CV_32FC1);
+    matchings_inliers = matchings_inliers_aux.clone();
 
-   camera2PCLadded = false;
+    camera2PCLadded = false;
 
-   viewer = new pcl::visualization::PCLVisualizer("Dense Map and camera position");
-   viewer->setBackgroundColor (0.75f,0.75f, 0.75f);
-   viewer->setSize(1100,1100);
+    viewer = new pcl::visualization::PCLVisualizer("Dense Map and camera position");
+    viewer->setBackgroundColor (0.75f,0.75f, 0.75f);
+    viewer->setSize(1100,1100);
 
-   //TODO: the viewer will not work if this auxiliar viewer1 is not added.
-   pcl::visualization::PCLVisualizer viewer1 ("aux viewer");
-   viewer1.setSize(3,3);
+    //TODO: the viewer will not work if this auxiliar viewer1 is not added.
+    pcl::visualization::PCLVisualizer viewer1 ("aux viewer");
+    viewer1.setSize(3,3);
 
-   depth_map_iterator = 1;
-   if(use_kinect == 1) depth_map_iterator = 6;
+    depth_map_iterator = 1;
+    if(use_kinect == 1) depth_map_iterator = 6;
 }
 
 void print_evaluation_(cv::Mat points,  char buffer[])
 {
-     ofstream out(buffer);
-     int num_points = points.rows;
+    ofstream out(buffer);
+    int num_points = points.rows;
 
 
-     int val = points.rows-1;
-     val = num_points;
+    int val = points.rows-1;
+    val = num_points;
 
-     for (int i = 0; i<= points.rows-1;i++)
-     {
+    for (int i = 0; i<= points.rows-1;i++)
+    {
         double val1 = points.at<double>(i,0);
         double val2 = points.at<double>(i,1);
         double val3 = points.at<double>(i,2);
@@ -89,40 +89,40 @@ void print_evaluation_(cv::Mat points,  char buffer[])
         {
             out << fixed << setprecision(5) << val1<< " " << fixed << setprecision(5) << val2 <<
                    " " << fixed << setprecision(5) << val3 \
-            << " "<< val4 << " "<< val5 << " "<< val6  << " "<< val7 << endl;
+                << " "<< val4 << " "<< val5 << " "<< val6  << " "<< val7 << endl;
         }
-     }
-     out.close();
- }
+    }
+    out.close();
+}
 
 void loopcloser::populate_denseMap(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud,cv::Mat pointcloud1)
 {
-     if(pointcloud1.rows > 0 && pointcloud1.cols > 3)
-     {
-         cv::Mat pointcloud = pointcloud1.clone();
-         cv::Mat color = pointcloud.colRange(3,6).clone();
-         color.convertTo(color,CV_16U);
+    if(pointcloud1.rows > 0 && pointcloud1.cols > 3)
+    {
+        cv::Mat pointcloud = pointcloud1.clone();
+        cv::Mat color = pointcloud.colRange(3,6).clone();
+        color.convertTo(color,CV_16U);
 
-         cloud->width = pointcloud.rows;
-         cloud->height = 1;
-         cloud->is_dense = false;
-         pointcloud.convertTo(pointcloud,CV_32FC1);
+        cloud->width = pointcloud.rows;
+        cloud->height = 1;
+        cloud->is_dense = false;
+        pointcloud.convertTo(pointcloud,CV_32FC1);
 
-         cloud->points.resize (cloud->width * cloud->height);
-         for(int i = 0; i < cloud->points.size(); i=i+1)
-         {
-             cloud->points[i].x = pointcloud.at<float>(i,0) ;
-             cloud->points[i].y = pointcloud.at<float>(i,1) ;
-             cloud->points[i].z = pointcloud.at<float>(i,2) ;
+        cloud->points.resize (cloud->width * cloud->height);
+        for(int i = 0; i < cloud->points.size(); i=i+1)
+        {
+            cloud->points[i].x = pointcloud.at<float>(i,0) ;
+            cloud->points[i].y = pointcloud.at<float>(i,1) ;
+            cloud->points[i].z = pointcloud.at<float>(i,2) ;
 
-             int r1 = pointcloud1.at<float>(i,3);
-             int r2 = pointcloud1.at<float>(i,4);
-             int r3 = pointcloud1.at<float>(i,5);
+            int r1 = pointcloud1.at<float>(i,3);
+            int r2 = pointcloud1.at<float>(i,4);
+            int r3 = pointcloud1.at<float>(i,5);
 
-             cloud->points[i].r =  r1;
-             cloud->points[i].g =  r2;
-             cloud->points[i].b =  r3;
-         }
+            cloud->points[i].r =  r1;
+            cloud->points[i].g =  r2;
+            cloud->points[i].b =  r3;
+        }
     }
 }
 
@@ -134,8 +134,8 @@ void loopcloser::calculate_median_of_a_vector(cv::Mat &errors,float &error)
 }
 
 void loopcloser::project_points_calculate_geometric_error(cv::Mat &points3D1, double fx,double fy,
-                                                           double cx,double cy,cv::Mat &coordinates2,
-                                                           cv::Mat &R2, cv::Mat &t2,cv::Mat &errors,float &error)
+                                                          double cx,double cy,cv::Mat &coordinates2,
+                                                          cv::Mat &R2, cv::Mat &t2,cv::Mat &errors,float &error)
 {
     cv::Mat t_r2 =  cv::repeat(t2,1,points3D1.cols);
     points3D1= R2*points3D1  + t_r2;
@@ -161,17 +161,17 @@ void loopcloser::project_points_calculate_geometric_error(cv::Mat &points3D1, do
 
 void loopcloser::print_poses(cv::Mat &points, char buffer[],int color,int points1rows)
 {
-      ofstream out(buffer);
+    ofstream out(buffer);
 
-     int num_points = points.rows;
+    int num_points = points.rows;
 
-     int val = points.rows-1;
-     val = num_points;
-     out << "ply" << endl;out << "format ascii 1.0" << endl;out << "element face 0" << endl;out << "property list uchar int vertex_indices" << endl;
-     out << "element vertex ";out << val << endl;out << "property float x" << endl;out << "property float y" << endl;out << "property float z" << endl;
-     out <<  "property uchar diffuse_red"<<endl;out << "property uchar diffuse_green" << endl;out << "property uchar diffuse_blue" << endl;out << "end_header" << endl;
-     for (int i = 0; i<= points.rows-1;i++)
-     {
+    int val = points.rows-1;
+    val = num_points;
+    out << "ply" << endl;out << "format ascii 1.0" << endl;out << "element face 0" << endl;out << "property list uchar int vertex_indices" << endl;
+    out << "element vertex ";out << val << endl;out << "property float x" << endl;out << "property float y" << endl;out << "property float z" << endl;
+    out <<  "property uchar diffuse_red"<<endl;out << "property uchar diffuse_green" << endl;out << "property uchar diffuse_blue" << endl;out << "end_header" << endl;
+    for (int i = 0; i<= points.rows-1;i++)
+    {
         double val1 = points.at<float>(i,0);
         double val2 = points.at<float>(i,1);
         double val3 = points.at<float>(i,2);
@@ -186,26 +186,26 @@ void loopcloser::print_poses(cv::Mat &points, char buffer[],int color,int points
         }
         {
             out << fixed  << val1<< " " << fixed  << val2 <<  " " << fixed << val3 \
-            << " "<< color1 << " "<< color2 << " "<< color3 << endl;
+                << " "<< color1 << " "<< color2 << " "<< color3 << endl;
         }
-     }
-     out.close();
- }
+    }
+    out.close();
+}
 
 void loopcloser::print_point_cloud(cv::Mat &points, char buffer[])
 {
-     points.convertTo(points,CV_32FC1);
-      ofstream out(buffer);
+    points.convertTo(points,CV_32FC1);
+    ofstream out(buffer);
 
-     int num_points = points.rows;
+    int num_points = points.rows;
 
-     int val = points.rows-1;
-     val = num_points;
-     out << "ply" << endl;out << "format ascii 1.0" << endl;out << "element face 0" << endl;out << "property list uchar int vertex_indices" << endl;
-     out << "element vertex ";out << val << endl;out << "property float x" << endl;out << "property float y" << endl;out << "property float z" << endl;
-     out <<  "property uchar diffuse_red"<<endl;out << "property uchar diffuse_green" << endl;out << "property uchar diffuse_blue" << endl;out << "end_header" << endl;
-     for (int i = 0; i<= points.rows-1;i++)
-     {
+    int val = points.rows-1;
+    val = num_points;
+    out << "ply" << endl;out << "format ascii 1.0" << endl;out << "element face 0" << endl;out << "property list uchar int vertex_indices" << endl;
+    out << "element vertex ";out << val << endl;out << "property float x" << endl;out << "property float y" << endl;out << "property float z" << endl;
+    out <<  "property uchar diffuse_red"<<endl;out << "property uchar diffuse_green" << endl;out << "property uchar diffuse_blue" << endl;out << "end_header" << endl;
+    for (int i = 0; i<= points.rows-1;i++)
+    {
         double val1 = points.at<float>(i,0);
         double val2 = points.at<float>(i,1);
         double val3 = points.at<float>(i,2);
@@ -216,31 +216,31 @@ void loopcloser::print_point_cloud(cv::Mat &points, char buffer[])
 
         {
             out << fixed  << val1<< " " << fixed  << val2 <<  " " << fixed << val3 \
-            << " "<< color1 << " "<< color2 << " "<< color3 << endl;
+                << " "<< color1 << " "<< color2 << " "<< color3 << endl;
         }
-     }
-     out.close();
- }
+    }
+    out.close();
+}
 
 // function borrowed from ORB_SLAM code
 std::vector <std::string> loopcloser::read_directory( const std::string& path )
 {
-      std::vector <std::string> result;
-      dirent* de;
-      DIR* dp;
-      dp = opendir( path.empty() ? "." : path.c_str() );
-      if (dp)
-        {
+    std::vector <std::string> result;
+    dirent* de;
+    DIR* dp;
+    dp = opendir( path.empty() ? "." : path.c_str() );
+    if (dp)
+    {
         while (true)
-          {
-          de = readdir( dp );
-          if (de == NULL) break;
-          result.push_back( std::string( de->d_name ) );
-          }
+        {
+            de = readdir( dp );
+            if (de == NULL) break;
+            result.push_back( std::string( de->d_name ) );
+        }
         closedir( dp );
         std::sort( result.begin(), result.end() );
-        }
-      return result;
+    }
+    return result;
 }
 
 void loopcloser::print_keyframes_after_optimization()
@@ -265,69 +265,69 @@ void loopcloser::print_keyframes_after_optimization()
 
             bool print_this_kf = false;
             for (int ii = 0 ; ii < matchings_inliers.rows; ii = ii+1)
-             {
-                 if (matchings_inliers.at<float>(ii,0)== i)
-                 {
-                     print_this_kf = true;
-                 }
-                 if (matchings_inliers.at<float>(ii,1)== i)
-                 {
-                     print_this_kf = true;
-                 }
-             }
+            {
+                if (matchings_inliers.at<float>(ii,0)== i)
+                {
+                    print_this_kf = true;
+                }
+                if (matchings_inliers.at<float>(ii,1)== i)
+                {
+                    print_this_kf = true;
+                }
+            }
 
             point_cloud_keyframe = point_cloud_keyframe.colRange(0,6);
 
 
             if (point_cloud_keyframe.rows > 0  && point_cloud_keyframe.cols == 6)
             {
-                    cv::Mat point_cloud_xyz = point_cloud_keyframe.colRange(0,3);
+                cv::Mat point_cloud_xyz = point_cloud_keyframe.colRange(0,3);
 
-                    point_cloud_xyz = point_cloud_xyz.t();
+                point_cloud_xyz = point_cloud_xyz.t();
 
-                    cv::Mat R_init,t_init, R_end,t_end,t_init_vector,t_end_vector;
-                    R_init = keyframes_vector.at(i).R.clone();
-                    t_init = keyframes_vector.at(i).t.clone();
-                    R_end = R_after_opt.at(i).clone();
-                    t_end = t_after_opt.at(i).clone();
-                    t_end = t_end.t();
-
-
-                    R_init.convertTo(R_init,CV_64FC1);
-                    t_init.convertTo(t_init,CV_64FC1);
-                    R_end.convertTo(R_end,CV_64FC1);
-                    t_end.convertTo(t_end,CV_64FC1);
-
-                    t_end_vector =   cv::repeat(t_end, 1,point_cloud_xyz.cols);
-                    t_init_vector =  cv::repeat(t_init,1,point_cloud_xyz.cols);
+                cv::Mat R_init,t_init, R_end,t_end,t_init_vector,t_end_vector;
+                R_init = keyframes_vector.at(i).R.clone();
+                t_init = keyframes_vector.at(i).t.clone();
+                R_end = R_after_opt.at(i).clone();
+                t_end = t_after_opt.at(i).clone();
+                t_end = t_end.t();
 
 
-                    point_cloud_xyz = R_init * point_cloud_xyz + t_init_vector;
-                    point_cloud_xyz = s_after_opt.at(i) * R_end * point_cloud_xyz + t_end_vector;
+                R_init.convertTo(R_init,CV_64FC1);
+                t_init.convertTo(t_init,CV_64FC1);
+                R_end.convertTo(R_end,CV_64FC1);
+                t_end.convertTo(t_end,CV_64FC1);
 
-                    point_cloud_xyz = point_cloud_xyz.t();
-
-                    for (int j = 0 ; j < point_cloud_xyz.rows; j++)
-                    {
-                        point_cloud_keyframe.at<double>(j,0) = point_cloud_xyz.at<double>(j,0);
-                        point_cloud_keyframe.at<double>(j,1) = point_cloud_xyz.at<double>(j,1);
-                        point_cloud_keyframe.at<double>(j,2) = point_cloud_xyz.at<double>(j,2);
-                    }
-
-                    if(print_this_kf  )
-                        point_cloud_keyframes_after_opt.push_back(point_cloud_keyframe);
-
-                    point_cloud_keyframes_after_opt_total.push_back(point_cloud_keyframe);
+                t_end_vector =   cv::repeat(t_end, 1,point_cloud_xyz.cols);
+                t_init_vector =  cv::repeat(t_init,1,point_cloud_xyz.cols);
 
 
-                    /// UPDATE POINTCLOUD IN THE VISUALIZER
-                    char buffer[150];
-                    point_cloud_keyframe.convertTo(point_cloud_keyframe,CV_32FC1);
-                    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-                    populate_denseMap(cloud, point_cloud_keyframe);
-                    sprintf(buffer,"denseMap%d", keyframes_vector.at(i).num_keyframe);
-                    viewer->updatePointCloud (cloud,buffer);
-                    /// UPDATE POINTCLOUD IN THE VISUALIZER
+                point_cloud_xyz = R_init * point_cloud_xyz + t_init_vector;
+                point_cloud_xyz = s_after_opt.at(i) * R_end * point_cloud_xyz + t_end_vector;
+
+                point_cloud_xyz = point_cloud_xyz.t();
+
+                for (int j = 0 ; j < point_cloud_xyz.rows; j++)
+                {
+                    point_cloud_keyframe.at<double>(j,0) = point_cloud_xyz.at<double>(j,0);
+                    point_cloud_keyframe.at<double>(j,1) = point_cloud_xyz.at<double>(j,1);
+                    point_cloud_keyframe.at<double>(j,2) = point_cloud_xyz.at<double>(j,2);
+                }
+
+                if(print_this_kf  )
+                    point_cloud_keyframes_after_opt.push_back(point_cloud_keyframe);
+
+                point_cloud_keyframes_after_opt_total.push_back(point_cloud_keyframe);
+
+
+                /// UPDATE POINTCLOUD IN THE VISUALIZER
+                char buffer[150];
+                point_cloud_keyframe.convertTo(point_cloud_keyframe,CV_32FC1);
+                pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
+                populate_denseMap(cloud, point_cloud_keyframe);
+                sprintf(buffer,"denseMap%d", keyframes_vector.at(i).num_keyframe);
+                viewer->updatePointCloud (cloud,buffer);
+                /// UPDATE POINTCLOUD IN THE VISUALIZER
             }
         }
     }
@@ -337,18 +337,18 @@ void loopcloser::print_keyframes_after_optimization()
         if(keyframes_vector.at(i).num_keyframe % depth_map_iterator==0 && keyframes_vector.at(i).point_cloud_toprint.rows > 0)
         {
 
-             bool print_this_kf = false;
-             for (int ii = 0 ; ii < matchings_inliers.rows; ii = ii+1)
-             {
-                 if (matchings_inliers.at<float>(ii,0)== i)
-                 {
-                     print_this_kf = true;
-                 }
-                 if (matchings_inliers.at<float>(ii,1)== i)
-                 {
-                     print_this_kf = true;
-                 }
-             }
+            bool print_this_kf = false;
+            for (int ii = 0 ; ii < matchings_inliers.rows; ii = ii+1)
+            {
+                if (matchings_inliers.at<float>(ii,0)== i)
+                {
+                    print_this_kf = true;
+                }
+                if (matchings_inliers.at<float>(ii,1)== i)
+                {
+                    print_this_kf = true;
+                }
+            }
 
             cv::Mat point_cloud_keyframe = keyframes_vector.at(i).point_cloud_toprint.clone();
             point_cloud_keyframe = point_cloud_keyframe.colRange(0,6);
@@ -357,10 +357,10 @@ void loopcloser::print_keyframes_after_optimization()
             if (print_this_kf )
             {
                 if (point_cloud_keyframe.rows > 0 && point_cloud_keyframe.cols == 6)
-                point_cloud_keyframes_without_opt.push_back(point_cloud_keyframe);
+                    point_cloud_keyframes_without_opt.push_back(point_cloud_keyframe);
             }
             if (point_cloud_keyframe.rows > 0  && point_cloud_keyframe.cols == 6)
-            point_cloud_keyframes_without_opt_total.push_back(point_cloud_keyframe);
+                point_cloud_keyframes_without_opt_total.push_back(point_cloud_keyframe);
         }
 
     }
@@ -414,12 +414,12 @@ void loopcloser::calculate_orb_and_load_features(  cv::Mat &image,vector<cv::Mat
         orb(image_orb, mask_orb, keypoints_orb, descriptors_orb);
         changeStructure_orb(descriptors_orb, features.back(), orb.descriptorSize());
         features_back = features.back();
-   }
+    }
 }
 
 
 void loopcloser::calculate_orb_features(  cv::Mat &image,vector<cv::Mat> &features_back,
-                                                   vector<cv::KeyPoint> &keypoints_orb,cv::Mat &descriptors_orb)
+                                          vector<cv::KeyPoint> &keypoints_orb,cv::Mat &descriptors_orb)
 {
     cv::Mat image_orb = image.clone();
     if (image_orb.rows >100 )
@@ -435,14 +435,14 @@ void loopcloser::calculate_orb_features(  cv::Mat &image,vector<cv::Mat> &featur
         orb(image_orb, mask_orb, keypoints_orb, descriptors_orb);
         changeStructure_orb(descriptors_orb, features_aux.back(), orb.descriptorSize());
         features_back = features_aux.back();
-   }
+    }
 }
 
 
 
 void loopcloser::backproject_matchedKpts_from_depth_map(cv::Mat &coordinates1,cv::Mat &final_depth_map1,cv::Mat &R1,cv::Mat &t1,
-                                             cv::Mat &coordinates2,cv::Mat &final_depth_map2,cv::Mat &R2,cv::Mat &t2,\
-                                             float &fx,float &fy,float &cx,float &cy,cv::Mat &points3D1,cv::Mat &points3D2)
+                                                        cv::Mat &coordinates2,cv::Mat &final_depth_map2,cv::Mat &R2,cv::Mat &t2,\
+                                                        float &fx,float &fy,float &cx,float &cy,cv::Mat &points3D1,cv::Mat &points3D2)
 {
     cv::Mat points1(0,3,CV_32FC1);
     cv::Mat points2(0,3,CV_32FC1);
@@ -535,7 +535,7 @@ void loopcloser::backproject_matchedKpts_from_depth_map(cv::Mat &coordinates1,cv
 
 
 void loopcloser::backproject_matchedKpts_from_depth_map(cv::Mat &coordinates1,cv::Mat &coordinates2,cv::Mat &final_depth_map1,cv::Mat &R1,cv::Mat &t1,
-                                             float &fx,float &fy,float &cx,float &cy,cv::Mat &points3D1)
+                                                        float &fx,float &fy,float &cx,float &cy,cv::Mat &points3D1)
 {
     cv::Mat points1(0,3,CV_32FC1);
 
@@ -562,7 +562,7 @@ void loopcloser::backproject_matchedKpts_from_depth_map(cv::Mat &coordinates1,cv
                     {
                         num_depths1++;
                         depth1+= final_depth_map1.at<float>(jj,ii);
-                     }
+                    }
                 }
             }
         }
@@ -623,8 +623,8 @@ void loopcloser::check_area_covered_by_features(float cx,float cy, cv::Mat &coor
         }
     }
 
-     area = (max_x - min_x) *  (max_y - min_y) / (cx*cy);
-  }
+    area = (max_x - min_x) *  (max_y - min_y) / (cx*cy);
+}
 
 void loopcloser::ransac_for_alignment(cv::Mat &model,cv::Mat &data,cv::Mat  &R_rel, cv::Mat  &t_rel,\
                                       float &scale,cv::Mat &matchings,cv::Mat &points3D1,
@@ -688,7 +688,7 @@ void loopcloser::ransac_for_alignment(cv::Mat &model,cv::Mat &data,cv::Mat  &R_r
 
         horn_alignment(model_5points,data_5points,R_rel,t_rel,scale);
 
-         // SELECT 5 POINT
+        // SELECT 5 POINT
         // CALCULATE ERRORS
 
         cv::Mat t_rel_vector =  cv::repeat(t_rel,1,model.cols);
@@ -701,7 +701,7 @@ void loopcloser::ransac_for_alignment(cv::Mat &model,cv::Mat &data,cv::Mat  &R_r
         cv::Mat points3D1_aux = points3D1.t();
 
         project_points_calculate_geometric_error(points3D1_aux,
-                keyframes_vector[matchings.at<float>(i,0)].fx,
+                                                 keyframes_vector[matchings.at<float>(i,0)].fx,
                 keyframes_vector[matchings.at<float>(i,0)].fy,
                 keyframes_vector[matchings.at<float>(i,0)].cx,
                 keyframes_vector[matchings.at<float>(i,0)].cy,
@@ -740,82 +740,82 @@ void loopcloser::ransac_for_alignment(cv::Mat &model,cv::Mat &data,cv::Mat  &R_r
 
         if (error3D_filtered.rows > inliers_minimun)
         {
-                cv::Mat error3D  = cv::abs(data-model);
-                error3D = error3D.colRange(0,1) + error3D.colRange(1,2) + error3D.colRange(2,3);
+            cv::Mat error3D  = cv::abs(data-model);
+            error3D = error3D.colRange(0,1) + error3D.colRange(1,2) + error3D.colRange(2,3);
 
-                cv::Mat sorted_3Derror;
-                cv::sort(error3D_filtered,sorted_3Derror,CV_SORT_EVERY_COLUMN + CV_SORT_ASCENDING);
+            cv::Mat sorted_3Derror;
+            cv::sort(error3D_filtered,sorted_3Derror,CV_SORT_EVERY_COLUMN + CV_SORT_ASCENDING);
 
-                for (int k = 0 ; k < errors2filtered.rows; k++)
+            for (int k = 0 ; k < errors2filtered.rows; k++)
+            {
+                if (errors2filtered.at<float>(k,0) < pixel_error * std::pow(1.2,keypoint_scale.at<float>(k,0)) )
                 {
-                    if (errors2filtered.at<float>(k,0) < pixel_error * std::pow(1.2,keypoint_scale.at<float>(k,0)) )
-                    {
-                        model_filtered.push_back(model.row(k));
-                        data_filtered.push_back(data.row(k));
-                        coordinates2_filtered.push_back(coordinates2.row(k));
-                        keypoint_scales_filtered.push_back(keypoint_scale.at<float>(k,0));
-                    }
+                    model_filtered.push_back(model.row(k));
+                    data_filtered.push_back(data.row(k));
+                    coordinates2_filtered.push_back(coordinates2.row(k));
+                    keypoint_scales_filtered.push_back(keypoint_scale.at<float>(k,0));
                 }
-                // REMOVE OUTLIERS
+            }
+            // REMOVE OUTLIERS
         }
 
 
         // UPDATE BEST TRANSFORMATION
         if (model_filtered.rows > inliers_minimun  )
         {
-                model = model_filtered.clone();
-                data = data_filtered.clone();
-                coordinates2 = coordinates2_filtered.clone();
+            model = model_filtered.clone();
+            data = data_filtered.clone();
+            coordinates2 = coordinates2_filtered.clone();
 
-                model = model.t();
-                data = data.t();
+            model = model.t();
+            data = data.t();
 
 
-                float area_covered = 0;
-                check_area_covered_by_features(keyframes_vector[0].image.cols,keyframes_vector[0].image.rows,coordinates2,area_covered);
+            float area_covered = 0;
+            check_area_covered_by_features(keyframes_vector[0].image.cols,keyframes_vector[0].image.rows,coordinates2,area_covered);
 
-                if (model.cols > inliers  && area_covered > 0.15 && area_covered > area_min)
+            if (model.cols > inliers  && area_covered > 0.15 && area_covered > area_min)
+            {
+                horn_alignment(model,data,R_rel_final,t_rel_final,scale);
+                cv::Mat t_rel_vector =  cv::repeat(t_rel_final,1,model.cols);
+
+                model = scale*R_rel_final*model + t_rel_vector;
+
+                /// CALCULATE ERROR FINAL
+                points3D1 = model.t();
+
+                cv::Mat errors(points3D1.rows,1,CV_32FC1);
+                cv::Mat points3D1_aux = points3D1.t();
+
+                project_points_calculate_geometric_error(points3D1_aux,
+                                                         keyframes_vector[matchings.at<float>(i,0)].fx,
+                        keyframes_vector[matchings.at<float>(i,0)].fy,
+                        keyframes_vector[matchings.at<float>(i,0)].cx,
+                        keyframes_vector[matchings.at<float>(i,0)].cy,
+                        coordinates2,keyframes_vector[matchings.at<float>(i,1)].R,
+                        keyframes_vector[matchings.at<float>(i,1)].t,errors,error);
+
+                int inliers_aux = 0;
+                for (int k = 0 ; k < errors.rows; k++)
                 {
-                    horn_alignment(model,data,R_rel_final,t_rel_final,scale);
-                    cv::Mat t_rel_vector =  cv::repeat(t_rel_final,1,model.cols);
-
-                    model = scale*R_rel_final*model + t_rel_vector;
-
-                    /// CALCULATE ERROR FINAL
-                    points3D1 = model.t();
-
-                    cv::Mat errors(points3D1.rows,1,CV_32FC1);
-                    cv::Mat points3D1_aux = points3D1.t();
-
-                    project_points_calculate_geometric_error(points3D1_aux,
-                            keyframes_vector[matchings.at<float>(i,0)].fx,
-                            keyframes_vector[matchings.at<float>(i,0)].fy,
-                            keyframes_vector[matchings.at<float>(i,0)].cx,
-                            keyframes_vector[matchings.at<float>(i,0)].cy,
-                            coordinates2,keyframes_vector[matchings.at<float>(i,1)].R,
-                            keyframes_vector[matchings.at<float>(i,1)].t,errors,error);
-
-                    int inliers_aux = 0;
-                    for (int k = 0 ; k < errors.rows; k++)
+                    if (errors.at<float>(k,0) < pixel_error * std::pow(1.2,keypoint_scales_filtered.at<float>(k,0)) )
                     {
-                        if (errors.at<float>(k,0) < pixel_error * std::pow(1.2,keypoint_scales_filtered.at<float>(k,0)) )
-                        {
-                            inliers_aux++;
-                        }
+                        inliers_aux++;
                     }
-
-                    if(inliers_aux > inliers)
-                    {
-                        inliers = model.cols;
-                        inliers = inliers_aux;
-                        errors2filtered = errors.clone();
-                        error_final = error;
-                        scale_final = scale;
-                        area_min = area_covered;
-                        keyframes_vector[matchings.at<float>(i,1)].scale = scale;
-                    }
-                    /// CALCULATE ERROR FINAL
                 }
+
+                if(inliers_aux > inliers)
+                {
+                    inliers = model.cols;
+                    inliers = inliers_aux;
+                    errors2filtered = errors.clone();
+                    error_final = error;
+                    scale_final = scale;
+                    area_min = area_covered;
+                    keyframes_vector[matchings.at<float>(i,1)].scale = scale;
+                }
+                /// CALCULATE ERROR FINAL
+            }
         }
         // UPDATE BEST TRANSFORMATION
     }
@@ -932,9 +932,9 @@ void loopcloser::horn_alignment(cv::Mat &model,cv::Mat &data,cv::Mat  &R_rel, cv
 }
 
 void loopcloser::feature_matching_and_edge_estimation(cv::Mat &matchings,cv::Mat &matchings_inliers,
-                                  vector<cv::Mat> &R_vector_edges,
-                                  vector<cv::Mat> &t_vector_edges,
-                                  vector<float> &s_vector_edges)
+                                                      vector<cv::Mat> &R_vector_edges,
+                                                      vector<cv::Mat> &t_vector_edges,
+                                                      vector<float> &s_vector_edges)
 {
     int img_cols = 0;
     int img_rows = 0;
@@ -1001,17 +1001,17 @@ void loopcloser::feature_matching_and_edge_estimation(cv::Mat &matchings,cv::Mat
         for (int ii = 0;ii < matches.size();ii++)
         {
             if (matches[ii].distance < minimun_distance*3)
-            //if (matches[ii].distance < mean_distance)
-            //if (matches[ii].distance < median_distance)
+                //if (matches[ii].distance < mean_distance)
+                //if (matches[ii].distance < median_distance)
             {
                 matches_good.push_back(matches[ii]);
 
                 if (keypoints_orb1[matches[ii].queryIdx ].pt.x > 0 && keypoints_orb1[matches[ii].queryIdx ].pt.x < img_cols
-                    && keypoints_orb1[matches[ii].queryIdx ].pt.y > 0 && keypoints_orb1[matches[ii].queryIdx ].pt.y < img_rows
-                    && keypoints_orb2[matches[ii].trainIdx ].pt.x > 0 && keypoints_orb2[matches[ii].trainIdx ].pt.x < img_cols
-                    && keypoints_orb2[matches[ii].trainIdx ].pt.y > 0 && keypoints_orb2[matches[ii].trainIdx ].pt.y < img_rows
-                    && keypoints_orb1[matches[ii].queryIdx ].octave   < 5
-                    && keypoints_orb2[matches[ii].trainIdx ].octave < 5)
+                        && keypoints_orb1[matches[ii].queryIdx ].pt.y > 0 && keypoints_orb1[matches[ii].queryIdx ].pt.y < img_rows
+                        && keypoints_orb2[matches[ii].trainIdx ].pt.x > 0 && keypoints_orb2[matches[ii].trainIdx ].pt.x < img_cols
+                        && keypoints_orb2[matches[ii].trainIdx ].pt.y > 0 && keypoints_orb2[matches[ii].trainIdx ].pt.y < img_rows
+                        && keypoints_orb1[matches[ii].queryIdx ].octave   < 5
+                        && keypoints_orb2[matches[ii].trainIdx ].octave < 5)
                 {
                     coordinates_aux.at<float>(0,0) = keypoints_orb1[matches[ii].queryIdx ].pt.x;
                     coordinates_aux.at<float>(0,1) = keypoints_orb1[matches[ii].queryIdx ].pt.y;
@@ -1033,12 +1033,12 @@ void loopcloser::feature_matching_and_edge_estimation(cv::Mat &matchings,cv::Mat
 
         cv::Mat points3D1,points3D2;
         backproject_matchedKpts_from_depth_map(coordinates1,keyframes_vector[matchings.at<float>(i,0)].final_depth_map,
-                 keyframes_vector[matchings.at<float>(i,0)].R, keyframes_vector[matchings.at<float>(i,0)].t,
-                 coordinates2,keyframes_vector[matchings.at<float>(i,1)].final_depth_map,
-                 keyframes_vector[matchings.at<float>(i,1)].R, keyframes_vector[matchings.at<float>(i,1)].t,
-                 keyframes_vector[matchings.at<float>(i,0)].fx, keyframes_vector[matchings.at<float>(i,0)].fy,
-                 keyframes_vector[matchings.at<float>(i,0)].cx, keyframes_vector[matchings.at<float>(i,0)].cy,\
-                 points3D1,points3D2);
+                keyframes_vector[matchings.at<float>(i,0)].R, keyframes_vector[matchings.at<float>(i,0)].t,
+                coordinates2,keyframes_vector[matchings.at<float>(i,1)].final_depth_map,
+                keyframes_vector[matchings.at<float>(i,1)].R, keyframes_vector[matchings.at<float>(i,1)].t,
+                keyframes_vector[matchings.at<float>(i,0)].fx, keyframes_vector[matchings.at<float>(i,0)].fy,
+                keyframes_vector[matchings.at<float>(i,0)].cx, keyframes_vector[matchings.at<float>(i,0)].cy,\
+                points3D1,points3D2);
 
 
         if (points3D1.rows > inliers_minimun)
@@ -1053,8 +1053,8 @@ void loopcloser::feature_matching_and_edge_estimation(cv::Mat &matchings,cv::Mat
 
             int inliers = inliers_minimun;
             ransac_for_alignment(model,data,R_rel,t_rel,scale,matchings,points3D1,coordinates2,keypoint_scale,error,i,
-                                keyframes_vector[matchings.at<float>(i,0)].R,keyframes_vector[matchings.at<float>(i,0)].t,
-                                keyframes_vector[matchings.at<float>(i,1)].R,keyframes_vector[matchings.at<float>(i,1)].t, inliers);
+                                 keyframes_vector[matchings.at<float>(i,0)].R,keyframes_vector[matchings.at<float>(i,0)].t,
+                    keyframes_vector[matchings.at<float>(i,1)].R,keyframes_vector[matchings.at<float>(i,1)].t, inliers);
 
             if (inliers > inliers_minimun  )
             {
@@ -1080,7 +1080,7 @@ void loopcloser::get_potential_keyframes(cv::Mat &image, cv::Mat &matchings, int
 
 
     if(matchings.rows == 0 && points_tracked >  0.25*image.rows/8*image.cols/8)
-    get_scores_for_mapreuse(features_orb,matchings,features_orb.size(),keyframes_vector.size(),0.30,5,1000);
+        get_scores_for_mapreuse(features_orb,matchings,features_orb.size(),keyframes_vector.size(),0.30,5,1000);
 }
 
 void loopcloser::relocalization(cv::Mat &image,cv::Mat &R, cv::Mat &t, int &oldest_kf, cv::Mat &matchings)
@@ -1093,7 +1093,7 @@ void loopcloser::relocalization(cv::Mat &image,cv::Mat &R, cv::Mat &t, int &olde
 
 
     if(matchings.rows == 0)
-    get_score_for_relocalization(features_orb,matchings,features_orb.size(),1,0.30,INT64_MIN,INT64_MAX);
+        get_score_for_relocalization(features_orb,matchings,features_orb.size(),1,0.30,INT64_MIN,INT64_MAX);
 
 
 
@@ -1104,123 +1104,123 @@ void loopcloser::relocalization(cv::Mat &image,cv::Mat &R, cv::Mat &t, int &olde
     {
         if(!isRelocalized)
         {
-                vector<cv::KeyPoint> keypoints_orb1;
-                cv::Mat descriptors_orb1;
+            vector<cv::KeyPoint> keypoints_orb1;
+            cv::Mat descriptors_orb1;
 
-                vector<cv::KeyPoint> keypoints_orb2;
-                cv::Mat descriptors_orb2;
-
-
-                img_cols = keyframes_vector[matchings.at<float>(i,1)].image.cols;
-                img_rows =  keyframes_vector[matchings.at<float>(i,1)].image.rows;
+            vector<cv::KeyPoint> keypoints_orb2;
+            cv::Mat descriptors_orb2;
 
 
-                descriptors_orb1 = keyframes_vector[matchings.at<float>(i,1)].descriptors_orb.clone();
-                keypoints_orb1   = keyframes_vector[matchings.at<float>(i,1)].keypoints_orb;
-
-                descriptors_orb2 = descriptors_orb.clone();
-                keypoints_orb2   = keypoints_orb;
+            img_cols = keyframes_vector[matchings.at<float>(i,1)].image.cols;
+            img_rows =  keyframes_vector[matchings.at<float>(i,1)].image.rows;
 
 
+            descriptors_orb1 = keyframes_vector[matchings.at<float>(i,1)].descriptors_orb.clone();
+            keypoints_orb1   = keyframes_vector[matchings.at<float>(i,1)].keypoints_orb;
+
+            descriptors_orb2 = descriptors_orb.clone();
+            keypoints_orb2   = keypoints_orb;
 
 
-                cv::BFMatcher matcher( cv::NORM_HAMMING, true );
-                std::vector< cv::DMatch > matches;
-                matcher.match( descriptors_orb1, descriptors_orb2, matches );
 
 
-                std::vector< cv::DMatch > matches_good;
+            cv::BFMatcher matcher( cv::NORM_HAMMING, true );
+            std::vector< cv::DMatch > matches;
+            matcher.match( descriptors_orb1, descriptors_orb2, matches );
 
 
-                cv::Mat coordinates1(0,2,CV_32FC1);
-                cv::Mat coordinates2(0,2,CV_32FC1);
-                cv::Mat keypoint_scale(0,1,CV_32FC1);
-                cv::Mat coordinates_aux(1,2,CV_32FC1);
+            std::vector< cv::DMatch > matches_good;
 
-                float minimun_distance = INFINITY;
-                float median_distance = 0;
-                float mean_distance = 0;
 
-                cv::Mat distances_btw_mathces(matches.size(),1,CV_32FC1);
-                for (int ii = 0;ii < matches.size();ii++)
+            cv::Mat coordinates1(0,2,CV_32FC1);
+            cv::Mat coordinates2(0,2,CV_32FC1);
+            cv::Mat keypoint_scale(0,1,CV_32FC1);
+            cv::Mat coordinates_aux(1,2,CV_32FC1);
+
+            float minimun_distance = INFINITY;
+            float median_distance = 0;
+            float mean_distance = 0;
+
+            cv::Mat distances_btw_mathces(matches.size(),1,CV_32FC1);
+            for (int ii = 0;ii < matches.size();ii++)
+            {
+                mean_distance += matches[ii].distance /  matches.size();
+                distances_btw_mathces.at<float>(ii,0) = matches[ii].distance;
+                if (matches[ii].distance < minimun_distance)
                 {
-                    mean_distance += matches[ii].distance /  matches.size();
-                    distances_btw_mathces.at<float>(ii,0) = matches[ii].distance;
-                    if (matches[ii].distance < minimun_distance)
-                    {
-                        minimun_distance = matches[ii].distance;
-                    }
+                    minimun_distance = matches[ii].distance;
                 }
-                calculate_median_of_a_vector(distances_btw_mathces,median_distance);
+            }
+            calculate_median_of_a_vector(distances_btw_mathces,median_distance);
 
-                for (int ii = 0;ii < matches.size();ii++)
+            for (int ii = 0;ii < matches.size();ii++)
+            {
+                //if (matches[ii].distance < minimun_distance*3)
                 {
-                    //if (matches[ii].distance < minimun_distance*3)
-                    {
-                        matches_good.push_back(matches[ii]);
-                        /*if (keypoints_orb1[matches[ii].queryIdx ].pt.x > 0 && keypoints_orb1[matches[ii].queryIdx ].pt.x < img_cols
+                    matches_good.push_back(matches[ii]);
+                    /*if (keypoints_orb1[matches[ii].queryIdx ].pt.x > 0 && keypoints_orb1[matches[ii].queryIdx ].pt.x < img_cols
                             && keypoints_orb1[matches[ii].queryIdx ].pt.y > 0 && keypoints_orb1[matches[ii].queryIdx ].pt.y < img_rows
                             && keypoints_orb2[matches[ii].trainIdx ].pt.x > 0 && keypoints_orb2[matches[ii].trainIdx ].pt.x < img_cols
                             && keypoints_orb2[matches[ii].trainIdx ].pt.y > 0 && keypoints_orb2[matches[ii].trainIdx ].pt.y < img_rows)*/
-                           // && keypoints_orb1[matches[ii].queryIdx ].octave < 5
-                           // && keypoints_orb2[matches[ii].trainIdx ].octave < 5)
-                        {
-                            coordinates_aux.at<float>(0,0) = keypoints_orb1[matches[ii].queryIdx ].pt.x;
-                            coordinates_aux.at<float>(0,1) = keypoints_orb1[matches[ii].queryIdx ].pt.y;
-                            coordinates1.push_back(coordinates_aux);
-                            coordinates_aux.at<float>(0,0) = keypoints_orb2[matches[ii].trainIdx ].pt.x;
-                            coordinates_aux.at<float>(0,1) = keypoints_orb2[matches[ii].trainIdx ].pt.y;
-                            coordinates2.push_back(coordinates_aux);
+                    // && keypoints_orb1[matches[ii].queryIdx ].octave < 5
+                    // && keypoints_orb2[matches[ii].trainIdx ].octave < 5)
+                    {
+                        coordinates_aux.at<float>(0,0) = keypoints_orb1[matches[ii].queryIdx ].pt.x;
+                        coordinates_aux.at<float>(0,1) = keypoints_orb1[matches[ii].queryIdx ].pt.y;
+                        coordinates1.push_back(coordinates_aux);
+                        coordinates_aux.at<float>(0,0) = keypoints_orb2[matches[ii].trainIdx ].pt.x;
+                        coordinates_aux.at<float>(0,1) = keypoints_orb2[matches[ii].trainIdx ].pt.y;
+                        coordinates2.push_back(coordinates_aux);
 
 
-                            if (keypoints_orb1[matches[ii].queryIdx ].octave <= keypoints_orb2[matches[ii].trainIdx ].octave )
-                            {keypoint_scale.push_back(keypoints_orb1[matches[ii].queryIdx ].octave );}else{
-                                keypoint_scale.push_back(keypoints_orb2[matches[ii].trainIdx ].octave );
-                            }
+                        if (keypoints_orb1[matches[ii].queryIdx ].octave <= keypoints_orb2[matches[ii].trainIdx ].octave )
+                        {keypoint_scale.push_back(keypoints_orb1[matches[ii].queryIdx ].octave );}else{
+                            keypoint_scale.push_back(keypoints_orb2[matches[ii].trainIdx ].octave );
                         }
                     }
                 }
+            }
 
 
-                cv::Mat points3D1;
-                backproject_matchedKpts_from_depth_map(coordinates1,coordinates2,keyframes_vector[matchings.at<float>(i,1)].final_depth_map,
-                         keyframes_vector[matchings.at<float>(i,1)].R, keyframes_vector[matchings.at<float>(i,1)].t,
-                         keyframes_vector[matchings.at<float>(i,1)].fx, keyframes_vector[matchings.at<float>(i,1)].fy,
-                         keyframes_vector[matchings.at<float>(i,1)].cx, keyframes_vector[matchings.at<float>(i,1)].cy,\
-                         points3D1);
+            cv::Mat points3D1;
+            backproject_matchedKpts_from_depth_map(coordinates1,coordinates2,keyframes_vector[matchings.at<float>(i,1)].final_depth_map,
+                    keyframes_vector[matchings.at<float>(i,1)].R, keyframes_vector[matchings.at<float>(i,1)].t,
+                    keyframes_vector[matchings.at<float>(i,1)].fx, keyframes_vector[matchings.at<float>(i,1)].fy,
+                    keyframes_vector[matchings.at<float>(i,1)].cx, keyframes_vector[matchings.at<float>(i,1)].cy,\
+                    points3D1);
 
-                cv::Mat cameraMatrix = (cv::Mat_<float>(3,3) << keyframes_vector[matchings.at<float>(i,1)].fx, 0., keyframes_vector[matchings.at<float>(i,1)].cx,
-                                                                 0., keyframes_vector[matchings.at<float>(i,1)].fy , keyframes_vector[matchings.at<float>(i,1)].cy,
-                                                                 0., 0., 1.);
-                cv::Mat distCoeffs = (cv::Mat_<float>(4,1) <<  0.0, 0.0, 0.0, 0.0);
+            cv::Mat cameraMatrix = (cv::Mat_<float>(3,3) << keyframes_vector[matchings.at<float>(i,1)].fx, 0., keyframes_vector[matchings.at<float>(i,1)].cx,
+                    0., keyframes_vector[matchings.at<float>(i,1)].fy , keyframes_vector[matchings.at<float>(i,1)].cy,
+                    0., 0., 1.);
+            cv::Mat distCoeffs = (cv::Mat_<float>(4,1) <<  0.0, 0.0, 0.0, 0.0);
 
-                cv::Mat R_pnp,r_pnp,t_pnp;
+            cv::Mat R_pnp,r_pnp,t_pnp;
 
-                if(coordinates1.rows   > 100)
+            if(coordinates1.rows   > 100)
+            {
+                cv::Mat inliers;
+
+                cv::solvePnPRansac(points3D1,coordinates2,cameraMatrix,distCoeffs,r_pnp,t_pnp,false,100,2.0,100,inliers,cv::ITERATIVE);
+
+                if(inliers.rows > 100 )
                 {
-                    cv::Mat inliers;
+                    cv::Mat R_rel = (cv::Mat_<double>(3,3) <<   1,   0,   0,
+                                     0., -1,   0,
+                                     0.,  0., -1.);
+                    cv::Rodrigues(r_pnp,R_pnp);
+                    R_pnp = R_rel * R_pnp ;
+                    t_pnp =   R_rel * t_pnp;
+                    t_pnp.convertTo(t_pnp,CV_32FC1);
+                    R_pnp.convertTo(R_pnp,CV_32FC1);
 
-                    cv::solvePnPRansac(points3D1,coordinates2,cameraMatrix,distCoeffs,r_pnp,t_pnp,false,100,2.0,100,inliers,cv::ITERATIVE);
-
-                    if(inliers.rows > 100 )
-                    {
-                            cv::Mat R_rel = (cv::Mat_<double>(3,3) <<   1,   0,   0,
-                                                                        0., -1,   0,
-                                                                        0.,  0., -1.);
-                            cv::Rodrigues(r_pnp,R_pnp);
-                            R_pnp = R_rel * R_pnp ;
-                            t_pnp =   R_rel * t_pnp;
-                            t_pnp.convertTo(t_pnp,CV_32FC1);
-                            R_pnp.convertTo(R_pnp,CV_32FC1);
-
-                            // UPDATE KEYFRAME INFO AND current frame POSE
-                            R = R_pnp.clone();
-                            t = t_pnp.clone();
-                            oldest_kf = matchings.at<float>(0,1);
-                            isRelocalized = true;
-                            // UPDATE KEYFRAME INFO AND current frame POSE
-                     }
+                    // UPDATE KEYFRAME INFO AND current frame POSE
+                    R = R_pnp.clone();
+                    t = t_pnp.clone();
+                    oldest_kf = matchings.at<float>(0,1);
+                    isRelocalized = true;
+                    // UPDATE KEYFRAME INFO AND current frame POSE
                 }
+            }
         } // if !isRelocalized
     } // for loop
 }
@@ -1319,7 +1319,7 @@ void loopcloser::compute_keyframe(cv::Mat &R, cv::Mat &t, cv::Mat &image, int nu
     orb_db.add(keyframe_aux.features);
 
     if(size_first_level > 0.25*image.rows/8*image.cols/8)
-    get_score_for_loopclosure(keyframe_aux.features,matchings,features.size(),num_keyframe,0.30,50,1000);
+        get_score_for_loopclosure(keyframe_aux.features,matchings,features.size(),num_keyframe,0.30,50,1000);
 
     /*  cv::Mat matchings_mapreuse(0,2,CV_32FC1);
     if(size_first_level > 0.25*image.rows/8*image.cols/8)
@@ -1373,15 +1373,15 @@ void loopcloser::compute_keyframe(cv::Mat &R, cv::Mat &t, cv::Mat &image, int nu
 
             if (use_kinect > 0.5)
             {     posegraph_Optimizer_obj.posegraphOptimization(R_vector,t_vector,\
-                                                          R_vector_after_opt,t_vector_after_opt,s_vector_after_opt,\
-                                                          R_vector_edges,t_vector_edges,\
-                                                          matchings_inliers,poses);}
+                                                                R_vector_after_opt,t_vector_after_opt,s_vector_after_opt,\
+                                                                R_vector_edges,t_vector_edges,\
+                                                                matchings_inliers,poses);}
             else
             {
-                   posegraph_Optimizer_obj.posegraphOptimization_Sim3(R_vector,t_vector,\
-                                                          R_vector_after_opt,t_vector_after_opt, s_vector_after_opt,\
-                                                          R_vector_edges,t_vector_edges, s_vector_edges,\
-                                                          matchings_inliers,poses);
+                posegraph_Optimizer_obj.posegraphOptimization_Sim3(R_vector,t_vector,\
+                                                                   R_vector_after_opt,t_vector_after_opt, s_vector_after_opt,\
+                                                                   R_vector_edges,t_vector_edges, s_vector_edges,\
+                                                                   matchings_inliers,poses);
             }
 
             R_after_opt = R_vector_after_opt;
@@ -1396,97 +1396,97 @@ void loopcloser::compute_keyframe(cv::Mat &R, cv::Mat &t, cv::Mat &image, int nu
 }
 
 void loopcloser::get_score_for_loopclosure(vector<cv::Mat> feature,cv::Mat &matchings,
-                                 int features_size,float keyframe_number, float threshold,
-                                 float min_kf_diff,float max_kf_diff)
+                                           int features_size,float keyframe_number, float threshold,
+                                           float min_kf_diff,float max_kf_diff)
 {
-      QueryResults ret;
+    QueryResults ret;
 
-      orb_db.query(feature, ret, features_size );
+    orb_db.query(feature, ret, features_size );
 
-      float previous_keyframe_score = 0.20;
-      int counter = 0;
-      cv::Mat match(1,2,CV_32FC1);
-      for(QueryResults::iterator qit = ret.begin(); qit != ret.end(); ++qit)
-      {
-          counter ++;
+    float previous_keyframe_score = 0.20;
+    int counter = 0;
+    cv::Mat match(1,2,CV_32FC1);
+    for(QueryResults::iterator qit = ret.begin(); qit != ret.end(); ++qit)
+    {
+        counter ++;
 
-          if (qit->Id  == features_size-2)
-          {
-              previous_keyframe_score = qit->Score;
-          }
-      }
+        if (qit->Id  == features_size-2)
+        {
+            previous_keyframe_score = qit->Score;
+        }
+    }
 
-      /*if (previous_keyframe_score < 0.040)
+    /*if (previous_keyframe_score < 0.040)
       {
          previous_keyframe_score = 0.040;
       }*/
 
-      counter = 0;
-      for(QueryResults::iterator qit = ret.begin(); qit != ret.end(); ++qit)
-      {
-          counter++;
-          if (qit->Score / previous_keyframe_score > threshold && counter > 2 &&
-                 fabs(keyframe_number-qit->Id ) > min_kf_diff &&   fabs(keyframe_number-qit->Id ) < max_kf_diff )
-          {
-              match.at<float>(0,0) = keyframe_number;
-              match.at<float>(0,1) = qit->Id;
-              matchings.push_back(match);
-          }
-      }
+    counter = 0;
+    for(QueryResults::iterator qit = ret.begin(); qit != ret.end(); ++qit)
+    {
+        counter++;
+        if (qit->Score / previous_keyframe_score > threshold && counter > 2 &&
+                fabs(keyframe_number-qit->Id ) > min_kf_diff &&   fabs(keyframe_number-qit->Id ) < max_kf_diff )
+        {
+            match.at<float>(0,0) = keyframe_number;
+            match.at<float>(0,1) = qit->Id;
+            matchings.push_back(match);
+        }
+    }
 }
 
 void loopcloser::get_score_for_relocalization(vector<cv::Mat> feature,cv::Mat &matchings,
-                                 int features_size,float keyframe_number, float threshold,
-                                 float min_kf_diff,float max_kf_diff)
+                                              int features_size,float keyframe_number, float threshold,
+                                              float min_kf_diff,float max_kf_diff)
 {
-      QueryResults ret;
+    QueryResults ret;
 
-      orb_db.query(feature, ret, features_size );
+    orb_db.query(feature, ret, features_size );
 
-      float previous_keyframe_score = 0.05;
-      int counter = 0;
-      cv::Mat match(1,2,CV_32FC1);
+    float previous_keyframe_score = 0.05;
+    int counter = 0;
+    cv::Mat match(1,2,CV_32FC1);
 
 
 
-      counter = 0;
-      for(QueryResults::iterator qit = ret.begin(); qit != ret.end(); ++qit)
-      {
-          counter++;
-          if (qit->Score / previous_keyframe_score > threshold  &&
-                  fabs(keyframe_number-qit->Id ) > min_kf_diff &&   fabs(keyframe_number-qit->Id ) < max_kf_diff &&
-                  qit->Score / previous_keyframe_score  > 0.5)
-          {
-              match.at<float>(0,0) = keyframe_number;
-              match.at<float>(0,1) = qit->Id;
-              matchings.push_back(match);
-          }
-      }
+    counter = 0;
+    for(QueryResults::iterator qit = ret.begin(); qit != ret.end(); ++qit)
+    {
+        counter++;
+        if (qit->Score / previous_keyframe_score > threshold  &&
+                fabs(keyframe_number-qit->Id ) > min_kf_diff &&   fabs(keyframe_number-qit->Id ) < max_kf_diff &&
+                qit->Score / previous_keyframe_score  > 0.5)
+        {
+            match.at<float>(0,0) = keyframe_number;
+            match.at<float>(0,1) = qit->Id;
+            matchings.push_back(match);
+        }
+    }
 }
 
 void loopcloser::get_scores_for_mapreuse(vector<cv::Mat> feature,cv::Mat &matchings,
-                                 int features_size,float keyframe_number, float threshold,
-                                 float min_kf_diff,float max_kf_diff)
+                                         int features_size,float keyframe_number, float threshold,
+                                         float min_kf_diff,float max_kf_diff)
 {
-      QueryResults ret;
+    QueryResults ret;
 
-      orb_db.query(feature, ret, features_size );
+    orb_db.query(feature, ret, features_size );
 
-      float previous_keyframe_score = 0.05;
-      int counter = 0;
-      cv::Mat match(1,2,CV_32FC1);
+    float previous_keyframe_score = 0.05;
+    int counter = 0;
+    cv::Mat match(1,2,CV_32FC1);
 
-      counter = 0;
-      for(QueryResults::iterator qit = ret.begin(); qit != ret.end(); ++qit)
-      {
-          counter++;
-          if (qit->Score / previous_keyframe_score > threshold  &&
-                  fabs(keyframe_number-qit->Id ) > min_kf_diff &&   fabs(keyframe_number-qit->Id ) < max_kf_diff &&
-                  qit->Score / previous_keyframe_score  > 0.5)
-          {
-              match.at<float>(0,0) = keyframe_number;
-              match.at<float>(0,1) = qit->Id;
-              matchings.push_back(match);
-          }
-      }
+    counter = 0;
+    for(QueryResults::iterator qit = ret.begin(); qit != ret.end(); ++qit)
+    {
+        counter++;
+        if (qit->Score / previous_keyframe_score > threshold  &&
+                fabs(keyframe_number-qit->Id ) > min_kf_diff &&   fabs(keyframe_number-qit->Id ) < max_kf_diff &&
+                qit->Score / previous_keyframe_score  > 0.5)
+        {
+            match.at<float>(0,0) = keyframe_number;
+            match.at<float>(0,1) = qit->Id;
+            matchings.push_back(match);
+        }
+    }
 }

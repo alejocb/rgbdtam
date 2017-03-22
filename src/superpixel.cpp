@@ -119,8 +119,8 @@ int SuperpixelsImage::computeSuperpixels()
 
     for (i=0; i<=C.rows-1 ; i+=1)
     {
-       spx = new superpixel();
-       sup.push_back(spx);
+        spx = new superpixel();
+        sup.push_back(spx);
     }
 
 
@@ -151,16 +151,16 @@ int SuperpixelsImage::computeSuperpixels()
             for (i=0; i < C.rows; i=i+1)
             {
                 if (exit == 0 && C.at<int>(i,0) == image_sup_R  && C.at<int>(i,1) == image_sup_G   && C.at<int>(i,2) == image_sup_B  )
-                 {
+                {
                     sup[i]->incSize();
                     sup[i]->set_pixels (count_r, count_c,image.at<cv::Vec3b>(count_r,count_c)[0]);
                     exit = 1;
 
-                     if (is_contour)
-                     {
-                         sup[i]->set_contour (count_r,count_c,1);
-                         exit = 1;
-                     }
+                    if (is_contour)
+                    {
+                        sup[i]->set_contour (count_r,count_c,1);
+                        exit = 1;
+                    }
                 }
             }
         }

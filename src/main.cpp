@@ -91,14 +91,14 @@ using namespace std;
 #include "opencv2/opencv.hpp"
 
 
- int main(int argc, char** argv)
- {
-     ros::init(argc, argv, "camera_image");
-     ros::start();
+int main(int argc, char** argv)
+{
+    ros::init(argc, argv, "camera_image");
+    ros::start();
 
-     //srand ( (unsigned)time(0) );
-     omp_set_dynamic(0);
-     omp_set_nested(1);
+    //srand ( (unsigned)time(0) );
+    omp_set_dynamic(0);
+    omp_set_nested(1);
 
 
     ///Launching rgbdtam
@@ -108,4 +108,4 @@ using namespace std;
 
     cout << "leaving..." << endl;
     return  0;
- }
+}

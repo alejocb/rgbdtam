@@ -26,13 +26,13 @@
 #include <Eigen/Dense>
 #include <opencv2/core/eigen.hpp>
 #define U_SEGS(a)\
-         gettimeofday(&tvd,0);\
-         a = tvd.tv_sec + tvd.tv_usec/1000000.0
+    gettimeofday(&tvd,0);\
+    a = tvd.tv_sec + tvd.tv_usec/1000000.0
 struct timeval tvd;
 double t1d, t2d;
 void ticd(){U_SEGS(t1d);}
 void tocd(){U_SEGS(t2d);
-           cout << (t2d - t1d)/1 << endl;}
+            cout << (t2d - t1d)/1 << endl;}
 
 
 DenseMapping::DenseMapping()
@@ -64,22 +64,22 @@ void DenseMapping::init_analisis() {
 }
 
 void DenseMapping::init_points3D4spx(int num_images) {
-     points3D4spx.resize(num_images);
+    points3D4spx.resize(num_images);
 }
 
 void print_poses(cv::Mat &points, char buffer[],int color)
 {
-      ofstream out(buffer);
+    ofstream out(buffer);
 
-     int num_points = points.rows;
+    int num_points = points.rows;
 
-     int val = points.rows-1;
-     val = num_points;
-     out << "ply" << endl;out << "format ascii 1.0" << endl;out << "element face 0" << endl;out << "property list uchar int vertex_indices" << endl;
-     out << "element vertex ";out << val << endl;out << "property float x" << endl;out << "property float y" << endl;out << "property float z" << endl;
-     out <<  "property uchar diffuse_red"<<endl;out << "property uchar diffuse_green" << endl;out << "property uchar diffuse_blue" << endl;out << "end_header" << endl;
-     for (int i = 0; i<= points.rows-1;i++)
-     {
+    int val = points.rows-1;
+    val = num_points;
+    out << "ply" << endl;out << "format ascii 1.0" << endl;out << "element face 0" << endl;out << "property list uchar int vertex_indices" << endl;
+    out << "element vertex ";out << val << endl;out << "property float x" << endl;out << "property float y" << endl;out << "property float z" << endl;
+    out <<  "property uchar diffuse_red"<<endl;out << "property uchar diffuse_green" << endl;out << "property uchar diffuse_blue" << endl;out << "end_header" << endl;
+    for (int i = 0; i<= points.rows-1;i++)
+    {
         float val1 = points.at<float>(i,0);
         float val2 = points.at<float>(i,1);
         float val3 = points.at<float>(i,2);
@@ -93,11 +93,11 @@ void print_poses(cv::Mat &points, char buffer[],int color)
         }
         {
             out << fixed  << val1<< " " << fixed  << val2 <<  " " << fixed << val3 \
-            << " "<< color1 << " "<< color2 << " "<< color3 << endl;
+                << " "<< color1 << " "<< color2 << " "<< color3 << endl;
         }
-     }
-     out.close();
- }
+    }
+    out.close();
+}
 
 
 
@@ -164,176 +164,176 @@ void fullydense_mapping(DenseMapping *pdense_mapper,ros::Publisher *pub_cloud)
         cv::Mat points_superpixels(0,6,CV_32FC1);
 
 
-         int cont_images_reconstructed = 0;
-         for (int i = 0; i<images.getNumberOfImages()-3;i++)
-         {
-             if (images.Im[i]->accurate_sd_map.rows > 0)
-             {
-                 cont_images_reconstructed++;
-             }
-         }
+        int cont_images_reconstructed = 0;
+        for (int i = 0; i<images.getNumberOfImages()-3;i++)
+        {
+            if (images.Im[i]->accurate_sd_map.rows > 0)
+            {
+                cont_images_reconstructed++;
+            }
+        }
 
-         int superpixels_index[5];
-         for (int i = 0; i < 5; i++)
-         {
-             superpixels_index[i]=0;
-         }
+        int superpixels_index[5];
+        for (int i = 0; i < 5; i++)
+        {
+            superpixels_index[i]=0;
+        }
 
-         cont_images_reconstructed=0;
-         for (int i = 0; i<images.getNumberOfImages()-3;i++)
-         {
-             if (images.Im[i]->accurate_sd_map.rows > 0)
-             {
-                 superpixels_index[cont_images_reconstructed] = i;
-                 cont_images_reconstructed++;
-             }
-         }
+        cont_images_reconstructed=0;
+        for (int i = 0; i<images.getNumberOfImages()-3;i++)
+        {
+            if (images.Im[i]->accurate_sd_map.rows > 0)
+            {
+                superpixels_index[cont_images_reconstructed] = i;
+                cont_images_reconstructed++;
+            }
+        }
 
-         int number_row;
+        int number_row;
 
-         for (int i = 0; i < sizeof(superpixels_index)/sizeof(superpixels_index[0]);i++)
-         {
-             calculate_superpixels_and_setdata(images,superpixels_index[i]);
-         }
-         //////////////// INITIALIZE SUPERPIXELS  AND calculate THEM
-         cv::Mat aux;
-         for (int i = 0; i<images.getNumberOfImages()-1;i++)
-         {
-             for (int j=0; j < images.supIm[i]->getNumberOfSuperpixels();j++ )
-             {
-                 images.supIm[i] -> getSuperpixeles()[j] -> SetbAlreadyMatched(false);
-                 images.supIm[i] -> getSuperpixeles()[j] -> matchings = aux.clone();
-             }
-         }
-
-
-         for (int i = 0; i< sizeof(superpixels_index)/sizeof(superpixels_index[0]); i++)
-         {
-             number_row = superpixels_index[i];
+        for (int i = 0; i < sizeof(superpixels_index)/sizeof(superpixels_index[0]);i++)
+        {
+            calculate_superpixels_and_setdata(images,superpixels_index[i]);
+        }
+        //////////////// INITIALIZE SUPERPIXELS  AND calculate THEM
+        cv::Mat aux;
+        for (int i = 0; i<images.getNumberOfImages()-1;i++)
+        {
+            for (int j=0; j < images.supIm[i]->getNumberOfSuperpixels();j++ )
+            {
+                images.supIm[i] -> getSuperpixeles()[j] -> SetbAlreadyMatched(false);
+                images.supIm[i] -> getSuperpixeles()[j] -> matchings = aux.clone();
+            }
+        }
 
 
-             if(images.Im[superpixels_index[i]]->accurate_sd_map.rows>0)
-             {
-                 cv::Mat accurate_sd_map = images.Im[superpixels_index[i]]->accurate_sd_map.clone();
-                 if (i-1 > -0.5)
-                 {
-                     if(images.Im[superpixels_index[i-1]]->accurate_sd_map.rows>0)
-                     {
-                         accurate_sd_map.push_back(images.Im[superpixels_index[i-1]]->accurate_sd_map);
-                     }
-                 }
+        for (int i = 0; i< sizeof(superpixels_index)/sizeof(superpixels_index[0]); i++)
+        {
+            number_row = superpixels_index[i];
 
-                 if (i+1 < sizeof(superpixels_index)/sizeof(superpixels_index[0]) )
-                 {
-                     if(images.Im[superpixels_index[i+1]]->accurate_sd_map.rows>0)
-                     {
-                         accurate_sd_map.push_back(images.Im[superpixels_index[i+1]]->accurate_sd_map);
-                     }
-                 }
 
-                 calculate_3D_superpixels_from_semidense( limit_ratio_sing_val, limit_normalized_residual,
-                                                          images,accurate_sd_map,number_row,
+            if(images.Im[superpixels_index[i]]->accurate_sd_map.rows>0)
+            {
+                cv::Mat accurate_sd_map = images.Im[superpixels_index[i]]->accurate_sd_map.clone();
+                if (i-1 > -0.5)
+                {
+                    if(images.Im[superpixels_index[i-1]]->accurate_sd_map.rows>0)
+                    {
+                        accurate_sd_map.push_back(images.Im[superpixels_index[i-1]]->accurate_sd_map);
+                    }
+                }
+
+                if (i+1 < sizeof(superpixels_index)/sizeof(superpixels_index[0]) )
+                {
+                    if(images.Im[superpixels_index[i+1]]->accurate_sd_map.rows>0)
+                    {
+                        accurate_sd_map.push_back(images.Im[superpixels_index[i+1]]->accurate_sd_map);
+                    }
+                }
+
+                calculate_3D_superpixels_from_semidense( limit_ratio_sing_val, limit_normalized_residual,
+                                                         images,accurate_sd_map,number_row,
                                                          mean_value);
-              }
-         }
-         //////////////// INITIALIZE SUPERPIXELS AND calculate THEM
+            }
+        }
+        //////////////// INITIALIZE SUPERPIXELS AND calculate THEM
 
-         //////////////// ACTIVE MATCHING
-         cv::Mat pixel_taken = cv::Mat::zeros(imsize_y,imsize_x,CV_32FC1) ;
-         for (int i = 0; i< sizeof(superpixels_index)/sizeof(superpixels_index[0]);i++)
-         {
+        //////////////// ACTIVE MATCHING
+        cv::Mat pixel_taken = cv::Mat::zeros(imsize_y,imsize_x,CV_32FC1) ;
+        for (int i = 0; i< sizeof(superpixels_index)/sizeof(superpixels_index[0]);i++)
+        {
 
-             number_row = superpixels_index[i];
-             active_matching(images,images.supIm,number_row,superpixels_index,sizeof(superpixels_index)/sizeof(superpixels_index[0]) );
-             for (int j = 0; j<= images.supIm[number_row]->getNumberOfSuperpixels()-1  ;j++)
-             {
-                 cv::Mat matchings= images.supIm[number_row]->getSuperpixeles()[j]->getMatchings();
-                 cv::Mat pixels3D= images.supIm[number_row]->getSuperpixeles()[j]->getPixels3D();
-                 cv::Mat pixelsCoordinates= images.supIm[number_row]->getSuperpixeles()[j]->getPixels();
+            number_row = superpixels_index[i];
+            active_matching(images,images.supIm,number_row,superpixels_index,sizeof(superpixels_index)/sizeof(superpixels_index[0]) );
+            for (int j = 0; j<= images.supIm[number_row]->getNumberOfSuperpixels()-1  ;j++)
+            {
+                cv::Mat matchings= images.supIm[number_row]->getSuperpixeles()[j]->getMatchings();
+                cv::Mat pixels3D= images.supIm[number_row]->getSuperpixeles()[j]->getPixels3D();
+                cv::Mat pixelsCoordinates= images.supIm[number_row]->getSuperpixeles()[j]->getPixels();
 
-                 if (matchings.rows > 0)
-                 {
-                     cv::Mat allPairs = matchings.clone();       // Mat with duplicate values
-                     cv::Mat uniqueStrides;  // Mat that will contain the unique values
-                     uniqueStrides.push_back( allPairs.row(0) );
-                     for (int i = 1; i < allPairs.rows; ++i) {
-                         int isInside = false;
-                         for (int j = 0; j < uniqueStrides.rows; ++j) {
-                             int count = 0;
-                             for (int k = 0; k < uniqueStrides.cols; ++k) // checks by element of
-                                 if(allPairs.at<int>(i,k) == uniqueStrides.at<int>(j,k))
-                                     ++count;
-                             if (count == 4) {
-                                 isInside = true;
-                                 break;
-                             }
-                         }
-                         if (isInside == false) uniqueStrides.push_back( allPairs.row(i) );
-                     }
-                     matchings = uniqueStrides.clone();
-                 }
+                if (matchings.rows > 0)
+                {
+                    cv::Mat allPairs = matchings.clone();       // Mat with duplicate values
+                    cv::Mat uniqueStrides;  // Mat that will contain the unique values
+                    uniqueStrides.push_back( allPairs.row(0) );
+                    for (int i = 1; i < allPairs.rows; ++i) {
+                        int isInside = false;
+                        for (int j = 0; j < uniqueStrides.rows; ++j) {
+                            int count = 0;
+                            for (int k = 0; k < uniqueStrides.cols; ++k) // checks by element of
+                                if(allPairs.at<int>(i,k) == uniqueStrides.at<int>(j,k))
+                                    ++count;
+                            if (count == 4) {
+                                isInside = true;
+                                break;
+                            }
+                        }
+                        if (isInside == false) uniqueStrides.push_back( allPairs.row(i) );
+                    }
+                    matchings = uniqueStrides.clone();
+                }
 
-                 if(  matchings.rows >= matchings_active_search|| images.supIm[number_row]->getSuperpixeles()[j]->informative == 1)
-                 {
-                     if ( pixels3D.rows > 0)
-                     {
-                       for (int jj = 0; jj<pixels3D.rows; jj++)
-                       {
-                           if (pixel_taken.at<float>(pixelsCoordinates.at<float>(jj,0),pixelsCoordinates.at<float>(jj,1)) < 0.5)
-                           {
-                               pixel_taken.at<float>(pixelsCoordinates.at<float>(jj,0),pixelsCoordinates.at<float>(jj,1))  = 1;
-                               points_superpixels.push_back(pixels3D.row(jj));
+                if(  matchings.rows >= matchings_active_search|| images.supIm[number_row]->getSuperpixeles()[j]->informative == 1)
+                {
+                    if ( pixels3D.rows > 0)
+                    {
+                        for (int jj = 0; jj<pixels3D.rows; jj++)
+                        {
+                            if (pixel_taken.at<float>(pixelsCoordinates.at<float>(jj,0),pixelsCoordinates.at<float>(jj,1)) < 0.5)
+                            {
+                                pixel_taken.at<float>(pixelsCoordinates.at<float>(jj,0),pixelsCoordinates.at<float>(jj,1))  = 1;
+                                points_superpixels.push_back(pixels3D.row(jj));
 
-                           }
-                       }
-                     }
+                            }
+                        }
+                    }
 
-                 }
-             }
-         }
-         //////////////// ACTIVE MATCHING
+                }
+            }
+        }
+        //////////////// ACTIVE MATCHING
 
-         cv::Mat points_superpixels_all = points_superpixels.clone();
-         cv::Mat points_superpixels_aux(6,0,CV_32FC1);
-         for (int i = 1; i<points_superpixels.rows;i++)
-         {
-             if ((rand() % 1000000 ) / 1000000.0 < 25000.0/points_superpixels.rows)
-             {
-                   points_superpixels_aux.push_back(points_superpixels.row(i));
-             }
-         }
-         points_superpixels = points_superpixels_aux.clone();
-
-
-
-         if ( points_superpixels.rows > 2000)
-         {
-             dense_uncertainty = cv::Mat::zeros(imsize_y,imsize_x, CV_32FC1);
-
-             pdense_mapper->map_sup_points_total.push_back(points_superpixels);
-             pdense_mapper->set_superpixels3Dprint(points_superpixels);
-             pdense_mapper->superpixels_print_number = pdense_mapper->dense_kf;
-         }
-
-         cv::Mat superpixels_to_project_aux(0,6,CV_32FC1);
-         cv::Mat superpixels_to_project;
-
-         if (points_superpixels.rows > 100)
-         {
-
-             superpixels_to_project_aux = points_superpixels.clone();
-         }
+        cv::Mat points_superpixels_all = points_superpixels.clone();
+        cv::Mat points_superpixels_aux(6,0,CV_32FC1);
+        for (int i = 1; i<points_superpixels.rows;i++)
+        {
+            if ((rand() % 1000000 ) / 1000000.0 < 25000.0/points_superpixels.rows)
+            {
+                points_superpixels_aux.push_back(points_superpixels.row(i));
+            }
+        }
+        points_superpixels = points_superpixels_aux.clone();
 
 
-         if (superpixels_to_project_aux.rows > 10)
-         {
-             superpixels_to_project = superpixels_to_project_aux.clone();
-             superpixels_to_project=superpixels_to_project.colRange(0,3);
-             pdense_mapper->set_superpixels3Dtracked(superpixels_to_project);
-         }
+
+        if ( points_superpixels.rows > 2000)
+        {
+            dense_uncertainty = cv::Mat::zeros(imsize_y,imsize_x, CV_32FC1);
+
+            pdense_mapper->map_sup_points_total.push_back(points_superpixels);
+            pdense_mapper->set_superpixels3Dprint(points_superpixels);
+            pdense_mapper->superpixels_print_number = pdense_mapper->dense_kf;
+        }
+
+        cv::Mat superpixels_to_project_aux(0,6,CV_32FC1);
+        cv::Mat superpixels_to_project;
+
+        if (points_superpixels.rows > 100)
+        {
+
+            superpixels_to_project_aux = points_superpixels.clone();
+        }
 
 
-         /*// PUBLISH SUPERPIXELS
+        if (superpixels_to_project_aux.rows > 10)
+        {
+            superpixels_to_project = superpixels_to_project_aux.clone();
+            superpixels_to_project=superpixels_to_project.colRange(0,3);
+            pdense_mapper->set_superpixels3Dtracked(superpixels_to_project);
+        }
+
+
+        /*// PUBLISH SUPERPIXELS
          pcl::PointCloud<pcl::PointXYZRGB> map_pcl;
          for (int i = 1; i < points_superpixels_all.rows; i++)
          {
@@ -360,27 +360,27 @@ void fullydense_mapping(DenseMapping *pdense_mapper,ros::Publisher *pub_cloud)
          // PUBLISH SUPERPIXELS*/
 
 
-         pdense_mapper->dense_kf++;
-         pdense_mapper->set_do_dense(0);
+        pdense_mapper->dense_kf++;
+        pdense_mapper->set_do_dense(0);
 
-         for (int j = 0; j< images.getNumberOfImageSuperpixels(); j = j+1)
-         {
-             for (int i = 0; i<images.supIm[j]->getNumberOfSuperpixels() ; i++)
-             {
-                 delete images.supIm[j]->sup[i];
-             }
-             images.supIm[j]->sup.clear();
-             delete images.supIm[j];
-         }
-         images.supIm.clear();
+        for (int j = 0; j< images.getNumberOfImageSuperpixels(); j = j+1)
+        {
+            for (int i = 0; i<images.supIm[j]->getNumberOfSuperpixels() ; i++)
+            {
+                delete images.supIm[j]->sup[i];
+            }
+            images.supIm[j]->sup.clear();
+            delete images.supIm[j];
+        }
+        images.supIm.clear();
 
 
 
-         for (int j = 0; j< images.getNumberOfImages(); j = j+1)
-         {
-             delete images.Im[j];
-         }
-         images.Im.clear();
+        for (int j = 0; j< images.getNumberOfImages(); j = j+1)
+        {
+            delete images.Im[j];
+        }
+        images.Im.clear();
 
     } // if get_do_dense
 
@@ -396,37 +396,37 @@ void copy_from_dense2images(DenseMapping &dense, Images_class &images)
     {
         if (dense.Im[l]-> accurate_sd_map.rows > 1000 || l % 5 == 0)
         {
-                images.computeImage();
-                int images_map_size = images.getNumberOfImages()-1;
+            images.computeImage();
+            int images_map_size = images.getNumberOfImages()-1;
 
-                cv::Mat image_gray =dense.Im[l]->image_gray.clone();
-                cv::Mat image =dense.Im[l]->image.clone();
+            cv::Mat image_gray =dense.Im[l]->image_gray.clone();
+            cv::Mat image =dense.Im[l]->image.clone();
 
-                int reduction = 1;
+            int reduction = 1;
 
-                // if images are too large, reduce them by a factor of 2 to calculate 3D superpixels efficiently
+            // if images are too large, reduce them by a factor of 2 to calculate 3D superpixels efficiently
 
-                if (image_gray.rows > 250)
-                {
-                    cv::resize(image_gray,image_gray,cv::Size(image_gray.cols/(2),image_gray.rows/(2)),0,0,cv::INTER_LINEAR);
-                    cv::resize(image,image,cv::Size(image.cols/(2),image.rows/(2)),0,0,cv::INTER_LINEAR);
-                    reduction = 2;
-                }
-                // if images are too large, reduce them by a factor of 2 to calculate 3D superpixels efficiently
+            if (image_gray.rows > 250)
+            {
+                cv::resize(image_gray,image_gray,cv::Size(image_gray.cols/(2),image_gray.rows/(2)),0,0,cv::INTER_LINEAR);
+                cv::resize(image,image,cv::Size(image.cols/(2),image.rows/(2)),0,0,cv::INTER_LINEAR);
+                reduction = 2;
+            }
+            // if images are too large, reduce them by a factor of 2 to calculate 3D superpixels efficiently
 
-                images.Im[images_map_size ]->image = image.clone();
-                images.Im[images_map_size ]->R = dense.Im[l]->R.clone();
-                images.Im[images_map_size ]->image_gray= image_gray.clone();
-                images.Im[images_map_size ]->t =dense.Im[l]->t.clone();
-                images.Im[images_map_size ]->t_r = dense.Im[l]->t_r.clone();
-                images.Im[images_map_size ]->fx = dense.Im[l]->fx/reduction;
-                images.Im[images_map_size ]->fy = dense.Im[l]->fy/reduction;
-                images.Im[images_map_size ]->cx = dense.Im[l]->cx/reduction;
-                images.Im[images_map_size ]->cy = dense.Im[l]->cy/reduction;
-                images.Im[images_map_size]->error = dense.Im[l]->error;
-                images.Im[images_map_size]->stamps = dense.Im[l]->stamps;
-                images.Im[images_map_size]->num_keyframes = dense.Im[l]-> num_keyframes;
-                images.Im[images_map_size]->accurate_sd_map =  dense.Im[l]-> accurate_sd_map;
+            images.Im[images_map_size ]->image = image.clone();
+            images.Im[images_map_size ]->R = dense.Im[l]->R.clone();
+            images.Im[images_map_size ]->image_gray= image_gray.clone();
+            images.Im[images_map_size ]->t =dense.Im[l]->t.clone();
+            images.Im[images_map_size ]->t_r = dense.Im[l]->t_r.clone();
+            images.Im[images_map_size ]->fx = dense.Im[l]->fx/reduction;
+            images.Im[images_map_size ]->fy = dense.Im[l]->fy/reduction;
+            images.Im[images_map_size ]->cx = dense.Im[l]->cx/reduction;
+            images.Im[images_map_size ]->cy = dense.Im[l]->cy/reduction;
+            images.Im[images_map_size]->error = dense.Im[l]->error;
+            images.Im[images_map_size]->stamps = dense.Im[l]->stamps;
+            images.Im[images_map_size]->num_keyframes = dense.Im[l]-> num_keyframes;
+            images.Im[images_map_size]->accurate_sd_map =  dense.Im[l]-> accurate_sd_map;
         }
 
     }
@@ -503,33 +503,33 @@ void calculate_3D_superpixels_from_semidense(float limit_ratio_sing_val,float li
         {
             for (int j = 0; j < pixels_sup.rows; j++)
             {
-                    if (matrix_3Dpoints_inImage.at<float>(pixels_sup.at<float>(j,0),pixels_sup.at<float>(j,1)) > 0)
+                if (matrix_3Dpoints_inImage.at<float>(pixels_sup.at<float>(j,0),pixels_sup.at<float>(j,1)) > 0)
+                {
+                    int row_ =matrix_3Dpoints_inImage.at<float>(pixels_sup.at<float>(j,0),pixels_sup.at<float>(j,1));
+                    if (!point_already_used[row_])
                     {
-                        int row_ =matrix_3Dpoints_inImage.at<float>(pixels_sup.at<float>(j,0),pixels_sup.at<float>(j,1));
-                        if (!point_already_used[row_])
-                        {
-                            point_already_used[row_] = true;
-                            points_sup.push_back(points6.row(row_));
-                            points_sup.at<float>(points_sup.rows-1,3) = -1;
-                        }
+                        point_already_used[row_] = true;
+                        points_sup.push_back(points6.row(row_));
+                        points_sup.at<float>(points_sup.rows-1,3) = -1;
                     }
+                }
             }
             memset(point_already_used,false,sizeof(point_already_used));
 
 
             for (int j = 0; j < pixels.rows; j++)
             {
-                    if (matrix_3Dpoints_inImage.at<float>(pixels.at<float>(j,0),pixels.at<float>(j,1)) > 0)
+                if (matrix_3Dpoints_inImage.at<float>(pixels.at<float>(j,0),pixels.at<float>(j,1)) > 0)
+                {
+                    int row_ = matrix_3Dpoints_inImage.at<float>(pixels.at<float>(j,0),pixels.at<float>(j,1));
+                    if (!point_already_used[row_])
                     {
-                        int row_ = matrix_3Dpoints_inImage.at<float>(pixels.at<float>(j,0),pixels.at<float>(j,1));
-                        if (!point_already_used[row_])
-                        {
-                            point_already_used[row_] = true;
-                            points_sup_total.push_back(points6.row(row_));
+                        point_already_used[row_] = true;
+                        points_sup_total.push_back(points6.row(row_));
 
-                            points_sup_total.at<float>(points_sup_total.rows-1,3) = -1;
-                        }
+                        points_sup_total.at<float>(points_sup_total.rows-1,3) = -1;
                     }
+                }
             }
         }
 
@@ -565,102 +565,102 @@ void calculate_3D_superpixels_from_semidense(float limit_ratio_sing_val,float li
 
             if (singular_values.rows > 2)
             {
-                    ///// Check if the contour can be exaplained by a line in the image
-                    if(singular_values.at<float>(0,0)/singular_values.at<float>(2,0)>limit_ratio_sing_val)
-                    {be_spx_outlier = 1;}
-                    ///// Check if the contour can be exaplained by a line in the image
+                ///// Check if the contour can be exaplained by a line in the image
+                if(singular_values.at<float>(0,0)/singular_values.at<float>(2,0)>limit_ratio_sing_val)
+                {be_spx_outlier = 1;}
+                ///// Check if the contour can be exaplained by a line in the image
 
 
-                    ////////////////////// Transform the normal and distance to image reference system
-                    cv::Mat punto_plano= n.clone()*0;
-                    punto_plano.at<float>(0,0) = d / n.at<float>(0,0);
+                ////////////////////// Transform the normal and distance to image reference system
+                cv::Mat punto_plano= n.clone()*0;
+                punto_plano.at<float>(0,0) = d / n.at<float>(0,0);
 
-                    cv::Mat R1,t1;
-                    R1 = images.Im[reference_image]->R;
-                    t1 = images.Im[reference_image]->t;
-                    n1=R1*n;
+                cv::Mat R1,t1;
+                R1 = images.Im[reference_image]->R;
+                t1 = images.Im[reference_image]->t;
+                n1=R1*n;
 
-                    cv::Mat punto_plano1 = R1 * (punto_plano) + t1;
-                    cv::Mat mat_d1   = n1.t()*punto_plano1;
+                cv::Mat punto_plano1 = R1 * (punto_plano) + t1;
+                cv::Mat mat_d1   = n1.t()*punto_plano1;
 
-                    d1 = mat_d1.at<float>(0,0);
-                    ////////////////////// Transform the normal and distance to image reference system
-
-
-                    ///////////////////// Check if the contour cannot  be exaplained by a plane
-
-                   if (  (mean(error_wrt_plane)[0]) / ((mean(sorted_error_wrt_plane)[0])) > limit_normalized_residual)
-                   {be_spx_outlier = 1;}
-
-                   ///////////////////////// Check if the contour cannot be exaplained by a plane
-
-                   cv::Mat X_total(pixels.rows,3,CV_32FC1);
-                   cv::Mat  inv_depth_mat_total;
-
-                   if (  be_spx_outlier < 0.5)
-                   {
-                         backproject_from_plane(images,pixels,n1,d1,inv_depth_mat_total,X_total,reference_image);
-                         for (int j = 0; j < pixels.rows; j++)
-                         {
-                             float inv_depth = inv_depth_mat_total.at<float>(j,0);
-                             if ((abs(1/inv_depth)) >(2.5*abs(mean_value)))
-                             {be_spx_outlier = 1;}
-                         }
-                   }
+                d1 = mat_d1.at<float>(0,0);
+                ////////////////////// Transform the normal and distance to image reference system
 
 
-                   float  informative_points = 0;
-                   for (int j = 0; j < pixels.rows; j++)
-                   {
-                       if (  be_spx_outlier < 0.5 )
-                       {
-                           if (matrix_3Dpoints_inImage.at<float>(pixels.at<float>(j,0),pixels.at<float>(j,1))> 0)
-                           {
-                               informative_points++;
-                           }
-                       }
-                   }
+                ///////////////////// Check if the contour cannot  be exaplained by a plane
 
-                   if ( be_spx_outlier < 0.5)
-                   {
-                       cv::Mat points_contour_3D(pixels_sup.rows,3,CV_32FC1);
-                       backproject_from_plane(images,pixels_sup,n1,d1,inv_depth_mat_total,points_contour_3D,reference_image);
+                if (  (mean(error_wrt_plane)[0]) / ((mean(sorted_error_wrt_plane)[0])) > limit_normalized_residual)
+                {be_spx_outlier = 1;}
 
-                       points_contour_3D = points_contour_3D.t();
-                       images.supIm[reference_image]->getSuperpixeles()[i]->set_contour3D(points_contour_3D);
-                   }
+                ///////////////////////// Check if the contour cannot be exaplained by a plane
+
+                cv::Mat X_total(pixels.rows,3,CV_32FC1);
+                cv::Mat  inv_depth_mat_total;
+
+                if (  be_spx_outlier < 0.5)
+                {
+                    backproject_from_plane(images,pixels,n1,d1,inv_depth_mat_total,X_total,reference_image);
+                    for (int j = 0; j < pixels.rows; j++)
+                    {
+                        float inv_depth = inv_depth_mat_total.at<float>(j,0);
+                        if ((abs(1/inv_depth)) >(2.5*abs(mean_value)))
+                        {be_spx_outlier = 1;}
+                    }
+                }
+
+
+                float  informative_points = 0;
+                for (int j = 0; j < pixels.rows; j++)
+                {
+                    if (  be_spx_outlier < 0.5 )
+                    {
+                        if (matrix_3Dpoints_inImage.at<float>(pixels.at<float>(j,0),pixels.at<float>(j,1))> 0)
+                        {
+                            informative_points++;
+                        }
+                    }
+                }
+
+                if ( be_spx_outlier < 0.5)
+                {
+                    cv::Mat points_contour_3D(pixels_sup.rows,3,CV_32FC1);
+                    backproject_from_plane(images,pixels_sup,n1,d1,inv_depth_mat_total,points_contour_3D,reference_image);
+
+                    points_contour_3D = points_contour_3D.t();
+                    images.supIm[reference_image]->getSuperpixeles()[i]->set_contour3D(points_contour_3D);
+                }
 
 
 
-                   if ( be_spx_outlier < 0.5 && (informative_points  / pixels.rows) >  0.40 &&  pixels.rows > 3700)
-                   {
-                       images.supIm[reference_image]->getSuperpixeles()[i]->informative = 1;
-                   }
+                if ( be_spx_outlier < 0.5 && (informative_points  / pixels.rows) >  0.40 &&  pixels.rows > 3700)
+                {
+                    images.supIm[reference_image]->getSuperpixeles()[i]->informative = 1;
+                }
 
-                   cv::Mat pixels3D(0,6,CV_32FC1);
+                cv::Mat pixels3D(0,6,CV_32FC1);
 
-                   for (int j = 0; j < pixels.rows; j++)
-                   {
-                       if (  be_spx_outlier < 0.5 )
-                       {
-                           cv::Mat points_superpixels_aux(1,6,CV_32FC1);
+                for (int j = 0; j < pixels.rows; j++)
+                {
+                    if (  be_spx_outlier < 0.5 )
+                    {
+                        cv::Mat points_superpixels_aux(1,6,CV_32FC1);
 
-                           points_superpixels_aux.at<float>(0,0)=X_total.at<float>(j,0);
-                           points_superpixels_aux.at<float>(0,1)=X_total.at<float>(j,1);
-                           points_superpixels_aux.at<float>(0,2)=X_total.at<float>(j,2);
+                        points_superpixels_aux.at<float>(0,0)=X_total.at<float>(j,0);
+                        points_superpixels_aux.at<float>(0,1)=X_total.at<float>(j,1);
+                        points_superpixels_aux.at<float>(0,2)=X_total.at<float>(j,2);
 
-                           points_superpixels_aux.at<float>(0,3)=image_reference.at<cv::Vec3b>(pixels.at<float>(j,0),pixels.at<float>(j,1))[2];
-                           points_superpixels_aux.at<float>(0,4)=image_reference.at<cv::Vec3b>(pixels.at<float>(j,0),pixels.at<float>(j,1))[1];
-                           points_superpixels_aux.at<float>(0,5)=image_reference.at<cv::Vec3b>(pixels.at<float>(j,0),pixels.at<float>(j,1))[0];
+                        points_superpixels_aux.at<float>(0,3)=image_reference.at<cv::Vec3b>(pixels.at<float>(j,0),pixels.at<float>(j,1))[2];
+                        points_superpixels_aux.at<float>(0,4)=image_reference.at<cv::Vec3b>(pixels.at<float>(j,0),pixels.at<float>(j,1))[1];
+                        points_superpixels_aux.at<float>(0,5)=image_reference.at<cv::Vec3b>(pixels.at<float>(j,0),pixels.at<float>(j,1))[0];
 
-                           pixels3D.push_back(points_superpixels_aux);
-                       }
-                   }
+                        pixels3D.push_back(points_superpixels_aux);
+                    }
+                }
 
-                   if (  be_spx_outlier < 0.5 )
-                   {
-                       images.supIm[reference_image]->getSuperpixeles()[i]->set_pixels3D(pixels3D);
-                   }
+                if (  be_spx_outlier < 0.5 )
+                {
+                    images.supIm[reference_image]->getSuperpixeles()[i]->set_pixels3D(pixels3D);
+                }
             } // if at_leaset one singular value
         } // if at leas most of the contour has gradients
     } // i =number of spx
@@ -686,13 +686,13 @@ void  active_matching(Images_class &images,vector<SuperpixelsImage*> &supImg, in
     for (int keyframes_aux = reference_image; keyframes_aux<=reference_image; keyframes_aux++)
     {
         for (int z = 0; z < size_sup_index; z++)
-          {
+        {
             int keyframes = superpixels_index[z];
 
             if (keyframes !=  keyframes_aux  )
-               {
-                    for (int i = 0; i <= supImg[keyframes_aux] -> getNumberOfSuperpixels()-1  ;i++)
-                    {exit = 0;
+            {
+                for (int i = 0; i <= supImg[keyframes_aux] -> getNumberOfSuperpixels()-1  ;i++)
+                {exit = 0;
                     for (int j = 0 ; j <=supImg[keyframes]->getNumberOfSuperpixels()-1 ; j++)
                     {
                         if (exit == 1){break;}
@@ -700,49 +700,49 @@ void  active_matching(Images_class &images,vector<SuperpixelsImage*> &supImg, in
                                 && supImg[keyframes]->getSuperpixeles()[j]->isLarge() \
                                 && supImg[keyframes]->getNumberOfSuperpixels() > 0 )
                         {
-                                float number_contour_points1 = supImg[keyframes_aux]->getSuperpixeles()[i]->getPixels().rows;
-                                float number_contour_points2 = supImg[keyframes]->getSuperpixeles()[j]->getPixels().rows;
-                                if ( number_contour_points1/ number_contour_points2 < 2 \
-                                        && number_contour_points1/ number_contour_points2  > 0.5)
+                            float number_contour_points1 = supImg[keyframes_aux]->getSuperpixeles()[i]->getPixels().rows;
+                            float number_contour_points2 = supImg[keyframes]->getSuperpixeles()[j]->getPixels().rows;
+                            if ( number_contour_points1/ number_contour_points2 < 2 \
+                                 && number_contour_points1/ number_contour_points2  > 0.5)
+                            {
+                                cv::Mat contour3D = supImg[keyframes_aux]-> getSuperpixeles()[i] -> getContour3D ();
+                                contour11 = supImg[keyframes_aux]->getSuperpixeles()[i]->getContour(); //
+                                contour22 = supImg[keyframes]->getSuperpixeles()[j]->getContour();
+
+
+                                if (supImg[keyframes] -> getSuperpixeles()[j] -> getMatrix().rows==0)
+                                {supImg[keyframes] -> getSuperpixeles()[j] -> set_matrix (create_matrix(contour22,5, imsize_x, imsize_y));}
+
+
+                                if (supImg[keyframes] -> getSuperpixeles()[j]-> getContourR().rows ==0)
                                 {
-                                         cv::Mat contour3D = supImg[keyframes_aux]-> getSuperpixeles()[i] -> getContour3D ();
-                                         contour11 = supImg[keyframes_aux]->getSuperpixeles()[i]->getContour(); //
-                                         contour22 = supImg[keyframes]->getSuperpixeles()[j]->getContour();
+                                    contour22 = supImg[keyframes]->getSuperpixeles()[j]->getContour();
+                                    cv::Mat contour2 = contour22.clone();
+                                    supImg[keyframes] -> getSuperpixeles()[j]-> set_contourR(contour2);
+                                }
 
+                                DataToSend DTS;
+                                DTS.showim = 1;
+                                DTS.percentage_limit = percentage_limit2;DTS.step_size = 1;
+                                DTS.SupImg = supImg;DTS.RefIm=keyframes_aux;DTS.RefSup =i;
 
-                                         if (supImg[keyframes] -> getSuperpixeles()[j] -> getMatrix().rows==0)
-                                         {supImg[keyframes] -> getSuperpixeles()[j] -> set_matrix (create_matrix(contour22,5, imsize_x, imsize_y));}
+                                percentage = montecarlo_seed10(images,keyframes_aux,i,keyframes,j,DTS,1,contour3D);
 
+                                if (percentage > percentage_limit2)
+                                {
+                                    supImg[keyframes_aux]-> getSuperpixeles()[i] -> set_matchings (keyframes_aux,i,keyframes,j);
+                                }
+                                if (percentage > percentage_limit1)
+                                {
+                                    exit = 1;
+                                    supImg[keyframes_aux]-> getSuperpixeles()[i] -> SetbAlreadyMatched(true);
+                                    supImg[keyframes]-> getSuperpixeles()[j] -> SetbAlreadyMatched(true);
+                                }
 
-                                         if (supImg[keyframes] -> getSuperpixeles()[j]-> getContourR().rows ==0)
-                                          {
-                                             contour22 = supImg[keyframes]->getSuperpixeles()[j]->getContour();
-                                             cv::Mat contour2 = contour22.clone();
-                                             supImg[keyframes] -> getSuperpixeles()[j]-> set_contourR(contour2);
-                                         }
-
-                                         DataToSend DTS;
-                                         DTS.showim = 1;
-                                         DTS.percentage_limit = percentage_limit2;DTS.step_size = 1;
-                                         DTS.SupImg = supImg;DTS.RefIm=keyframes_aux;DTS.RefSup =i;
-
-                                         percentage = montecarlo_seed10(images,keyframes_aux,i,keyframes,j,DTS,1,contour3D);
-
-                                         if (percentage > percentage_limit2)
-                                         {
-                                             supImg[keyframes_aux]-> getSuperpixeles()[i] -> set_matchings (keyframes_aux,i,keyframes,j);
-                                         }
-                                         if (percentage > percentage_limit1)
-                                         {
-                                             exit = 1;
-                                             supImg[keyframes_aux]-> getSuperpixeles()[i] -> SetbAlreadyMatched(true);
-                                             supImg[keyframes]-> getSuperpixeles()[j] -> SetbAlreadyMatched(true);
-                                         }
-
-                                } //if contours are similar in size
-                          } //if large
-                   } // for sup
-                 } // for sup
+                            } //if contours are similar in size
+                        } //if large
+                    } // for sup
+                } // for sup
             } // if !=
         } //for image
     } // for  image
@@ -751,13 +751,13 @@ void  active_matching(Images_class &images,vector<SuperpixelsImage*> &supImg, in
 
 void transform_points(Images_class images, int frame, cv::Mat points, cv::Mat &transformed_points)
 {
-   cv::Mat R =  images.Im[frame]->R;
-   cv::Mat t =  images.Im[frame]->t;
-   cv::Mat t_repeat =  cv::repeat(t,1,points.rows);
+    cv::Mat R =  images.Im[frame]->R;
+    cv::Mat t =  images.Im[frame]->t;
+    cv::Mat t_repeat =  cv::repeat(t,1,points.rows);
 
-   points = points.colRange(0,3).rowRange(0,points.rows);
+    points = points.colRange(0,3).rowRange(0,points.rows);
 
-   transformed_points = R*points.t() +t_repeat;
+    transformed_points = R*points.t() +t_repeat;
 }
 
 
@@ -783,47 +783,47 @@ void distances_interval(Images_class images, int frame, cv::Mat transformed_poin
 
     if (depth_map.rows == 0)
     {depth_map = cv::Mat::zeros(imsize_y,imsize_x,CV_32FC1);
-    variance_points_tracked = cv::Mat::zeros(imsize_y,imsize_x,CV_32FC1);}
+        variance_points_tracked = cv::Mat::zeros(imsize_y,imsize_x,CV_32FC1);}
     for (int ii = 0 ; ii<=transformed_points.rows-1; ii++ )
     {
-             float depth = transformed_points.at<float>(ii,2);
+        float depth = transformed_points.at<float>(ii,2);
 
-             transformed_points.at<float>(ii,0) /= (depth/fx);
-             transformed_points.at<float>(ii,1) /= (depth/fy);
+        transformed_points.at<float>(ii,0) /= (depth/fx);
+        transformed_points.at<float>(ii,1) /= (depth/fy);
 
-             projected_points.at<float>(ii,0) = (cy + (transformed_points.at<float>(ii,1)));
-             projected_points.at<float>(ii,1) = (-(transformed_points.at<float>(ii,0)) + cx);
-             projected_points.at<float>(ii,2) = 1.0;
+        projected_points.at<float>(ii,0) = (cy + (transformed_points.at<float>(ii,1)));
+        projected_points.at<float>(ii,1) = (-(transformed_points.at<float>(ii,0)) + cx);
+        projected_points.at<float>(ii,2) = 1.0;
 
-             if (projected_points.at<float>(ii,0) > 0 && projected_points.at<float>(ii,0) < imsize_y-1\
-                     && projected_points.at<float>(ii,1) > 0 && projected_points.at<float>(ii,1) < imsize_x-1\
-                      && depth < 0)
-             {
-                 int nx_aux = (projected_points.at<float>(ii,1));
-                 int ny_aux = (projected_points.at<float>(ii,0));
-                 depth_map.at<float>(ny_aux,nx_aux) = depth;
-                 variance_points_tracked.at<float>(ny_aux,nx_aux) = real_points.at<float>(ii,6);
+        if (projected_points.at<float>(ii,0) > 0 && projected_points.at<float>(ii,0) < imsize_y-1\
+                && projected_points.at<float>(ii,1) > 0 && projected_points.at<float>(ii,1) < imsize_x-1\
+                && depth < 0)
+        {
+            int nx_aux = (projected_points.at<float>(ii,1));
+            int ny_aux = (projected_points.at<float>(ii,0));
+            depth_map.at<float>(ny_aux,nx_aux) = depth;
+            variance_points_tracked.at<float>(ny_aux,nx_aux) = real_points.at<float>(ii,6);
 
-                 int nx =nx_aux;
-                 int ny = ny_aux+1;
-                 depth_map.at<float>(ny,nx) = depth;
-                 variance_points_tracked.at<float>(ny,nx) = real_points.at<float>(ii,6);
+            int nx =nx_aux;
+            int ny = ny_aux+1;
+            depth_map.at<float>(ny,nx) = depth;
+            variance_points_tracked.at<float>(ny,nx) = real_points.at<float>(ii,6);
 
-                 nx = nx_aux+1;
-                 ny = ny_aux;
-                 depth_map.at<float>(ny,nx) = depth;
-                 variance_points_tracked.at<float>(ny,nx) = real_points.at<float>(ii,6);
-
-
-                 nx = nx_aux+1;
-                 ny = ny_aux+1;
-                 depth_map.at<float>(ny,nx) = depth;
-                 variance_points_tracked.at<float>(ny,nx) = real_points.at<float>(ii,6);
+            nx = nx_aux+1;
+            ny = ny_aux;
+            depth_map.at<float>(ny,nx) = depth;
+            variance_points_tracked.at<float>(ny,nx) = real_points.at<float>(ii,6);
 
 
-                 depths.push_back(depth);
-                 real_points_in_image.push_back(real_points.row(ii));
-             }
+            nx = nx_aux+1;
+            ny = ny_aux+1;
+            depth_map.at<float>(ny,nx) = depth;
+            variance_points_tracked.at<float>(ny,nx) = real_points.at<float>(ii,6);
+
+
+            depths.push_back(depth);
+            real_points_in_image.push_back(real_points.row(ii));
+        }
     }
 
     double minVal, maxVal;
@@ -833,58 +833,58 @@ void distances_interval(Images_class images, int frame, cv::Mat transformed_poin
 
     if ( sorted_depths.rows > 50)
     {
-            float low_limit = 0.05*depths.rows;
-            float high_limit = 0.95*depths.rows;
-            low_limit = 0;
-            high_limit = depths.rows-1;
+        float low_limit = 0.05*depths.rows;
+        float high_limit = 0.95*depths.rows;
+        low_limit = 0;
+        high_limit = depths.rows-1;
 
-            maximo = maxVal;
-            minimo = minVal;
+        maximo = maxVal;
+        minimo = minVal;
 
-            maximo = sorted_depths.at<float>(static_cast<int>(high_limit))*300;
-            minimo = sorted_depths.at<float>(static_cast<int>(low_limit))*0.30;
+        maximo = sorted_depths.at<float>(static_cast<int>(high_limit))*300;
+        minimo = sorted_depths.at<float>(static_cast<int>(low_limit))*0.30;
 
-            maximo = sorted_depths.at<float>(static_cast<int>(high_limit))*300;
-            minimo = sorted_depths.at<float>(static_cast<int>(low_limit))*0.70;
-            minimo = sorted_depths.at<float>(static_cast<int>(low_limit))*0.50;
-
-
-
-            cv::Mat R_ = images.Im[0]->R.clone();
-            cv::Mat t_ = images.Im[0]->t.clone();
-            cv::Mat C = -R_.t()*t_;
-            C = C.t();
+        maximo = sorted_depths.at<float>(static_cast<int>(high_limit))*300;
+        minimo = sorted_depths.at<float>(static_cast<int>(low_limit))*0.70;
+        minimo = sorted_depths.at<float>(static_cast<int>(low_limit))*0.50;
 
 
-            cv::Mat distances(0,1,CV_32FC1);
-            for (int ii = 0 ; ii<=real_points_in_image.rows-1; ii = ii + 5 )
-            {
-                      float distance = fabs(real_points_in_image.at<float>(ii,0)- C.at<float>(0,0))+fabs(real_points_in_image.at<float>(ii,1)-C.at<float>(0,1))+fabs(real_points_in_image.at<float>(ii,2)-C.at<float>(0,2));
-                      distances.push_back(distance);
-            }
 
-            cv::Mat sorted_distances;
-            cv::sort(distances,sorted_distances,CV_SORT_ASCENDING+CV_SORT_EVERY_COLUMN);
-            if (set_maximo == 1)
-            { mean_value =  sorted_distances.at<float>(round(1*sorted_distances.rows/20),0);}
-            else
-            { mean_value =  sorted_distances.at<float>(round(1*sorted_distances.rows/20),0);}
+        cv::Mat R_ = images.Im[0]->R.clone();
+        cv::Mat t_ = images.Im[0]->t.clone();
+        cv::Mat C = -R_.t()*t_;
+        C = C.t();
 
 
-            float aux = minimo;
-            minimo = - maximo;
-            maximo = -aux;
+        cv::Mat distances(0,1,CV_32FC1);
+        for (int ii = 0 ; ii<=real_points_in_image.rows-1; ii = ii + 5 )
+        {
+            float distance = fabs(real_points_in_image.at<float>(ii,0)- C.at<float>(0,0))+fabs(real_points_in_image.at<float>(ii,1)-C.at<float>(0,1))+fabs(real_points_in_image.at<float>(ii,2)-C.at<float>(0,2));
+            distances.push_back(distance);
+        }
+
+        cv::Mat sorted_distances;
+        cv::sort(distances,sorted_distances,CV_SORT_ASCENDING+CV_SORT_EVERY_COLUMN);
+        if (set_maximo == 1)
+        { mean_value =  sorted_distances.at<float>(round(1*sorted_distances.rows/20),0);}
+        else
+        { mean_value =  sorted_distances.at<float>(round(1*sorted_distances.rows/20),0);}
 
 
-            minVal=1/minimo;
-            maxVal=1/maximo;
+        float aux = minimo;
+        minimo = - maximo;
+        maximo = -aux;
 
-            depth_step = (maxVal-minVal)/(discretization-1);
 
-            for (int i = 0; i < discretization ; i++)
-            {
-                inv_depths.at<float>(i,0) = minVal + i*depth_step;
-            }
+        minVal=1/minimo;
+        maxVal=1/maximo;
+
+        depth_step = (maxVal-minVal)/(discretization-1);
+
+        for (int i = 0; i < discretization ; i++)
+        {
+            inv_depths.at<float>(i,0) = minVal + i*depth_step;
+        }
     }
 }
 
@@ -912,32 +912,32 @@ void get_3Dpoints_inImage(Images_class &images, cv::Mat &points,cv::Mat &depth_m
 
     depth_map = cv::Mat::zeros(size_y,size_x,CV_32FC1);
     for (int ii = 0 ; ii<=transformed_points.rows-1; ii++ )
+    {
+        float depth = transformed_points.at<float>(ii,2);
+
+        transformed_points.at<float>(ii,0) /= (depth/fx);
+        transformed_points.at<float>(ii,1) /= (depth/fy);
+
+
+        projected_points.at<float>(ii,0) = (cy + transformed_points.at<float>(ii,1));
+        projected_points.at<float>(ii,1) = (-transformed_points.at<float>(ii,0) + cx);
+        projected_points.at<float>(ii,2) = 1.0;
+
+        if (projected_points.at<float>(ii,0) > 6 && projected_points.at<float>(ii,0) < imsize_y-6\
+                && projected_points.at<float>(ii,1) > 6 && projected_points.at<float>(ii,1) < imsize_x-6)
         {
-            float depth = transformed_points.at<float>(ii,2);
 
-            transformed_points.at<float>(ii,0) /= (depth/fx);
-            transformed_points.at<float>(ii,1) /= (depth/fy);
+            float y_pos =  projected_points.at<float>(ii,0);
+            float x_pos =  projected_points.at<float>(ii,1);
 
-
-             projected_points.at<float>(ii,0) = (cy + transformed_points.at<float>(ii,1));
-             projected_points.at<float>(ii,1) = (-transformed_points.at<float>(ii,0) + cx);
-             projected_points.at<float>(ii,2) = 1.0;
-
-         if (projected_points.at<float>(ii,0) > 6 && projected_points.at<float>(ii,0) < imsize_y-6\
-                 && projected_points.at<float>(ii,1) > 6 && projected_points.at<float>(ii,1) < imsize_x-6)
-         {
-
-             float y_pos =  projected_points.at<float>(ii,0);
-             float x_pos =  projected_points.at<float>(ii,1);
-
-             for (int ll = y_pos-5; ll <=y_pos+5;ll++)
-             {
-                 for (int mm = x_pos-5; mm <= x_pos+5;mm++)
-                 {
-                     depth_map.at<float>(ll,mm) = ii;
-                 }
-             }
-         }
+            for (int ll = y_pos-5; ll <=y_pos+5;ll++)
+            {
+                for (int mm = x_pos-5; mm <= x_pos+5;mm++)
+                {
+                    depth_map.at<float>(ll,mm) = ii;
+                }
+            }
+        }
     }
 }
 
@@ -1023,11 +1023,11 @@ void backproject_from_plane(Images_class &images,cv::Mat &pixels,cv::Mat &n1,flo
 
     for (int j = 0; j < pixels.rows; j++)
     {
-            int A = pixels.at<float>(j,0);
-            int B = pixels.at<float>(j,1);
-            X_total.at<float>(j,0) = cx-B;
-            X_total.at<float>(j,1) = A-cy;
-            X_total.at<float>(j,2) = 1;
+        int A = pixels.at<float>(j,0);
+        int B = pixels.at<float>(j,1);
+        X_total.at<float>(j,0) = cx-B;
+        X_total.at<float>(j,1) = A-cy;
+        X_total.at<float>(j,2) = 1;
     }
 
     inv_depth_mat_total = (X_total *K1_inv * n1 / d1);
@@ -1062,24 +1062,24 @@ cv::Mat create_matrix(cv::Mat contour4, int limit, int imsize_x, int imsize_y)
 
             for (int l = aux2.at<float>(n,0)-1; l<= aux2.at<float>(n,0)+1; l = l+2)
             {
-                  if (l>-1 && l < imsize_y  && m.at<float>(l,aux2.at<float>(n,1)) > limit)
-                  {
-                        m.at<float>(l,aux2.at<float>(n,1)) =it;
-                        aux1.at<float>(0,0) =l;
-                        aux1.at<float>(0,1) =aux2.at<float>(n,1);
-                        aux.push_back(aux1.row(0));
-                  }
+                if (l>-1 && l < imsize_y  && m.at<float>(l,aux2.at<float>(n,1)) > limit)
+                {
+                    m.at<float>(l,aux2.at<float>(n,1)) =it;
+                    aux1.at<float>(0,0) =l;
+                    aux1.at<float>(0,1) =aux2.at<float>(n,1);
+                    aux.push_back(aux1.row(0));
+                }
             }
             for (int l = aux2.at<float>(n,1)-1; l<= aux2.at<float>(n,1)+1; l = l+2)
             {
                 if (l>-1 && l < imsize_x  && m.at<float>(aux2.at<float>(n,0),l) > limit)
                 {
-                        m.at<float>(aux2.at<float>(n,0),l) =it;
-                        aux1.at<float>(0,0) =aux2.at<float>(n,0);
-                        aux1.at<float>(0,1) =l;
-                        aux.push_back(aux1.row(0));
+                    m.at<float>(aux2.at<float>(n,0),l) =it;
+                    aux1.at<float>(0,0) =aux2.at<float>(n,0);
+                    aux1.at<float>(0,1) =l;
+                    aux.push_back(aux1.row(0));
                 }
-           }
+            }
         }
     }
     return m;
@@ -1188,75 +1188,75 @@ inline void centered_gradients_d(cv::Mat &grad_dx, cv::Mat &grad_dy, cv::Mat &gr
 
 float reprojected_contour (Images_class &images,DataToSend &DTS, cv::Mat matchings, int i,float &percentage,float threshold, cv::Mat &contour3D)
 {
-     cv::Mat contour1_2;
-     cv::Mat R1;
-     cv::Mat t1 ;
-     int reference_image = matchings.at<int>(i,0);
+    cv::Mat contour1_2;
+    cv::Mat R1;
+    cv::Mat t1 ;
+    int reference_image = matchings.at<int>(i,0);
 
-     float fx= images.Im[reference_image]-> fx;
-     float fy= images.Im[reference_image]->fy;
-     float cx= images.Im[reference_image]->cx;
-     float cy= images.Im[reference_image]->cy;
-     cv::Mat img = images.Im[reference_image]->image.clone();
-
-
-     cv::Mat m;
-     m = DTS.SupImg[reference_image] -> getSuperpixeles()[matchings.at<int>(i,1)]-> getMatrix();
-
-     R1  = images.Im[reference_image]-> R;
-     t1  = images.Im[reference_image]-> t;
-     fx  = images.Im[reference_image]-> fx;
-     fy  = images.Im[reference_image]-> fy;
-
-     cv::Mat points3D_cam;
+    float fx= images.Im[reference_image]-> fx;
+    float fy= images.Im[reference_image]->fy;
+    float cx= images.Im[reference_image]->cx;
+    float cy= images.Im[reference_image]->cy;
+    cv::Mat img = images.Im[reference_image]->image.clone();
 
 
+    cv::Mat m;
+    m = DTS.SupImg[reference_image] -> getSuperpixeles()[matchings.at<int>(i,1)]-> getMatrix();
 
-     transform_points (points3D_cam, R1,t1,fx, fy, cx, cy, contour3D);
-     points3D_cam= points3D_cam.t();
-     contour1_2 = points3D_cam.clone();
+    R1  = images.Im[reference_image]-> R;
+    t1  = images.Im[reference_image]-> t;
+    fx  = images.Im[reference_image]-> fx;
+    fy  = images.Im[reference_image]-> fy;
 
-     float imsize_x =DTS.SupImg[reference_image] -> image.cols;
-     float imsize_y =DTS.SupImg[reference_image] -> image.rows;
+    cv::Mat points3D_cam;
 
-     float distance, distance_total = 0, distance_opt = INFINITY;
 
-     distance = 0;
-     distance_total = 0;
-     float percentage2=0;
 
-     float d_x1_y,d_x3_y;
-     float x_1,x_2,x_3,y_1,y_2,y_3;
-     for (int k = 0 ; k<=contour1_2.rows-1; k++)
-     {
-            distance_opt = threshold;
-            if (contour1_2.at<float>(k,0) > 1 && contour1_2.at<float>(k,0) < (imsize_x-2)\
-                    && contour1_2.at<float>(k,1) > 1 && contour1_2.at<float>(k,1) < (imsize_y-2))
-            {
-                //BILINEAR INTERPOLATION
-                y_2 = contour1_2.at<float>(k,1);
-                y_1 = static_cast<int>(y_2);
-                y_3 = y_1 +1;
-                x_2 = contour1_2.at<float>(k,0);
-                x_1 = static_cast<int>(x_2);
-                x_3 = x_1 +1;
+    transform_points (points3D_cam, R1,t1,fx, fy, cx, cy, contour3D);
+    points3D_cam= points3D_cam.t();
+    contour1_2 = points3D_cam.clone();
 
-                d_x1_y = (y_2-y_1) * m.at<float>(y_1,x_1) + (y_3-y_2) * m.at<float>(y_3,x_1);
-                d_x3_y = (y_2-y_1) * m.at<float>(y_1,x_3) + (y_3-y_2) * m.at<float>(y_3,x_3);
+    float imsize_x =DTS.SupImg[reference_image] -> image.cols;
+    float imsize_y =DTS.SupImg[reference_image] -> image.rows;
 
-                /////////
-            }
-            distance_total = distance_total + 1.0*distance_opt / contour1_2.rows;
-            percentage2 = percentage2 + (distance_opt < 3) ;
-     }
-     percentage2 = percentage2 / contour1_2.rows;
-     percentage  = percentage2;
-     return distance_total;
+    float distance, distance_total = 0, distance_opt = INFINITY;
+
+    distance = 0;
+    distance_total = 0;
+    float percentage2=0;
+
+    float d_x1_y,d_x3_y;
+    float x_1,x_2,x_3,y_1,y_2,y_3;
+    for (int k = 0 ; k<=contour1_2.rows-1; k++)
+    {
+        distance_opt = threshold;
+        if (contour1_2.at<float>(k,0) > 1 && contour1_2.at<float>(k,0) < (imsize_x-2)\
+                && contour1_2.at<float>(k,1) > 1 && contour1_2.at<float>(k,1) < (imsize_y-2))
+        {
+            //BILINEAR INTERPOLATION
+            y_2 = contour1_2.at<float>(k,1);
+            y_1 = static_cast<int>(y_2);
+            y_3 = y_1 +1;
+            x_2 = contour1_2.at<float>(k,0);
+            x_1 = static_cast<int>(x_2);
+            x_3 = x_1 +1;
+
+            d_x1_y = (y_2-y_1) * m.at<float>(y_1,x_1) + (y_3-y_2) * m.at<float>(y_3,x_1);
+            d_x3_y = (y_2-y_1) * m.at<float>(y_1,x_3) + (y_3-y_2) * m.at<float>(y_3,x_3);
+
+            /////////
+        }
+        distance_total = distance_total + 1.0*distance_opt / contour1_2.rows;
+        percentage2 = percentage2 + (distance_opt < 3) ;
+    }
+    percentage2 = percentage2 / contour1_2.rows;
+    percentage  = percentage2;
+    return distance_total;
 }
 
 
 void transform_points(cv::Mat &points3D_cam, cv::Mat &R,cv::Mat &t,float fx,float fy,
-                        float cx,float cy, cv::Mat &points3D)
+                      float cx,float cy, cv::Mat &points3D)
 {
 
     cv::Mat t_r =  cv::repeat(t,1,points3D.cols);
@@ -1275,7 +1275,7 @@ void transform_points(cv::Mat &points3D_cam, cv::Mat &R,cv::Mat &t,float fx,floa
 }
 
 void transform_points_return_3Dpoints(cv::Mat &points3D_cam, cv::Mat &R,cv::Mat &t,float fx,
-                                        float fy,float cx,float cy, cv::Mat &points3D, cv::Mat &transformed_points)
+                                      float fy,float cx,float cy, cv::Mat &points3D, cv::Mat &transformed_points)
 {
     cv::Mat t_r =  cv::repeat(t,1,points3D.cols);
     points3D_cam = R*points3D  + t_r;
