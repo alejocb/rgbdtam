@@ -1428,7 +1428,7 @@ void optimize_camera_pose(int num_keyframes,SemiDenseTracking *semidense_tracker
                           float mean_depth_value,cv::Mat &coordinates_cam_to_print)
 {
     /// REDUCING RGB AND DEPTH IMAGES
-#pragma omp parallel num_threads(2)
+    #pragma omp parallel num_threads(2)
     {
         switch(omp_get_thread_num())
         {
@@ -2343,7 +2343,7 @@ void gauss_newton_ic(SemiDenseTracking *semidense_tracker,cv::Mat &coordinates_c
 
                 if (init_it && processed_frames < 0.5)
                 {
-#pragma omp parallel num_threads(2)
+                    #pragma omp parallel num_threads(2)
                     {
                         switch(omp_get_thread_num())
                         {
@@ -2446,7 +2446,7 @@ void gauss_newton_ic(SemiDenseTracking *semidense_tracker,cv::Mat &coordinates_c
                 {
                     jacobian_total1 = jacobian_geo_weight.clone();
                     jacobian_total_no_weight1 = jacobian_geo.clone();
-                    error_total_sqrt = error_geo_vector.clone();
+                    error_total_sqrt = error_geo_vector_sqrt.clone();
                     weight_total = weight_geo.clone();
                 }
 
@@ -2495,7 +2495,7 @@ void gauss_newton_ic(SemiDenseTracking *semidense_tracker,cv::Mat &coordinates_c
 
 
 
-#pragma omp parallel num_threads(2)
+                #pragma omp parallel num_threads(2)
                 {
                     switch(omp_get_thread_num())
                     {

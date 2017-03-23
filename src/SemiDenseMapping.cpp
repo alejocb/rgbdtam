@@ -850,7 +850,7 @@ void semidense_mapping(DenseMapping *dense_mapper,SemiDenseMapping *semidense_ma
 
         cv::Mat baseline_convergence = cv::Mat::zeros(semidense_mapper-> initial_inv_depth_sd.rows,1,CV_32FC1);
 
-#pragma omp parallel for num_threads(4)
+        #pragma omp parallel for num_threads(4)
         for (cont_depths = 0; cont_depths <semidense_mapper-> initial_inv_depth_sd.rows;cont_depths++ )
         {
             if (be_outlier.at<float>(cont_depths,0) == 0)
@@ -1394,7 +1394,7 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
     inv_depths_vector_end = inv_depths.at<float>(discretization-1,0);
     float sigma_times = 2;
 
-#pragma omp parallel for num_threads(4)
+     #pragma omp parallel for num_threads(4)
     for (int i = 0; i < inv_depths_vector.cols; i++)
     {
         if (initial_inv_depth_inEveryCamera_largeParallax[i].rows > 1)
@@ -1587,7 +1587,7 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
     cv::Mat GX_copy = GX.clone();
     cv::Mat GY_copy = GY.clone();
 
-#pragma omp parallel for num_threads(4)
+    #pragma omp parallel for num_threads(4)
     for (int i = 0; i < initial_inv_depth.rows; i++)
     {
         float X_gx_ex_aux = 0.0;
@@ -1867,7 +1867,7 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
 
 
 
-#pragma omp parallel for num_threads(4)
+    #pragma omp parallel for num_threads(4)
     for (int i = 0; i < initial_inv_depth.rows; i++)
     {
         /// //1.2*semidense_mapper->num_cameras_mapping_th_aux * semidense_mapper-> translational_ratio_th_min_aux
@@ -1919,7 +1919,7 @@ void convergence_test(SemiDenseMapping *semidense_mapper,cv::Mat &be_outlier,
     minim_prev_and_post_images  = 0;
     minim_images  = semidense_mapper->num_cameras_mapping_th_aux / 2;
 
-#pragma omp parallel for num_threads(4)
+    #pragma omp parallel for num_threads(4)
     for (int i=0; i<semidense_mapper-> initial_inv_depth_sd.rows; i++)
     {
 
