@@ -46,6 +46,13 @@ PCL library for visualization:
 BOOST library to launch the different threads:
     
      sudo apt-get install libboost-all-dev 
+     
+CHOLMOD, BLAS, LAPACK and Eigen3 to compile g2o:
+
+     sudo apt-get install libsuitesparse-dev
+    	sudo apt-get install libblas-dev
+	    sudo apt-get install liblapack-dev
+	    sudo apt-get install libeigen3-dev   
 
 Vocabulary used for loop closure and relocalization:
     
