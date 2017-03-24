@@ -9,16 +9,12 @@ Video of the results that you should expect:
 https://youtu.be/sc-hqtJtHD4
 
  
-
 # License
 
 RGBDTAM is licensed under the GNU General Public License Version 3 (GPLv3), please see http://www.gnu.org/licenses/gpl.html.
 
 For commercial purposes, please contact the authors.
 
- 
-
-      
 
 # Disclaimer
 
@@ -58,10 +54,6 @@ Vocabulary used for loop closure and relocalization:
     
 We have used the vocabulary created by ORB-SLAM authors. Please, download the vocabulary from this link "https://github.com/raulmur/ORB_SLAM/blob/master/Data/ORBvoc.txt.tar.gz" and place it in "ThirdParty/DBoW2/ORBvoc.txt"
 
-
-# Installation
-
-     git clone  https://github.com/alejocb/rgbdtam.git
     
 # Compilation
 
@@ -127,6 +119,10 @@ translational_ratio_th_min: [double]. Minimum parallax to insert a keyframe. Def
 3-) Depth - RGB offset
 
 depth_rgb_offset: [double]. Offset between the timestamps of depth and rgb images. Default: -0.020 (TUM dataset).
+
+4-) Do relocalization
+
+use_relocalization: [bool]. If true, the system will try to detect when it is lost and will try to relocalize.
 
 # Contact
 
