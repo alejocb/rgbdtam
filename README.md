@@ -83,7 +83,7 @@ Launch the visualizer of the current frame
     rosrun image_view image_view image:=/rgbdtam/camera/image
 
 
-You can use a sequence from the TUM dataset to test the algorithm:
+You can use a depth camera (kinect / asus) or a bag file:
 
     rosbag play sequence.bag
 
