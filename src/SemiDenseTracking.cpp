@@ -457,8 +457,7 @@ void ThreadSemiDenseTracker(Images_class *images,SemiDenseMapping *semidense_map
     cout << "Printing keyframes after posegraph optimization" << endl;
     semidense_tracker->loopcloser_obj.print_keyframes_after_optimization();
     cout << "Total keyframes: " << semidense_tracker->loopcloser_obj.keyframes_vector.size() << endl;
-    cout << "evaluating trayectory" << endl;
-
+ 
 
     /// We keep the visualizer for a few seconds even though the sequence has already finished
     boost::this_thread::sleep(boost::posix_time::milliseconds(5000));
