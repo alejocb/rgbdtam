@@ -194,6 +194,7 @@ public:
 
 
     bool SystemIsLost{false};
+    bool use_relocalization;
     bool image_processing_semaphore;
     float PhotoError{0.0};
 
@@ -203,6 +204,8 @@ public:
     float depth_rgb_offset;
 
     bool keepvisualizer{true};
+
+    float geometric_error;
 
 
 private:
