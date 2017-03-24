@@ -17,6 +17,7 @@ path_to_folder:""
 use_kinect: 1
 use_depth_tracking: 1
 kinect_initialization: 1
+use_relocalization: 1
 depth_rgb_offset: -0.020
 
 

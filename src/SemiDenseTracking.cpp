@@ -59,6 +59,7 @@ SemiDenseTracking::SemiDenseTracking()
     init_frame =(int)fs2["init_frame"];
     use_ros =(int)fs2["use_ros"];
     use_depth_tracking =(int)fs2["use_depth_tracking"];
+    use_relocalization = (int)fs2["use_relocalization"] != 0;
 
 
     loopcloser_obj.use_kinect = use_kinect;
@@ -436,7 +437,6 @@ void ThreadSemiDenseTracker(Images_class *images,SemiDenseMapping *semidense_map
     {
         if (semidense_mapper->semaphore == false || (semidense_tracker->use_ros == 1))
         {
-            //semidense_tracker->image_processing_semaphore = false;
             if(semidense_tracker->use_ros == 0 || semidense_tracker->image_processing_semaphore == true)
             {
                 semidense_tracking(images,semidense_mapper,semidense_tracker,dense_mapper,Map,vis_pub,pub_image);
@@ -460,11 +460,10 @@ void ThreadSemiDenseTracker(Images_class *images,SemiDenseMapping *semidense_map
     cout << "evaluating trayectory" << endl;
 
 
-    /// WE keep the visualizer for a few seconds even though the sequence has already finished
+    /// We keep the visualizer for a few seconds even though the sequence has already finished
     boost::this_thread::sleep(boost::posix_time::milliseconds(5000));
     semidense_tracker->keepvisualizer = false;
-    /// WE keep the visualizer for a few seconds even though the sequence has already finished
-
+    /// We keep the visualizer for a few seconds even though the sequence has already finished
 
 
     cout << "thread tracking finished" << endl;
@@ -808,6 +807,7 @@ void relocalization(SemiDenseTracking *semidense_tracker,SemiDenseMapping *semid
                     }
                     depth_frame =  semidense_tracker->keyframe_depth[j];
                 }
+                cout << "System relocalized!! " << endl;
             }
         }else{
             //SYSTEM IS LOST, print current frame;
@@ -888,13 +888,14 @@ void get_depth_image( SemiDenseTracking *semidense_tracker,
 
             if(found_depth_stamp_newer_than_rgb_stamp || num_checks > 15)
             {
-
+                found_depth_stamp_newer_than_rgb_stamp = true;
                 depth_frame = semidense_mapper->image_depth_keyframes[depth_index].clone();
                 if(stamp_error > 0.050) cout << "WARNING!!, stamp error = " << stamp_error << endl;
             }else{
                 boost::this_thread::sleep(boost::posix_time::milliseconds(3));
             }
         }
+
     }
 
 }
@@ -1528,17 +1529,21 @@ void optimize_camera_pose(int num_keyframes,SemiDenseTracking *semidense_tracker
         weight[j] = weight[j].mul(weight[j]);
 
 
+        /// CHECKING IF THE SYSTEM IS LOST
         if(j==3){
-            if ( semidense_tracker->PhotoError > 0   )
+            if ( semidense_tracker->PhotoError > 0 && semidense_tracker->use_relocalization )
             {
-                if( num_keyframes > 3 && ((sorted_error.at<float>(sorted_error.rows/2,0) / semidense_tracker->PhotoError > 7)||
-                                          isnan(sorted_error.at<float>(sorted_error.rows/2,0)))){
-                    //semidense_tracker->SystemIsLost = true;
-                    //cout << "SYSTEM IS LOST" << endl;
+                if( num_keyframes > 3 && ((sorted_error.at<float>(sorted_error.rows/2,0) / semidense_tracker->PhotoError > 6 )
+                                         || isnan(sorted_error.at<float>(sorted_error.rows/2,0)))){
+                      if(semidense_tracker->use_depth_tracking==0 || semidense_tracker->geometric_error > 0.035)
+                      {semidense_tracker->SystemIsLost = true;
+                      cout << "WARNING: SYSTEM MIGHT BE LOST" << endl;}
                 }
             }
             semidense_tracker->PhotoError =  sorted_error.at<float>(sorted_error.rows/2,0)  ;
         }
+        /// CHECKING IF THE SYSTEM IS LOST
+
     }
     /// CAMERA POSE ESTIMATION AND UPDATE OF ROBUST COST FUNCTION
 
@@ -1547,8 +1552,6 @@ void optimize_camera_pose(int num_keyframes,SemiDenseTracking *semidense_tracker
     /// SEND CURRENT TRACKED MAP TO THE MAPPING THREAD AS INITIAL SEED
     if (images.getNumberOfImages() == 0  && !semidense_tracker->SystemIsLost )
     {
-        //cout << "Points tracked: " << points_map[pyramid_levels-1].rows << endl;
-
         cv::Mat points3D_tracked = points_map[pyramid_levels-1].t();
         points3D_tracked = points3D_tracked.rowRange(0,3);
 
@@ -1684,11 +1687,13 @@ void show_error_photo( cv::Mat &coordinates_cam, cv::Mat &image_print,
                 }
             }
             else
-            {image_print.at<cv::Vec3b>(yy,xx)[0] = 255;
+            {
+                image_print.at<cv::Vec3b>(yy,xx)[0] = 255;
                 image_print.at<cv::Vec3b>(yy+1,xx)[0] = 255;
                 image_print.at<cv::Vec3b>(yy,xx+1)[0] = 255;
                 image_print.at<cv::Vec3b>(yy-1,xx)[0] = 255;
-                image_print.at<cv::Vec3b>(yy,xx-1)[0] = 255;}
+                image_print.at<cv::Vec3b>(yy,xx-1)[0] = 255;
+            }
         }
     }
     sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(),"bgr8",image_print).toImageMsg();
@@ -2545,6 +2550,7 @@ void gauss_newton_ic(SemiDenseTracking *semidense_tracker,cv::Mat &coordinates_c
                     float count_close_points = weight_geo.rows;
                     count_close_points = 0;
 
+                    semidense_tracker->geometric_error = cv::mean(cv::abs(error_geo_vector_sqrt))[0];
                     /* if(pyramid_level > 1)
                              {
                                    float overlap_aux =  1 - cv::sum(constant_error)[0] / constant_error.rows;
