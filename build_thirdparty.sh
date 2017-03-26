@@ -17,7 +17,6 @@ make -j
 
 
 cd ../../segment
-cd ThirdParty/segment
 rm segment
 make
 
