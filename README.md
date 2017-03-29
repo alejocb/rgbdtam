@@ -125,6 +125,7 @@ depth_rgb_offset: [double]. Offset between the timestamps of depth and rgb image
 use_relocalization: [bool]. If true, the system will try to detect when it is lost and will try to relocalize.
 
 5-) Minimize geometric error
+
 use_depth_trackoing: [bool]. If false, geometric error will not be minimized (only the photometric error will be minimized). It is recommended to minimize also the geometric error unless RGBDTAM does not work in real-time in your computer. Default: True.
 
 # Contact
