@@ -68,6 +68,7 @@ using namespace std;
 
 #define  SIZE_DEPTH_VECTOR 101
 
+
 class SemiDenseMapping  :public Images_class {
 public:
     SemiDenseMapping();
@@ -181,6 +182,7 @@ public:
 
 
     bool reusing_map{false};
+    float depth_range_print;
 private:
     vector<cv::Mat> points_new_map;
     cv::Mat map_points_print;

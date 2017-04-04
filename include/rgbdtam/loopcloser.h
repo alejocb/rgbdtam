@@ -143,12 +143,18 @@ public:
     vector<cv::Mat> t_after_opt;
     vector<float> s_after_opt;
 
+
+    unordered_map<int,cv::Mat> R_relative;
+    unordered_map<int,cv::Mat> t_relative;
+    unordered_map<int,float> s_relative;
+
+
     int init_keyframes;
 
     bool camera2PCLadded;
 
     void ransac_for_alignment(cv::Mat &model, cv::Mat &data, cv::Mat  &R_rel, cv::Mat  &t_rel,
-                              float &scale, cv::Mat &matchings, cv::Mat &points3D1, cv::Mat &coordinates2,
+                              float &scale, cv::Mat &matchings, cv::Mat &points3D1, cv::Mat &points3D2, cv::Mat &coordinates2,
                               cv::Mat &keypoint_Scale, float &error, int matchings_row, cv::Mat  &R_model,
                               cv::Mat  &t_model, cv::Mat  &R_data, cv::Mat  &t_data,
                               int &inliers_minimum);
