@@ -65,7 +65,7 @@ We have used the vocabulary created by ORB-SLAM authors. Please, download the vo
 
 2-) Compile rgbdtam
       
-    catkin_make --pkg rgbdtam
+    catkin_make rgbdtam -j3
 
 # Usage
 
