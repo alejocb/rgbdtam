@@ -74,16 +74,13 @@ Launch rgbdtam from your 'catkin_workspace' folder:
     cd root/catkin_workspace 
     rosrun rgbdtam rgbdtam
     
-Notice that the location of rgbdtam should be the following:
-
-    root/catkin_workspace/src/rgbdtam
 
 Launch the visualizer of the current frame
 
     rosrun image_view image_view image:=/rgbdtam/camera/image
 
 
-You can use a depth camera (kinect / asus) or a bag file. For example, download the ROS bag of this sequence from the TUM dataset that is the third one in our video (http://vision.in.tum.de/data/datasets/rgbd-dataset/download#freiburg3_long_office_household)
+Now you need a sequence or a depth camera. For example, download the ROS bag of this sequence from the TUM dataset: http://vision.in.tum.de/data/datasets/rgbd-dataset/download#freiburg3_long_office_household.
 
 Use the following command to remove redundant topics 
 
@@ -108,6 +105,7 @@ There are four parameters that you have to modify (before executing a sequence) 
 2-) Camera and depth camera topics
 
 'camera_path'
+
 'depth_camera_path'
 
 
