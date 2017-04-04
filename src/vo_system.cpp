@@ -33,7 +33,9 @@ vo_system::vo_system(){
     cv::FileStorage  fs2( (ros::package::getPath("rgbdtam")+"/src/data.yml").c_str(), cv::FileStorage::READ);
 
     std::string camera_path;
+    std::string depth_camera_path;
     fs2["camera_path"] >> camera_path;
+    fs2["depth_camera_path"] >> depth_camera_path;
     fs2["use_ros"] >> use_ros;
     fs2["cameraMatrix"] >> cameraMatrix;
     fs2["distCoeffs"] >> distCoeffs;
@@ -45,7 +47,6 @@ vo_system::vo_system(){
 
     image_transport::ImageTransport it(nh);
 
-    // sub1_right = it.subscribe(camera_path_right,1, & vo_system::imgcb_right,this);
     odom_pub = nh.advertise<nav_msgs::Odometry>("odom1", 50);
     /// advertising 3D map and camera poses in rviz
     pub_cloud = nh.advertise<sensor_msgs::PointCloud2> ("rgbdtam/map", 1);
@@ -95,8 +96,8 @@ vo_system::vo_system(){
     if(use_ros == 1)
     {
         sub1 = it.subscribe(camera_path,1, & vo_system::imgcb,this);
-        if(semidense_tracker.use_kinect)
-            sub2 = it.subscribe("/camera/depth/image",1, & vo_system::depthcb,this);
+        if(semidense_tracker.use_kinect || semidense_mapper.kinect_initialization )
+            sub2 = it.subscribe(depth_camera_path,1, & vo_system::depthcb,this);
     }
 }
 

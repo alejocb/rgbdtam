@@ -146,7 +146,92 @@ void posegraphOptimizer::posegraphOptimization(vector<cv::Mat> &R_vector,vector<
         edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(j)));
         edge->setMeasurement(T_j_i);
 
-        edge->information() = information_matrix;
+        edge->information() =  information_matrix;
+        sparse_optimizer.addEdge(edge);
+    }
+
+    /// EDGES TO KEEP LOCAL CONSISTENCY
+    for(int i=0; i<num_kfs-5;i++)
+    {
+        int j = i+5;
+
+        g2o::SE3Quat T_world_i;
+        g2o::SE3Quat T_world_j;
+
+
+        cv::Mat R2graph = R_vector.at(i);
+        cv::Mat t2graph = t_vector.at(i);
+        T_world_i = convert_SE3_to_quat( R2graph,  t2graph);
+
+        R2graph = R_vector.at(j);
+        t2graph = t_vector.at(j);
+        T_world_j = convert_SE3_to_quat( R2graph,  t2graph);
+
+        g2o::SE3Quat T_j_i = T_world_j*T_world_i.inverse();
+
+        g2o::EdgeSE3Expmap* edge = new g2o::EdgeSE3Expmap();
+        edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(i)));
+        edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(j)));
+        edge->setMeasurement(T_j_i);
+
+        edge->information() =  information_matrix;
+        sparse_optimizer.addEdge(edge);
+    }
+
+    /// EDGES TO KEEP LOCAL CONSISTENCY
+    for(int i=0; i<num_kfs-10;i++)
+    {
+        int j = i+10;
+
+        g2o::SE3Quat T_world_i;
+        g2o::SE3Quat T_world_j;
+
+
+        cv::Mat R2graph = R_vector.at(i);
+        cv::Mat t2graph = t_vector.at(i);
+        T_world_i = convert_SE3_to_quat( R2graph,  t2graph);
+
+        R2graph = R_vector.at(j);
+        t2graph = t_vector.at(j);
+        T_world_j = convert_SE3_to_quat( R2graph,  t2graph);
+
+        g2o::SE3Quat T_j_i = T_world_j*T_world_i.inverse();
+
+        g2o::EdgeSE3Expmap* edge = new g2o::EdgeSE3Expmap();
+        edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(i)));
+        edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(j)));
+        edge->setMeasurement(T_j_i);
+
+        edge->information() =  information_matrix;
+        sparse_optimizer.addEdge(edge);
+    }
+
+
+    /// EDGES TO KEEP LOCAL CONSISTENCY
+    for(int i=0; i<num_kfs-15;i++)
+    {
+        int j = i+15;
+
+        g2o::SE3Quat T_world_i;
+        g2o::SE3Quat T_world_j;
+
+
+        cv::Mat R2graph = R_vector.at(i);
+        cv::Mat t2graph = t_vector.at(i);
+        T_world_i = convert_SE3_to_quat( R2graph,  t2graph);
+
+        R2graph = R_vector.at(j);
+        t2graph = t_vector.at(j);
+        T_world_j = convert_SE3_to_quat( R2graph,  t2graph);
+
+        g2o::SE3Quat T_j_i = T_world_j*T_world_i.inverse();
+
+        g2o::EdgeSE3Expmap* edge = new g2o::EdgeSE3Expmap();
+        edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(i)));
+        edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(j)));
+        edge->setMeasurement(T_j_i);
+
+        edge->information() =  information_matrix;
         sparse_optimizer.addEdge(edge);
     }
 
@@ -154,7 +239,7 @@ void posegraphOptimizer::posegraphOptimization(vector<cv::Mat> &R_vector,vector<
     /// LOOP CLOSURE EDGES
     for(int i=0; i < R_vector_edges.size(); i++)
     {
-        for(int j=0; j <1; j++)
+        for(int j = 0; j < 3; j++)
         {
             g2o::SE3Quat T_j_i;
             T_j_i = convert_SE3_to_quat( R_vector_edges.at(i),  t_vector_edges.at(i));
@@ -165,7 +250,7 @@ void posegraphOptimizer::posegraphOptimization(vector<cv::Mat> &R_vector,vector<
             edge_loop->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(edges_index.at<unsigned short>(i,1))));
             edge_loop->setMeasurement(T_j_i);
 
-            edge_loop->information() = information_matrix;
+            edge_loop->information() =  information_matrix;
             sparse_optimizer.addEdge(edge_loop);
         }
     }
@@ -199,7 +284,7 @@ void posegraphOptimizer::posegraphOptimization(vector<cv::Mat> &R_vector,vector<
     }
 
     char buffer[150];
-    sprintf(buffer,"src/rgbdtam/src/map_and_poses/tracking_posegraph.ply");
+    sprintf(buffer,"src/rgbdtam/src/results_depth_maps/tracking_posegraph.ply");
     print_poses_(poses,buffer);
     poses1 = poses.clone();
 }
@@ -279,10 +364,99 @@ void posegraphOptimizer::posegraphOptimization_Sim3(vector<cv::Mat> &R_vector,ve
         sparse_optimizer.addEdge(edge);
     }
 
+    /// EDGES TO KEEP LOCAL CONSISTENCY
+    for(int i=0; i<num_kfs-5;i++)
+    {
+
+        int j = i+5;
+
+        cv::Mat R2graph = R_vector.at(i);
+        cv::Mat t2graph = t_vector.at(i);
+
+
+        g2o::Sim3 Sim3_world_i(convert_R_toEigen(R2graph),convert_t_toEigen(t2graph),1.0);
+
+        R2graph = R_vector.at(j);
+        t2graph = t_vector.at(j);
+
+
+        g2o::Sim3 Sim3_world_j(convert_R_toEigen(R2graph),convert_t_toEigen(t2graph),1.0);
+        g2o::Sim3 Sim3_j_i = Sim3_world_j*Sim3_world_i.inverse();
+
+
+
+        g2o::EdgeSim3* edge = new g2o::EdgeSim3();
+        edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(i)));
+        edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(j)));
+        edge->setMeasurement(Sim3_j_i);
+
+        edge->information() = information_matrix;
+        sparse_optimizer.addEdge(edge);
+    }
+
+    /// EDGES TO KEEP LOCAL CONSISTENCY
+    for(int i=0; i<num_kfs-10;i++)
+    {
+
+        int j = i+10;
+
+        cv::Mat R2graph = R_vector.at(i);
+        cv::Mat t2graph = t_vector.at(i);
+
+
+        g2o::Sim3 Sim3_world_i(convert_R_toEigen(R2graph),convert_t_toEigen(t2graph),1.0);
+
+        R2graph = R_vector.at(j);
+        t2graph = t_vector.at(j);
+
+
+        g2o::Sim3 Sim3_world_j(convert_R_toEigen(R2graph),convert_t_toEigen(t2graph),1.0);
+        g2o::Sim3 Sim3_j_i = Sim3_world_j*Sim3_world_i.inverse();
+
+
+
+        g2o::EdgeSim3* edge = new g2o::EdgeSim3();
+        edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(i)));
+        edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(j)));
+        edge->setMeasurement(Sim3_j_i);
+
+        edge->information() = information_matrix;
+        sparse_optimizer.addEdge(edge);
+    }
+    /// EDGES TO KEEP LOCAL CONSISTENCY
+    for(int i=0; i<num_kfs-15;i++)
+    {
+
+        int j = i+15;
+
+        cv::Mat R2graph = R_vector.at(i);
+        cv::Mat t2graph = t_vector.at(i);
+
+
+        g2o::Sim3 Sim3_world_i(convert_R_toEigen(R2graph),convert_t_toEigen(t2graph),1.0);
+
+        R2graph = R_vector.at(j);
+        t2graph = t_vector.at(j);
+
+
+        g2o::Sim3 Sim3_world_j(convert_R_toEigen(R2graph),convert_t_toEigen(t2graph),1.0);
+        g2o::Sim3 Sim3_j_i = Sim3_world_j*Sim3_world_i.inverse();
+
+
+
+        g2o::EdgeSim3* edge = new g2o::EdgeSim3();
+        edge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(i)));
+        edge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(sparse_optimizer.vertex(j)));
+        edge->setMeasurement(Sim3_j_i);
+
+        edge->information() = information_matrix;
+        sparse_optimizer.addEdge(edge);
+    }
+
     /// LOOP CLOSURE EDGES
     for(int i=0; i < R_vector_edges.size(); i++)
     {
-        for(int j=0; j < 1; j++)
+        for(int j=0; j < 3; j++)
         {
             g2o::Sim3 Sim3_j_i(convert_R_toEigen(R_vector_edges.at(i)),convert_t_toEigen( t_vector_edges.at(i)),s_vector_edges.at(i));
             Sim3_j_i = Sim3_j_i.inverse();
@@ -328,7 +502,7 @@ void posegraphOptimizer::posegraphOptimization_Sim3(vector<cv::Mat> &R_vector,ve
     }
 
     char buffer[150];
-    sprintf(buffer,"src/rgbdtam/src/map_and_poses/tracking_posegraph.ply");
+    sprintf(buffer,"src/rgbdtam/src/results_depth_maps/tracking_posegraph.ply");
     print_poses_(poses,buffer);
     poses1 = poses.clone();
 }

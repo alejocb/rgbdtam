@@ -57,11 +57,11 @@ loopcloser::loopcloser()
     cout << "end!!" << endl;
 
     pixel_error = 1.5;
-    //pixel_error = 2.0;
-    inliers_minimun = 15;
+    pixel_error = 2.5;
+    inliers_minimun = 20;
     initial_kf = 0;
     patch_size_for_depths = 0;
-    if(use_kinect == 0) patch_size_for_depths = 2;
+    if(use_kinect == 0) patch_size_for_depths = 3;
 
     number_loops_found = 0;
     cv::Mat matchings_inliers_aux(0,2,CV_32FC1);
@@ -78,7 +78,7 @@ loopcloser::loopcloser()
     viewer1.setSize(3,3);
 
     depth_map_iterator = 1;
-    if(use_kinect == 1) depth_map_iterator = 6;
+    if(use_kinect == 1) depth_map_iterator = 4;
 }
 
 void print_evaluation_(cv::Mat points,  char buffer[])
@@ -142,9 +142,13 @@ void loopcloser::populate_denseMap(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud
 
 void loopcloser::calculate_median_of_a_vector(cv::Mat &errors,float &error)
 {
-    cv::Mat sorted_errors;
+    /// MEDIAN
+    /*cv::Mat sorted_errors;
     cv::sort(errors,sorted_errors,CV_SORT_EVERY_COLUMN + CV_SORT_ASCENDING);
-    error = sorted_errors.at<float>(round(sorted_errors.rows/2),0);
+    error = sorted_errors.at<float>(round(sorted_errors.rows/2),0);*/
+
+    /// MEAN
+    error = cv::mean(errors)[0];
 }
 
 void loopcloser::project_points_calculate_geometric_error(cv::Mat &points3D1, double fx,double fy,
@@ -196,6 +200,7 @@ void loopcloser::print_poses(cv::Mat &points, char buffer[],int color,int points
         if (i<points1rows)
         {
             color3 = 255;
+        }else{
             color1 = 0;
         }
         {
@@ -259,8 +264,6 @@ std::vector <std::string> loopcloser::read_directory( const std::string& path )
 
 void loopcloser::print_keyframes_after_optimization()
 {
-
-
     cv::Mat point_cloud_keyframes_without_opt(0,6,CV_64FC1);
     cv::Mat point_cloud_keyframes_after_opt(0,6,CV_64FC1);
 
@@ -268,7 +271,6 @@ void loopcloser::print_keyframes_after_optimization()
     cv::Mat point_cloud_keyframes_after_opt_total(0,6,CV_64FC1);
 
     int kf_size = 1;
-
 
     for (int i = 0 ; i < R_after_opt.size(); i = i+1)
     {
@@ -278,13 +280,13 @@ void loopcloser::print_keyframes_after_optimization()
             point_cloud_keyframe.convertTo(point_cloud_keyframe,CV_64FC1);
 
             bool print_this_kf = false;
-            for (int ii = 0 ; ii < matchings_inliers.rows; ii = ii+1)
+            for (int  ii = 0 ; ii < matchings_inliers.rows; ii = ii+1)
             {
-                if (matchings_inliers.at<float>(ii,0)== i)
+                if (matchings_inliers.at<float>(ii,0) == i)
                 {
                     print_this_kf = true;
                 }
-                if (matchings_inliers.at<float>(ii,1)== i)
+                if (matchings_inliers.at<float>(ii,1) == i)
                 {
                     print_this_kf = true;
                 }
@@ -306,7 +308,6 @@ void loopcloser::print_keyframes_after_optimization()
                 t_end = t_after_opt.at(i).clone();
                 t_end = t_end.t();
 
-
                 R_init.convertTo(R_init,CV_64FC1);
                 t_init.convertTo(t_init,CV_64FC1);
                 R_end.convertTo(R_end,CV_64FC1);
@@ -315,9 +316,8 @@ void loopcloser::print_keyframes_after_optimization()
                 t_end_vector =   cv::repeat(t_end, 1,point_cloud_xyz.cols);
                 t_init_vector =  cv::repeat(t_init,1,point_cloud_xyz.cols);
 
-
                 point_cloud_xyz = R_init * point_cloud_xyz + t_init_vector;
-                point_cloud_xyz = s_after_opt.at(i) * R_end * point_cloud_xyz + t_end_vector;
+                point_cloud_xyz =   s_after_opt.at(i) * R_end * point_cloud_xyz + t_end_vector;
 
                 point_cloud_xyz = point_cloud_xyz.t();
 
@@ -395,8 +395,8 @@ void loopcloser::print_keyframes_after_optimization()
         print_point_cloud(point_cloud_keyframes_without_opt,buffer);*/
         sprintf (buffer,"src/rgbdtam/src/results_depth_maps/reconstruction_after_optimization_total.ply");
         print_point_cloud(point_cloud_keyframes_after_opt_total,buffer);
-        /*sprintf (buffer,"src/rgbdtam/src/results_depth_maps/reconstruction_without_optimization_total.ply");
-        print_point_cloud(point_cloud_keyframes_without_opt_total,buffer);*/
+        sprintf (buffer,"src/rgbdtam/src/results_depth_maps/reconstruction_without_optimization_total.ply");
+        print_point_cloud(point_cloud_keyframes_without_opt_total,buffer);
     }
 
     return;
@@ -641,7 +641,7 @@ void loopcloser::check_area_covered_by_features(float cx,float cy, cv::Mat &coor
 }
 
 void loopcloser::ransac_for_alignment(cv::Mat &model,cv::Mat &data,cv::Mat  &R_rel, cv::Mat  &t_rel,\
-                                      float &scale,cv::Mat &matchings,cv::Mat &points3D1,
+                                      float &scale,cv::Mat &matchings,cv::Mat &points3D1,cv::Mat &points3D2,
                                       cv::Mat &coordinates2,  cv::Mat &keypoint_scale,float &error, int matchings_row,\
                                       cv::Mat  &R_model, cv::Mat  &t_model,cv::Mat  &R_data,\
                                       cv::Mat  &t_data,int &inliers)
@@ -661,7 +661,8 @@ void loopcloser::ransac_for_alignment(cv::Mat &model,cv::Mat &data,cv::Mat  &R_r
     cv::Mat errors2filtered;
     float error2filtered;
 
-    cv::Mat R_rel_final, t_rel_final;
+    cv::Mat R_rel_final, t_rel_final,points3D1_FINAL,points3D2_FINAL;
+
 
 
     float error_final = 10;
@@ -797,6 +798,8 @@ void loopcloser::ransac_for_alignment(cv::Mat &model,cv::Mat &data,cv::Mat  &R_r
 
                 /// CALCULATE ERROR FINAL
                 points3D1 = model.t();
+                points3D1_FINAL = model.t();
+                points3D2_FINAL = data.t();
 
                 cv::Mat errors(points3D1.rows,1,CV_32FC1);
                 cv::Mat points3D1_aux = points3D1.t();
@@ -850,11 +853,18 @@ void loopcloser::ransac_for_alignment(cv::Mat &model,cv::Mat &data,cv::Mat  &R_r
         R_rel_aux = R_rel_final*R_rel_aux;
         //////////
 
+        R_relative[matchings.at<float>(i,0)]=(R_rel_final);
+        t_relative[matchings.at<float>(i,0)]=(t_rel_final);
+        s_relative[matchings.at<float>(i,0)]=(scale_final);
+
         R_rel = R_rel_aux.clone();
         t_rel = t_rel_aux.clone();
 
         scale = scale_final;
         error = error_final;
+
+        points3D1 = points3D1_FINAL.clone();
+        points3D2 = points3D2_FINAL.clone();
     }
     else
     {
@@ -1066,9 +1076,9 @@ void loopcloser::feature_matching_and_edge_estimation(cv::Mat &matchings,cv::Mat
 
 
             int inliers = inliers_minimun;
-            ransac_for_alignment(model,data,R_rel,t_rel,scale,matchings,points3D1,coordinates2,keypoint_scale,error,i,
+            ransac_for_alignment(model,data,R_rel,t_rel,scale,matchings,points3D1,points3D2,coordinates2,keypoint_scale,error,i,
                                  keyframes_vector[matchings.at<float>(i,0)].R,keyframes_vector[matchings.at<float>(i,0)].t,
-                    keyframes_vector[matchings.at<float>(i,1)].R,keyframes_vector[matchings.at<float>(i,1)].t, inliers);
+                                 keyframes_vector[matchings.at<float>(i,1)].R,keyframes_vector[matchings.at<float>(i,1)].t, inliers);
 
             if (inliers > inliers_minimun  )
             {
@@ -1080,6 +1090,14 @@ void loopcloser::feature_matching_and_edge_estimation(cv::Mat &matchings,cv::Mat
                 R_vector_edges.push_back(R_rel);
                 t_vector_edges.push_back(t_rel);
                 s_vector_edges.push_back(scale);
+
+                /*if(points3D1.rows == points3D2.rows){
+                int  kf2print = matchings.at<float>(i,0)*10+matchings.at<float>(i,1)*1;
+                char buffer[150];
+
+                points3D1.push_back(points3D2);
+                sprintf (buffer,"src/rgbdtam/src/results_depth_maps/img%d_1_aligned.ply",kf2print);
+                print_poses(points3D1,buffer,0,points3D2.rows);}*/
             }
         }
     }
@@ -1370,6 +1388,13 @@ void loopcloser::compute_keyframe(cv::Mat &R, cv::Mat &t, cv::Mat &image, int nu
     char buffer_evaluation[150];
     sprintf(buffer_evaluation,"src/rgbdtam/src/evaluation/trajectory_no_posegraph.txt");
     evaluation(poses_no_optimized,buffer_evaluation);
+
+
+
+    char buffer[150];
+    poses_no_optimized.convertTo(poses_no_optimized,CV_32FC1);
+    sprintf(buffer,"src/rgbdtam/src/results_depth_maps/tracking_NO_posegraph.ply");
+    print_poses(poses_no_optimized,buffer,0,poses_no_optimized.rows);
 
 
     //if (matchings_inliers.rows > 0)
