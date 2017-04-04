@@ -94,7 +94,7 @@ Play the sequence
     rosbag play new_office_household.bag
     
 
-Do not move the visualizer point of view until the sequence has finished (only zoom in/out), or it will get lost otherwise. We will fix this issue in the near future. You can also see the reconstrucction with meshlab after the sequence has finished. Open the following file '/home/alejo/catkin_ws/src/rgbdtam/src/results_depth_maps/reconstruction_after_optimization_total.ply
+Do not move the visualizer point of view until the sequence has finished (only zoom in/out), or it will get lost otherwise. We will fix this issue in the near future. You can also see the reconstrucction with meshlab after the sequence has finished. Open the following file 'rgbdtam/src/results_depth_maps/reconstruction_after_optimization_total.ply
 
 
 There are four parameters that you have to modify (before executing a sequence) in rgbdtam/src/data.yml:
