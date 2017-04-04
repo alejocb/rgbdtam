@@ -83,14 +83,21 @@ Launch the visualizer of the current frame
     rosrun image_view image_view image:=/rgbdtam/camera/image
 
 
-You can use a depth camera (kinect / asus) or a bag file:
+You can use a depth camera (kinect / asus) or a bag file. For example, download the ROS bag of this sequence from the TUM dataset that is the third one in our video (http://vision.in.tum.de/data/datasets/rgbd-dataset/download#freiburg3_long_office_household)
 
-    rosbag play sequence.bag
+Use the following command to remove redundant topics 
 
-Do not move the visualizer point of view until the sequence has finished (only zoom in/out), or it will get lost otherwise. We will fix this issue in the near future.
+    rosbag filter rgbd_dataset_freiburg3_long_office_household.bag new_office_household.bag "topic=='/camera/rgb/image_color' or topic == '/camera/depth/image'"
+    
+Play the sequence
+    
+    rosbag play new_office_household.bag
+    
+
+Do not move the visualizer point of view until the sequence has finished (only zoom in/out), or it will get lost otherwise. We will fix this issue in the near future. You can also see the reconstrucction with meshlab after the sequence has finished. Open the following file '/home/alejo/catkin_ws/src/rgbdtam/src/results_depth_maps/reconstruction_after_optimization_total.ply
 
 
-There are three parameters that you have to modify (before executing a sequence) in rgbdtam/src/data.yml:
+There are four parameters that you have to modify (before executing a sequence) in rgbdtam/src/data.yml:
 
 1-) Intrinsic parameters of the camera:
 
@@ -98,9 +105,10 @@ There are three parameters that you have to modify (before executing a sequence)
 
 'distCoeffs'
 
-2-) Camera topic
+2-) Camera and depth camera topics
 
 'camera_path'
+'depth_camera_path'
 
 
 # Parameters
@@ -127,6 +135,10 @@ use_relocalization: [bool]. If true, the system will try to detect when it is lo
 5-) Minimize geometric error
 
 use_depth_tracking: [bool]. If false, geometric error will not be minimized (only the photometric error will be minimized). It is recommended to minimize also the geometric error unless RGBDTAM does not work in real-time in your computer. Default: True.
+
+6-) Maximum depth to print
+
+depth_range_print: [float]. If higher far away points will also be displayed. Default: 1.7 (meters).
 
 # Contact
 
