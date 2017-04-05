@@ -82,11 +82,11 @@ Launch the visualizer of the current frame
 
 Now you need a sequence or a depth camera. For example, download this sequence (ROS bag format) from the TUM dataset: http://vision.in.tum.de/rgbd/dataset/freiburg3/rgbd_dataset_freiburg3_long_office_household.bag.
 
-Use the following command to remove redundant topics 
+Use the following command to remove the unnecessary topics from the sequence
 
     rosbag filter rgbd_dataset_freiburg3_long_office_household.bag new_office_household.bag "topic=='/camera/rgb/image_color' or topic == '/camera/depth/image'"
     
-Play the sequence
+Play the new sequence
     
     rosbag play new_office_household.bag
     
