@@ -80,7 +80,7 @@ Launch the visualizer of the current frame
     rosrun image_view image_view image:=/rgbdtam/camera/image
 
 
-Now you need a sequence or a depth camera. For example, download the ROS bag of this sequence from the TUM dataset: http://vision.in.tum.de/rgbd/dataset/freiburg3/rgbd_dataset_freiburg3_long_office_household.bag.
+Now you need a sequence or a depth camera. For example, download this sequence (ROS bag format) from the TUM dataset: http://vision.in.tum.de/rgbd/dataset/freiburg3/rgbd_dataset_freiburg3_long_office_household.bag.
 
 Use the following command to remove redundant topics 
 
