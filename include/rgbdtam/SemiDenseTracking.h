@@ -252,6 +252,10 @@ void initialization_semidense(SemiDenseTracking *semidense_tracker,cv::Mat &R,cv
                               cv::Mat depth_frame, int kinect_initialization,\
                               float cx,float cy,  vector<float> &centerx,vector<float> &centery,cv::Mat image_gray,float limit_grad  );
 
+
+/// Update the field of view.
+void UpdateFieldOfView(SemiDenseTracking *semidense_tracker, cv::Mat &R, cv::Mat &t_aux);
+
 /// Get color from point cloud.
 void get_color (cv::Mat &points,cv::Mat &color);
 
