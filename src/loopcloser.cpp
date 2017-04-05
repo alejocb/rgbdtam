@@ -71,14 +71,18 @@ loopcloser::loopcloser()
 
     viewer = new pcl::visualization::PCLVisualizer("Dense Map and camera position");
     viewer->setBackgroundColor (0.75f,0.75f, 0.75f);
-    viewer->setSize(1100,1100);
+    viewer->initCameraParameters();
+    viewer->setPosition(0,0);
+    viewer->setSize(3*640,2*480);
+    viewer->setCameraClipDistances(0.01,10.01);
+    //viewer->setCameraFieldOfView(1.0);
 
     //TODO: the viewer will not work if this auxiliar viewer1 is not added.
     pcl::visualization::PCLVisualizer viewer1 ("aux viewer");
     viewer1.setSize(3,3);
 
     depth_map_iterator = 1;
-    if(use_kinect == 1) depth_map_iterator = 4;
+    if(use_kinect == 1) depth_map_iterator = 3;
 }
 
 void print_evaluation_(cv::Mat points,  char buffer[])
@@ -293,7 +297,6 @@ void loopcloser::print_keyframes_after_optimization()
             }
 
             point_cloud_keyframe = point_cloud_keyframe.colRange(0,6);
-
 
             if (point_cloud_keyframe.rows > 0  && point_cloud_keyframe.cols == 6)
             {
@@ -1292,7 +1295,7 @@ void loopcloser::addCameraPCL(cv::Mat &R, cv::Mat &t){
 
     if(!camera2PCLadded)
     {
-        viewer->addCoordinateSystem (0.25,  t_affine, "camera", 0);
+        viewer->addCoordinateSystem (0.10,  t_affine, "camera", 0);
         camera2PCLadded = true;
     }else{
         viewer->updateCoordinateSystemPose( "camera",  t_affine);

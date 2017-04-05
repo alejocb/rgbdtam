@@ -342,17 +342,53 @@ void prepare_image(SemiDenseTracking *semidense_tracker, cv::Mat &image_frame,
     image_to_track /= (255*1.0);
 }
 
+void UpdateFieldOfView(SemiDenseTracking *semidense_tracker,cv::Mat &R, cv::Mat &t_aux){
+
+    if(t_aux.rows == 1)  t_aux = t_aux.t();
+
+
+    cv::Mat t = t_aux.clone();
+    t.at<float>(0,0) = t.at<float>(0,0);
+    t.at<float>(1,0) = t.at<float>(1,0);
+    t.at<float>(2,0) = t.at<float>(2,0) -0.5;
+    cv::Mat C = -R.t()*t;
+
+    cv::Mat aux = t.clone();
+    aux.at<float>(0,0) =  0;
+    aux.at<float>(1,0)  = 0;
+    aux.at<float>(2,0) =  1;
+    cv::Mat look_at = -R.t()*aux  + -R.t()*t_aux;
+
+    aux.at<float>(0,0) =  0 ;
+    aux.at<float>(1,0)  = -1;
+    aux.at<float>(2,0) =  0;
+    cv::Mat up_vector = -R.t()*aux;
+
+    C.convertTo(C,CV_64FC1);
+    look_at.convertTo(look_at,CV_64FC1);
+    up_vector.convertTo(up_vector,CV_64FC1);
+
+    semidense_tracker->loopcloser_obj.viewer->setCameraPosition(C.at<double>(0,0),C.at<double>(1,0),C.at<double>(2,0),
+                                                            look_at.at<double>(0,0),look_at.at<double>(1,0),look_at.at<double>(2,0),
+                                                            up_vector.at<double>(0,0),up_vector.at<double>(1,0),up_vector.at<double>(2,0));
+}
+
 
 void ThreadViewerUpdater( SemiDenseTracking *semidense_tracker,SemiDenseMapping *semidense_mapper, DenseMapping *dense_mapper)
 {
    while((ros::ok() && semidense_tracker->keepvisualizer))
-    {
+   {
         {
             boost::mutex::scoped_lock lock( semidense_tracker->loopcloser_obj.guard);
+
             semidense_tracker->loopcloser_obj.viewer->spinOnce(1);
+
+            if(!dense_mapper->sequence_has_finished){
+                 UpdateFieldOfView(semidense_tracker,semidense_tracker->R,semidense_tracker->t);
+            }
         }
         boost::this_thread::sleep(boost::posix_time::milliseconds(300));
-    }
+   }
 }
 
 void ThreadImageProcessing( SemiDenseTracking *semidense_tracker,
@@ -462,7 +498,20 @@ void ThreadSemiDenseTracker(Images_class *images,SemiDenseMapping *semidense_map
     /// We keep the visualizer for a few seconds even though the sequence has already finished
     boost::this_thread::sleep(boost::posix_time::milliseconds(5000));
     semidense_tracker->keepvisualizer = false;
+
+    /*for(int i = 0; i < semidense_tracker->loopcloser_obj.R_after_opt.size();i++){
+        {
+            boost::mutex::scoped_lock lock( semidense_tracker->loopcloser_obj.guard);
+             semidense_tracker->loopcloser_obj.viewer->spinOnce(1);
+             UpdateFieldOfView(semidense_tracker,semidense_tracker->loopcloser_obj.R_after_opt[i],
+                               semidense_tracker->loopcloser_obj.t_after_opt[i]);
+             boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+        }
+    }*/
     /// We keep the visualizer for a few seconds even though the sequence has already finished
+
+
+
 
     cout << "thread tracking finished" << endl;
     ros::shutdown();
@@ -1146,19 +1195,19 @@ void semidense_tracking(Images_class *images,SemiDenseMapping *semidense_mapper,
                 if(!semidense_tracker->SystemIsLost)
                 {
 
+                    /// UPDATE CAMERA POSE IN PCL VISUALIZER
+                    {
+                    boost::mutex::scoped_lock lock( semidense_tracker->loopcloser_obj.guard);
+                    semidense_tracker->loopcloser_obj.addCameraPCL(semidense_tracker->R,semidense_tracker->t);
+                    }
+                    /// UPDATE CAMERA POSE IN PCL VISUALIZER
+
+
                     semidense_tracker->frames_processed++;
                     if (images->getNumberOfImages() == 2 && semidense_mapper->num_keyframes % 10 == 0 && semidense_tracker->use_ros == 1)\
                     {
                         cout << "frames_processed -> " <<100.0 * semidense_tracker->frames_processed / *semidense_tracker->cont_frames << " %  Keyframes: " << semidense_mapper->num_keyframes << endl;
                     }
-
-
-                    /// PRINT CAMERA IN PCL
-                    {
-                        boost::mutex::scoped_lock lock(semidense_tracker->loopcloser_obj.guard);
-                        semidense_tracker->loopcloser_obj.addCameraPCL(semidense_tracker->R,semidense_tracker->t);
-                    }
-                    /// PRINT CAMERA IN PCL
 
 
                     Map->set_R(semidense_tracker->R);
