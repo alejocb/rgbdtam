@@ -381,11 +381,15 @@ void ThreadViewerUpdater( SemiDenseTracking *semidense_tracker,SemiDenseMapping 
         {
             boost::mutex::scoped_lock lock( semidense_tracker->loopcloser_obj.guard);
 
-            semidense_tracker->loopcloser_obj.viewer->spinOnce(1);
+            semidense_tracker->loopcloser_obj.addCameraPCL(semidense_tracker->R,semidense_tracker->t);
+
 
             if(!dense_mapper->sequence_has_finished){
                  UpdateFieldOfView(semidense_tracker,semidense_tracker->R,semidense_tracker->t);
             }
+
+            semidense_tracker->loopcloser_obj.viewer->spinOnce(1);
+
         }
         boost::this_thread::sleep(boost::posix_time::milliseconds(300));
    }
@@ -482,7 +486,7 @@ void ThreadSemiDenseTracker(Images_class *images,SemiDenseMapping *semidense_map
                 double time_check_if_seq_is_finished = 0;
                 toc_finalt(time_check_if_seq_is_finished);
 
-                if (time_check_if_seq_is_finished > 8 && semidense_mapper->num_keyframes > 10)
+                if (time_check_if_seq_is_finished > 3 && semidense_mapper->num_keyframes > 10)
                 {dense_mapper->sequence_has_finished = true;}
             }
         }
@@ -498,15 +502,25 @@ void ThreadSemiDenseTracker(Images_class *images,SemiDenseMapping *semidense_map
     /// We keep the visualizer for a few seconds even though the sequence has already finished
     boost::this_thread::sleep(boost::posix_time::milliseconds(5000));
     semidense_tracker->keepvisualizer = false;
-
     /*for(int i = 0; i < semidense_tracker->loopcloser_obj.R_after_opt.size();i++){
-        {
+       {
             boost::mutex::scoped_lock lock( semidense_tracker->loopcloser_obj.guard);
-             semidense_tracker->loopcloser_obj.viewer->spinOnce(1);
-             UpdateFieldOfView(semidense_tracker,semidense_tracker->loopcloser_obj.R_after_opt[i],
-                               semidense_tracker->loopcloser_obj.t_after_opt[i]);
-             boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+
+            cv::Mat t = semidense_tracker->loopcloser_obj.t_after_opt[i].t();
+            cv::Mat R = semidense_tracker->loopcloser_obj.R_after_opt[i];
+
+            t = -R.t()*t;
+            R = R.t();
+            t.convertTo(t,CV_32FC1);
+            R.convertTo(R,CV_32FC1);
+
+            semidense_tracker->loopcloser_obj.addCameraPCL(R,t);
+
+            UpdateFieldOfView(semidense_tracker,R,t);
+
+            semidense_tracker->loopcloser_obj.viewer->spinOnce(1);
         }
+        boost::this_thread::sleep(boost::posix_time::milliseconds(300));
     }*/
     /// We keep the visualizer for a few seconds even though the sequence has already finished
 
@@ -1194,15 +1208,6 @@ void semidense_tracking(Images_class *images,SemiDenseMapping *semidense_mapper,
 
                 if(!semidense_tracker->SystemIsLost)
                 {
-
-                    /// UPDATE CAMERA POSE IN PCL VISUALIZER
-                    {
-                    boost::mutex::scoped_lock lock( semidense_tracker->loopcloser_obj.guard);
-                    semidense_tracker->loopcloser_obj.addCameraPCL(semidense_tracker->R,semidense_tracker->t);
-                    }
-                    /// UPDATE CAMERA POSE IN PCL VISUALIZER
-
-
                     semidense_tracker->frames_processed++;
                     if (images->getNumberOfImages() == 2 && semidense_mapper->num_keyframes % 10 == 0 && semidense_tracker->use_ros == 1)\
                     {
