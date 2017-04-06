@@ -502,30 +502,7 @@ void ThreadSemiDenseTracker(Images_class *images,SemiDenseMapping *semidense_map
     /// We keep the visualizer for a few seconds even though the sequence has already finished
     boost::this_thread::sleep(boost::posix_time::milliseconds(5000));
     semidense_tracker->keepvisualizer = false;
-    /*for(int i = 0; i < semidense_tracker->loopcloser_obj.R_after_opt.size();i++){
-       {
-            boost::mutex::scoped_lock lock( semidense_tracker->loopcloser_obj.guard);
-
-            cv::Mat t = semidense_tracker->loopcloser_obj.t_after_opt[i].t();
-            cv::Mat R = semidense_tracker->loopcloser_obj.R_after_opt[i];
-
-            t = -R.t()*t;
-            R = R.t();
-            t.convertTo(t,CV_32FC1);
-            R.convertTo(R,CV_32FC1);
-
-            semidense_tracker->loopcloser_obj.addCameraPCL(R,t);
-
-            UpdateFieldOfView(semidense_tracker,R,t);
-
-            semidense_tracker->loopcloser_obj.viewer->spinOnce(1);
-        }
-        boost::this_thread::sleep(boost::posix_time::milliseconds(300));
-    }*/
     /// We keep the visualizer for a few seconds even though the sequence has already finished
-
-
-
 
     cout << "thread tracking finished" << endl;
     ros::shutdown();
@@ -637,9 +614,8 @@ void map_reuse(SemiDenseTracking *semidense_tracker,SemiDenseMapping *semidense_
             {
                 if( matchings_mapreuse.at<float>(ii,1) < oldest_kf)
                 {
-                    int pydamid_level = 1;
                     cv::Mat  pointsKF = semidense_tracker->loopcloser_obj.keyframes_vector
-                            [matchings_mapreuse.at<float>(ii,1)].point_cloud_totrack[pydamid_level].clone();
+                            [matchings_mapreuse.at<float>(ii,1)].point_cloud_totrack[0].clone();
 
 
                     correct_kf_after_posegraph_optimization(semidense_tracker,pointsKF,matchings_mapreuse.at<float>(ii,1));
@@ -649,10 +625,10 @@ void map_reuse(SemiDenseTracking *semidense_tracker,SemiDenseMapping *semidense_
                     cv::Mat transformed_points_cam,coordinates_cam;
 
                     transform_points_return_3Dpoints (coordinates_cam, semidense_tracker->R,
-                                                      semidense_tracker->t,semidense_tracker->focalx[pydamid_level],
-                            semidense_tracker->focaly[pydamid_level],\
-                            semidense_tracker->centerx[pydamid_level],
-                            semidense_tracker->centery[pydamid_level],
+                                                      semidense_tracker->t,semidense_tracker->focalx[0],
+                            semidense_tracker->focaly[0],\
+                            semidense_tracker->centerx[0],
+                            semidense_tracker->centery[0],
                             pointsKF,transformed_points_cam);
                     float overlap=0;
                     coordinates_cam=coordinates_cam.t();
@@ -665,8 +641,8 @@ void map_reuse(SemiDenseTracking *semidense_tracker,SemiDenseMapping *semidense_
                     for(int jj = 0; jj < coordinates_cam.rows;jj++)
                     {
                         if(coordinates_cam.at<float>(jj,0) > 0  &&  coordinates_cam.at<float>(jj,1) > 0  &&
-                                coordinates_cam.at<float>(jj,0) < image_frame_aux.cols/4 &&  coordinates_cam.at<float>(jj,1) <
-                                image_frame_aux.rows/4 )
+                                coordinates_cam.at<float>(jj,0) < image_frame_aux.cols/8 &&  coordinates_cam.at<float>(jj,1) <
+                                image_frame_aux.rows/8 )
                         {
                             overlap++;
                             if(coordinates_cam.at<float>(jj,0)  > max_x)max_x = coordinates_cam.at<float>(jj,0) ;
@@ -681,22 +657,22 @@ void map_reuse(SemiDenseTracking *semidense_tracker,SemiDenseMapping *semidense_
                     }
 
                     if(overlap /  coordinates_cam.rows > 0.75  &&
-                            (max_x - min_x) * (max_y-min_y) > image_frame_aux.cols/4*image_frame_aux.rows/4*0.25
-                             //&& max_x_t < 360 && max_y_t < 280 && min_x_t > -60 && min_y_t > -60
+                            (max_x - min_x) * (max_y-min_y) > image_frame_aux.cols/8*image_frame_aux.rows/8*0.75
+                             && max_x_t < 90 && max_y_t < 70 && min_x_t > -10 && min_y_t > -10
                             )
                     {
                         cv::Mat color;
                         get_color(semidense_tracker->loopcloser_obj.keyframes_vector
-                                  [matchings_mapreuse.at<float>(ii,1)].point_cloud_totrack[pydamid_level],color);
+                                  [matchings_mapreuse.at<float>(ii,1)].point_cloud_totrack[0],color);
                         float variance = 0.03; cv::Mat weight;
                         cv::Mat error_vector_sqrt = cv::Mat::zeros(pointsKF.cols,1,CV_32FC1);
                         cv::Mat error_vector = cv::Mat::zeros(pointsKF.cols,1,CV_32FC1);
                         cv::Mat error_check = cv::Mat::zeros(pointsKF.cols,1,CV_32FC1);
                         coordinates_cam = coordinates_cam.t();
-                        compute_error( coordinates_cam,semidense_tracker->image_reduced[pydamid_level],color, error_vector,
+                        compute_error( coordinates_cam,semidense_tracker->image_reduced[0],color, error_vector,
                                 variance,error_vector_sqrt,error_check,weight);
 
-                        if( cv::mean(error_check)[0] < 0.025 && matchings_mapreuse.at<float>(ii,1) > semidense_mapper->init_keyframes/2)
+                        if( cv::mean(error_check)[0] < 0.035 && matchings_mapreuse.at<float>(ii,1) > semidense_mapper->init_keyframes/2)
                         {
                             oldest_kf = matchings_mapreuse.at<float>(ii,1);
                             R_aux = semidense_tracker->R.clone();
@@ -716,10 +692,10 @@ void map_reuse(SemiDenseTracking *semidense_tracker,SemiDenseMapping *semidense_
                 cout << "REUSING previous Keyframe#:  "  << oldest_kf << "  Current Keyframes#:  " << semidense_tracker->loopcloser_obj.keyframes_vector.size()-1  << endl;
 
                 /*for(int j = 0 ; j < semidense_tracker->pyramid_levels; j++){
-                      semidense_tracker->points_map[j] =  semidense_tracker->loopcloser_obj.keyframes_vector
-                               [oldest_kf].point_cloud_totrack[j].clone();
-                      correct_kf_after_posegraph_optimization(semidense_tracker,semidense_tracker->points_map[j],oldest_kf);
-                }*/
+                        semidense_tracker->points_map[j] =  semidense_tracker->loopcloser_obj.keyframes_vector
+                                [oldest_kf].point_cloud_totrack[j].clone();
+                        correct_kf_after_posegraph_optimization(semidense_tracker,semidense_tracker->points_map[j],oldest_kf);
+                    }*/
 
                 R_kf = semidense_tracker->loopcloser_obj.keyframes_vector
                         [oldest_kf].R.clone();
@@ -775,6 +751,7 @@ void map_reuse(SemiDenseTracking *semidense_tracker,SemiDenseMapping *semidense_
         }
     } // !systemIsLOST
 }
+
 
 void relocalization(SemiDenseTracking *semidense_tracker,SemiDenseMapping *semidense_mapper,cv::Mat &image_frame_aux
                     ,cv::Mat &R_kf, cv::Mat &t_kf,image_transport::Publisher *pub_image){
@@ -2002,12 +1979,11 @@ void compute_error_ic( cv::Mat &coordinates_cam,cv::Mat &coordinates_cam_p, cv::
     int imsize_x =image.cols-1;
     int imsize_y =image.rows-1;
 
-    float cont = 0;
+    overlap = 0;
 
     for (int k = 0; k < coordinates_cam.cols;k++)
     {
-        if(coordinates_cam.at<float>(1,k) > 1 && coordinates_cam.at<float>(1,k) < imsize_y-1 && coordinates_cam.at<float>(0,k) > 1 && coordinates_cam.at<float>(0,k) < imsize_x-1)
-        cont ++;
+
         if (coordinates_cam.at<float>(1,k) > 1 && coordinates_cam.at<float>(1,k) < imsize_y-1 && coordinates_cam.at<float>(0,k) > 1 && coordinates_cam.at<float>(0,k) < imsize_x-1
                 && coordinates_cam_p.at<float>(1,k) >1 && coordinates_cam_p.at<float>(1,k) < imsize_y-1 && coordinates_cam_p.at<float>(0,k) > 1 && coordinates_cam_p.at<float>(0,k) < imsize_x-1)
         {
@@ -2028,11 +2004,10 @@ void compute_error_ic( cv::Mat &coordinates_cam,cv::Mat &coordinates_cam_p, cv::
             color_p.at<float>(k,0) = r_p;
             error_vector_sqrt.at<float>(k,0) =(r*gain + brightness -  r_p);
 
-            /*if ( fabs(error_vector_sqrt.at<float>(k,0) ) < 0.2)
+            if ( fabs(error_vector_sqrt.at<float>(k,0) ) < 0.2)
             {
                 overlap += 1.0/coordinates_cam.cols;
-            } */
-
+            }
         }
         else
         {
@@ -2057,8 +2032,6 @@ void compute_error_ic( cv::Mat &coordinates_cam,cv::Mat &coordinates_cam_p, cv::
             error_vector_sqrt.at<float>(k,0) = sqrt(variance);
         }
     }
-
-    overlap = cont / coordinates_cam.cols;
 
 
     cv::pow(error_vector_sqrt, 2,error_vector);
@@ -2603,11 +2576,11 @@ void gauss_newton_ic(SemiDenseTracking *semidense_tracker,cv::Mat &coordinates_c
                     count_close_points = 0;
 
                     semidense_tracker->geometric_error = cv::mean(cv::abs(error_geo_vector_sqrt))[0];
-                    /* if(pyramid_level > 1)
-                             {
-                                   float overlap_aux =  1 - cv::sum(constant_error)[0] / constant_error.rows;
-                                   if (overlap_aux*1.00 < overlap) overlap = overlap_aux;
-                             }*/
+                     /*if(pyramid_level > 1)
+                     {
+                        float overlap_aux =  1 - cv::sum(constant_error)[0] / constant_error.rows;
+                        if (overlap_aux*1.00 < overlap) overlap = overlap_aux;
+                     }*/
                 }
                 else
                 {
@@ -2938,8 +2911,6 @@ void compute_error_ic_ni( cv::Mat &coordinates_cam,cv::Mat &coordinates_cam_p, c
 
     for (int k =0; k< coordinates_cam.cols;k++)
     {
-        if(coordinates_cam.at<float>(1,k) > 1 && coordinates_cam.at<float>(1,k) < imsize_y-1 && coordinates_cam.at<float>(0,k) > 1 && coordinates_cam.at<float>(0,k) < imsize_x-1)
-        cont++;
         if (coordinates_cam.at<float>(1,k) > 1 && coordinates_cam.at<float>(1,k) < imsize_y-1 && coordinates_cam.at<float>(0,k) >1 && coordinates_cam.at<float>(0,k) < imsize_x-1
                 && coordinates_cam_p.at<float>(1,k) > 1 && coordinates_cam_p.at<float>(1,k) < imsize_y-1 && coordinates_cam_p.at<float>(0,k) > 1 && coordinates_cam_p.at<float>(0,k) < imsize_x-1)
         {
@@ -2954,11 +2925,10 @@ void compute_error_ic_ni( cv::Mat &coordinates_cam,cv::Mat &coordinates_cam_p, c
 
             if ( fabs(r -  r_p) < 0.2)
             {
+                cont++;
                 intensities_kf.push_back(r_p);
                 intensities_frame.push_back(r);
             }
-
-
 
             error_vector_sqrt.at<float>(k,0) =(r*gain+brightness -  r_p);
         }
@@ -2989,6 +2959,7 @@ void compute_error_ic_ni( cv::Mat &coordinates_cam,cv::Mat &coordinates_cam_p, c
     bright_mat  = intensities_kf - gain*intensities_frame;
     brightness = cv::sum(bright_mat)[0]/(1.0*bright_mat.rows);
 }
+
 
 void exp_SO3(cv::Mat &R, cv::Mat &w)
 {
