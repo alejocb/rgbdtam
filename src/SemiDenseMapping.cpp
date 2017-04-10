@@ -1459,17 +1459,6 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
     if (num_cameras_mapping == 0)
     {
 
-        char buffer[150];
-
-
-        if(semidense_mapper->num_keyframes < 100){
-
-        if(semidense_mapper->num_keyframes < 10)
-        {sprintf(buffer,"/home/alejo/catkin_ws/src/rgbdtam/src/map_and_poses/keyframe00/camera0%d00.png", semidense_mapper->num_keyframes);}else{
-        sprintf(buffer,"/home/alejo/catkin_ws/src/rgbdtam/src/map_and_poses/keyframe00/camera0%d00.png", semidense_mapper->num_keyframes);}
-        cv::imwrite(buffer, images.Im[reference_image]->image_gray);
-}
-
         semidense_mapper->points_convergence = cv::Mat::zeros( inv_depths_vector.cols,1,CV_32FC1);
         semidense_mapper->stereo_baseline = cv::Mat::zeros( inv_depths_vector.cols,1,CV_32FC1);
 
@@ -1493,24 +1482,6 @@ void get_photometric_errors_matrix_sd_exhaustive(SemiDenseMapping *semidense_map
 
         all_points.ph_error[discretization-1] = (1/inv_depths_vector_end).mul(semidense_mapper->linear_relation_btw_3D_and_inv_depth1 ) +
                 semidense_mapper->linear_relation_btw_3D_and_inv_depth2;
-
-
-        char buffer[150];
-
-         if(semidense_mapper->num_keyframes < 100){
-        if(semidense_mapper->num_keyframes < 10)
-        {
-            if(num_cameras_mapping < 10)
-            sprintf(buffer,"/home/alejo/catkin_ws/src/rgbdtam/src/map_and_poses/keyframe00/camera0%d0%d.png", semidense_mapper->num_keyframes,num_cameras_mapping);
-            else
-                sprintf(buffer,"/home/alejo/catkin_ws/src/rgbdtam/src/map_and_poses/keyframe00/camera0%d%d.png", semidense_mapper->num_keyframes,num_cameras_mapping);
-        }else{
-            if(num_cameras_mapping < 10)
-            sprintf(buffer,"/home/alejo/catkin_ws/src/rgbdtam/src/map_and_poses/keyframe00/camera%d0%d.png", semidense_mapper->num_keyframes,num_cameras_mapping);
-            else
-                sprintf(buffer,"/home/alejo/catkin_ws/src/rgbdtam/src/map_and_poses/keyframe00/camera%d%d.png", semidense_mapper->num_keyframes,num_cameras_mapping);           }
-               cv::imwrite(buffer, images.Im[image_to_be_added]->image_gray);
-         }
     }
 
     all_points.ph_error[10] = ((1/inv_depths_vector_end + 1/inv_depths_vector)/2).mul(semidense_mapper->linear_relation_btw_3D_and_inv_depth1 ) +
