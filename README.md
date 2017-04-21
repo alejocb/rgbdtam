@@ -57,13 +57,15 @@ We have used the vocabulary created by ORB-SLAM authors. Please, download the vo
     
 # Compilation
 
+1-) Download rgbdtam. Rename the main folder 'rgbdtam-master' and name it 'rgbdtam' instead.
 
-1-) Run the script build_thirdparty.sh to compile the ThirdParty directories (segmentation, DBoW2 and g20).
+
+2-) Run the script build_thirdparty.sh to compile the ThirdParty directories (segmentation, DBoW2 and g20).
        
     sh build_thirdparty.sh
 
 
-2-) Compile rgbdtam
+3-) Compile rgbdtam
       
     catkin_make rgbdtam -j3
 
