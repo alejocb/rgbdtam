@@ -426,10 +426,30 @@ void loopcloser::calculate_orb_and_load_features(  cv::Mat &image,vector<cv::Mat
         int nFeatures = 1000;
         int sizePatch = 31;
 
-        cv::ORB orb(nFeatures,1.2,8,sizePatch,0,2,cv::ORB::HARRIS_SCORE,sizePatch);
+        //cv::ORB orb(nFeatures,1.2,8,sizePatch,0,2,cv::ORB::HARRIS_SCORE,sizePatch);
+        static cv::Ptr<cv::ORB> orb = cv::ORB::create(nFeatures,1.2,8,sizePatch,0,2,cv::ORB::HARRIS_SCORE,sizePatch);  // change for opencv 3
         cv::Mat mask_orb;
-        orb(image_orb, mask_orb, keypoints_orb, descriptors_orb);
-        changeStructure_orb(descriptors_orb, features.back(), orb.descriptorSize());
+        
+        // begin : added for opencv 3
+        cv::Ptr<cv::DescriptorMatcher> matcher = cv::DescriptorMatcher::create("BruteForce-Hamming");
+        
+        orb->detectAndCompute( image_orb, cv::noArray(), keypoints_orb, descriptors_orb );
+        /*  cv::ORB  inherited from cv::FeatureMatcher2D 
+        
+        virtual void 	detectAndCompute (
+            InputArray image, 
+            InputArray mask, 
+            std::vector< KeyPoint > &keypoints, 
+            OutputArray descriptors, 
+            bool useProvidedKeypoints=false
+            )
+        
+        detector->detectAndCompute(frame,   noArray(),   kp,   desc)
+        
+        */  // end added for opencv3
+        
+        //orb(image_orb, mask_orb, keypoints_orb, descriptors_orb);
+        changeStructure_orb(descriptors_orb, features.back(), orb->descriptorSize());
         features_back = features.back();
     }
 }
@@ -447,10 +467,12 @@ void loopcloser::calculate_orb_features(  cv::Mat &image,vector<cv::Mat> &featur
         int nFeatures = 1000;
         int sizePatch = 31;
 
-        cv::ORB orb(nFeatures,1.2,8,sizePatch,0,2,cv::ORB::HARRIS_SCORE,sizePatch);
+        //cv::ORB orb(nFeatures,1.2,8,sizePatch,0,2,cv::ORB::HARRIS_SCORE,sizePatch);
+        static cv::Ptr<cv::ORB> orb = cv::ORB::create(nFeatures,1.2,8,sizePatch,0,2,cv::ORB::HARRIS_SCORE,sizePatch);  // change for opencv 3
         cv::Mat mask_orb;
-        orb(image_orb, mask_orb, keypoints_orb, descriptors_orb);
-        changeStructure_orb(descriptors_orb, features_aux.back(), orb.descriptorSize());
+        //orb(image_orb, mask_orb, keypoints_orb, descriptors_orb);
+        orb->detectAndCompute( image_orb, cv::noArray(), keypoints_orb, descriptors_orb );
+        changeStructure_orb(descriptors_orb, features_aux.back(), orb->descriptorSize());
         features_back = features_aux.back();
     }
 }
@@ -1235,7 +1257,7 @@ void loopcloser::relocalization(cv::Mat &image,cv::Mat &R, cv::Mat &t, int &olde
             {
                 cv::Mat inliers;
 
-                cv::solvePnPRansac(points3D1,coordinates2,cameraMatrix,distCoeffs,r_pnp,t_pnp,false,100,2.0,100,inliers,cv::ITERATIVE);
+                cv::solvePnPRansac(points3D1,coordinates2,cameraMatrix,distCoeffs,r_pnp,t_pnp,false,100,2.0,100,inliers,cv::SOLVEPNP_ITERATIVE);
 
                 if(inliers.rows > 100 )
                 {
