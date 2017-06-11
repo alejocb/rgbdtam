@@ -117,7 +117,8 @@ Run rgbdtam with the rectified rgb and depth images.
     rosrun rgbdtam rgbdtam /camera/rgb/image_color:=/camera/rgb/image_rect_color /camera/depth/image:=/camera/depth/image_rect
 
 In your oppenni2.launch file set depth_ragistration to true:
-<arg name="depth_registration" default="true" />
+
+arg name="depth_registration" default="true" 
 
 # Parameters
 
