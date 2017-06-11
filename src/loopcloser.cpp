@@ -1,3 +1,4 @@
+
 /**
 * This file is part of rgbdtam.
 *
@@ -36,7 +37,6 @@ loopcloser::loopcloser()
 
     sprintf (buffer,(ros::package::getPath("rgbdtam") + "/ThirdParty/DBoW2/ORBvoc.txt").c_str());
 
-
     try{
         std::ifstream infile(buffer);
         if(!infile.good()) throw 100;
@@ -71,18 +71,14 @@ loopcloser::loopcloser()
 
     viewer = new pcl::visualization::PCLVisualizer("Dense Map and camera position");
     viewer->setBackgroundColor (0.75f,0.75f, 0.75f);
-    viewer->initCameraParameters();
-    viewer->setPosition(0,0);
-    viewer->setSize(3*640,2*480);
-    viewer->setCameraClipDistances(0.01,10.01);
-    //viewer->setCameraFieldOfView(1.0);
+    viewer->setSize(1100,1100);
 
     //TODO: the viewer will not work if this auxiliar viewer1 is not added.
     pcl::visualization::PCLVisualizer viewer1 ("aux viewer");
     viewer1.setSize(3,3);
 
     depth_map_iterator = 1;
-    if(use_kinect == 1) depth_map_iterator = 3;
+    if(use_kinect == 1) depth_map_iterator = 4;
 }
 
 void print_evaluation_(cv::Mat points,  char buffer[])
@@ -298,6 +294,7 @@ void loopcloser::print_keyframes_after_optimization()
 
             point_cloud_keyframe = point_cloud_keyframe.colRange(0,6);
 
+
             if (point_cloud_keyframe.rows > 0  && point_cloud_keyframe.cols == 6)
             {
                 cv::Mat point_cloud_xyz = point_cloud_keyframe.colRange(0,3);
@@ -426,14 +423,20 @@ void loopcloser::calculate_orb_and_load_features(  cv::Mat &image,vector<cv::Mat
         int nFeatures = 1000;
         int sizePatch = 31;
 
-        cv::ORB orb(nFeatures,1.2,8,sizePatch,0,2,cv::ORB::HARRIS_SCORE,sizePatch);
         cv::Mat mask_orb;
+        #if CV_MAJOR_VERSION >= 3
+        cv::Ptr<cv::ORB> orb = cv::ORB::create(nFeatures,1.2,8,sizePatch,0,2,cv::ORB::HARRIS_SCORE,sizePatch);        
+        orb->detectAndCompute(image_orb, mask_orb, keypoints_orb, descriptors_orb);        
+        changeStructure_orb(descriptors_orb, features.back(), orb->descriptorSize());
+        #else
+        cv::ORB orb(nFeatures,1.2,8,sizePatch,0,2,cv::ORB::HARRIS_SCORE,sizePatch);
         orb(image_orb, mask_orb, keypoints_orb, descriptors_orb);
         changeStructure_orb(descriptors_orb, features.back(), orb.descriptorSize());
+        #endif
+
         features_back = features.back();
     }
 }
-
 
 void loopcloser::calculate_orb_features(  cv::Mat &image,vector<cv::Mat> &features_back,
                                           vector<cv::KeyPoint> &keypoints_orb,cv::Mat &descriptors_orb)
@@ -446,11 +449,18 @@ void loopcloser::calculate_orb_features(  cv::Mat &image,vector<cv::Mat> &featur
         features_aux.push_back(vector<cv::Mat>());
         int nFeatures = 1000;
         int sizePatch = 31;
-
-        cv::ORB orb(nFeatures,1.2,8,sizePatch,0,2,cv::ORB::HARRIS_SCORE,sizePatch);
         cv::Mat mask_orb;
+
+        #if CV_MAJOR_VERSION >= 3
+        cv::Ptr<cv::ORB> orb = cv::ORB::create(nFeatures,1.2,8,sizePatch,0,2,cv::ORB::HARRIS_SCORE,sizePatch);
+        orb->detectAndCompute(image_orb, mask_orb, keypoints_orb, descriptors_orb);
+        changeStructure_orb(descriptors_orb, features_aux.back(), orb->descriptorSize());
+        #else
+        cv::ORB orb(nFeatures,1.2,8,sizePatch,0,2,cv::ORB::HARRIS_SCORE,sizePatch);
         orb(image_orb, mask_orb, keypoints_orb, descriptors_orb);
         changeStructure_orb(descriptors_orb, features_aux.back(), orb.descriptorSize());
+        #endif
+
         features_back = features_aux.back();
     }
 }
@@ -1097,7 +1107,6 @@ void loopcloser::feature_matching_and_edge_estimation(cv::Mat &matchings,cv::Mat
                 /*if(points3D1.rows == points3D2.rows){
                 int  kf2print = matchings.at<float>(i,0)*10+matchings.at<float>(i,1)*1;
                 char buffer[150];
-
                 points3D1.push_back(points3D2);
                 sprintf (buffer,"src/rgbdtam/src/results_depth_maps/img%d_1_aligned.ply",kf2print);
                 print_poses(points3D1,buffer,0,points3D2.rows);}*/
@@ -1235,7 +1244,12 @@ void loopcloser::relocalization(cv::Mat &image,cv::Mat &R, cv::Mat &t, int &olde
             {
                 cv::Mat inliers;
 
+                #if CV_MAJOR_VERSION >= 3
+                cv::solvePnPRansac(points3D1,coordinates2,cameraMatrix,distCoeffs,r_pnp,t_pnp,false,100,2.0,100,inliers,cv::SOLVEPNP_ITERATIVE);
+                #else
                 cv::solvePnPRansac(points3D1,coordinates2,cameraMatrix,distCoeffs,r_pnp,t_pnp,false,100,2.0,100,inliers,cv::ITERATIVE);
+                #endif
+
 
                 if(inliers.rows > 100 )
                 {
@@ -1295,7 +1309,7 @@ void loopcloser::addCameraPCL(cv::Mat &R, cv::Mat &t){
 
     if(!camera2PCLadded)
     {
-        viewer->addCoordinateSystem (0.10,  t_affine, "camera", 0);
+        viewer->addCoordinateSystem (0.25,  t_affine, "camera", 0);
         camera2PCLadded = true;
     }else{
         viewer->updateCoordinateSystemPose( "camera",  t_affine);
