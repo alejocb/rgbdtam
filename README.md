@@ -69,7 +69,7 @@ We have used the vocabulary created by ORB-SLAM authors. Please, download the vo
       
     catkin_make rgbdtam -j3
 
-# Usage
+# Usage with a '.bag' sequence
 
 Launch rgbdtam from your 'catkin_workspace' folder:
      
@@ -110,6 +110,14 @@ There are four parameters that you have to modify (before executing a sequence) 
 
 'depth_camera_path'
 
+# Usage with ASUS
+
+Run rgbdtam with the rectified rgb and depth images.
+
+    rosrun rgbdtam rgbdtam /camera/rgb/image_color:=/camera/rgb/image_rect_color /camera/depth/image:=/camera/depth/image_rect
+
+In your oppenni2.launch file set depth_ragistration to true:
+<arg name="depth_registration" default="true" />
 
 # Parameters
 
