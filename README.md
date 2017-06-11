@@ -110,15 +110,20 @@ There are four parameters that you have to modify (before executing a sequence) 
 
 'depth_camera_path'
 
-# Usage with ASUS
+# Usage with ASUS depth camera
 
 Run rgbdtam with the rectified rgb and depth images.
 
     rosrun rgbdtam rgbdtam /camera/rgb/image_color:=/camera/rgb/image_rect_color /camera/depth/image:=/camera/depth/image_rect
 
-In your oppenni2.launch file set depth_ragistration to true:
+Go to your oppenni2.launch file and set depth_ragistration to true:
 
 arg name="depth_registration" default="true" 
+
+Then, run it.
+
+    roslaunch openni2.launch 
+ 
 
 # Parameters
 
